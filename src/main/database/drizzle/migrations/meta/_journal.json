@@ -1,0 +1,34 @@
+{
+    "version": "7",
+    "dialect": "sqlite",
+    "entries": [
+        {
+            "idx": 0,
+            "version": "6",
+            "when": 1783388308554,
+            "tag": "0000_puzzling_magma",
+            "breakpoints": true
+        },
+        {
+            "idx": 1,
+            "version": "6",
+            "when": 1783782851430,
+            "tag": "0001_amused_blonde_phantom",
+            "breakpoints": true
+        },
+        {
+            "idx": 2,
+            "version": "7",
+            "when": 1783785000000,
+            "tag": "0002_add_agent_tables",
+            "breakpoints": true
+        },
+        {
+            "idx": 3,
+            "version": "7",
+            "when": 1783846000000,
+            "tag": "0003_add_model_to_conversations",
+            "breakpoints": true
+        }
+    ]
+}

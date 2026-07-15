@@ -1,0 +1,434 @@
+/* ===== 笔笔统一 UI 组件样式 ===== */
+
+/* ---------- 按钮 ---------- */
+.bb-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-sm);
+    background: var(--bb-bg-card);
+    color: var(--bb-text-secondary);
+    font-size: 14px;
+    font-weight: var(--bb-weight-medium);
+    cursor: pointer;
+    transition: all var(--bb-duration-fast) var(--bb-ease);
+    outline: none;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+.bb-btn:hover {
+    border-color: var(--bb-accent);
+    color: var(--bb-accent);
+}
+.bb-btn:active {
+    transform: scale(0.97);
+}
+.bb-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.bb-btn-primary {
+    background: var(--bb-accent);
+    border-color: var(--bb-accent);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(217, 164, 4, 0.2);
+}
+.bb-btn-primary:hover {
+    background: var(--bb-accent-hover);
+    border-color: var(--bb-accent-hover);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(217, 164, 4, 0.28);
+    transform: translateY(-1px);
+}
+.bb-btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(217, 164, 4, 0.15);
+}
+
+.bb-btn-text {
+    border: none;
+    background: transparent;
+    color: var(--bb-text-secondary);
+    padding: 4px 8px;
+}
+.bb-btn-text:hover {
+    background: var(--bb-bg-hover);
+    color: var(--bb-accent);
+}
+
+.bb-btn-danger:hover {
+    border-color: var(--bb-danger);
+    color: var(--bb-danger);
+}
+
+.bb-btn-sm {
+    padding: 4px 10px;
+    font-size: 12px;
+}
+
+.bb-btn-long {
+    width: 100%;
+}
+
+.bb-btn-loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* ---------- 输入框 ---------- */
+.bb-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-sm);
+    background: var(--bb-bg-input);
+    color: var(--bb-text-primary);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color var(--bb-duration-fast) var(--bb-ease);
+    line-height: 1.5;
+}
+.bb-input::placeholder {
+    color: var(--bb-text-tertiary);
+}
+.bb-input:focus {
+    border-color: var(--bb-accent);
+    box-shadow: 0 0 0 3px var(--bb-accent-light);
+}
+
+.bb-input-sm {
+    padding: 5px 10px;
+    font-size: 13px;
+}
+
+/* ---------- 下拉选择（已由 BbSelect 组件替代，保留为空作为兜底） ---------- */
+
+/* ---------- 复选框 ---------- */
+.bb-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--bb-text-primary);
+    user-select: none;
+}
+.bb-checkbox input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--bb-accent);
+    cursor: pointer;
+}
+
+/* ---------- 头像 ---------- */
+.bb-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #fff;
+    font-weight: var(--bb-weight-semibold);
+    flex-shrink: 0;
+    overflow: hidden;
+    line-height: 1;
+}
+
+/* ---------- 日期输入 ---------- */
+input[type='date'].bb-input {
+    appearance: none;
+    -webkit-appearance: none;
+    min-height: 38px;
+}
+
+/* ---------- 数字输入 ---------- */
+.bb-number-wrap {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-sm);
+    background: var(--bb-bg-input);
+    overflow: hidden;
+}
+.bb-number-wrap:focus-within {
+    border-color: var(--bb-accent);
+    box-shadow: 0 0 0 3px var(--bb-accent-light);
+}
+.bb-number-wrap .bb-input {
+    border: none;
+    border-radius: 0;
+    box-shadow: none !important;
+    text-align: right;
+    width: 100%;
+}
+.bb-number-prefix {
+    padding: 0 0 0 12px;
+    color: var(--bb-text-secondary);
+    font-weight: var(--bb-weight-medium);
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+/* ---------- 搜索框 ---------- */
+.bb-search-wrap {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-sm);
+    background: var(--bb-bg-input);
+    overflow: hidden;
+    transition: border-color var(--bb-duration-fast) var(--bb-ease);
+}
+.bb-search-wrap:focus-within {
+    border-color: var(--bb-accent);
+    box-shadow: 0 0 0 3px var(--bb-accent-light);
+}
+.bb-search-wrap .bb-input {
+    border: none;
+    border-radius: 0;
+    box-shadow: none !important;
+}
+.bb-search-icon {
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 10px;
+    color: var(--bb-text-tertiary);
+    flex-shrink: 0;
+}
+.bb-search-clear {
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    color: var(--bb-text-tertiary);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.bb-search-clear:hover {
+    color: var(--bb-text-primary);
+}
+
+/* ---------- 选项列表（Select 内部） ---------- */
+.bb-option-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+}
+.bb-option-label {
+    font-weight: 500;
+}
+.bb-option-hint {
+    font-size: 12px;
+    color: var(--bb-text-tertiary);
+    font-family: var(--bb-font-mono);
+}
+
+/* ---------- 标签（分类用） ---------- */
+.bb-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+    background: var(--bb-bg-hover);
+    color: var(--bb-text-secondary);
+    font-weight: var(--bb-weight-medium);
+    transition: all var(--bb-duration-fast) var(--bb-ease);
+    cursor: default;
+}
+.bb-tag:hover {
+    background: var(--bb-accent-lighter);
+    color: var(--bb-accent-text);
+}
+
+/* ---------- 空状态 ---------- */
+.bb-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 40px 0;
+    color: var(--bb-text-tertiary);
+    font-size: 14px;
+}
+.bb-empty-hint {
+    font-size: 12px;
+    color: var(--bb-text-disabled);
+}
+
+/* ---------- 类型切换胶囊 ---------- */
+.bb-pill-group {
+    display: flex;
+    gap: 6px;
+    background: var(--bb-bg-input);
+    border-radius: 10px;
+    padding: 3px;
+}
+.bb-pill {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--bb-text-secondary);
+    font-size: 14px;
+    font-weight: var(--bb-weight-medium);
+    cursor: pointer;
+    transition: all var(--bb-duration-fast) var(--bb-ease);
+    outline: none;
+    text-align: center;
+}
+.bb-pill.active {
+    background: var(--bb-bg-card);
+    color: var(--bb-accent-text);
+    font-weight: var(--bb-weight-semibold);
+    box-shadow: 0 1px 3px rgba(217, 164, 4, 0.1);
+}
+
+/* ---------- 来源选择 ---------- */
+.bb-source-group {
+    display: flex;
+    gap: 8px;
+}
+.bb-source-pill {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    border: 1px solid var(--bb-border);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--bb-text-secondary);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: var(--bb-weight-medium);
+    transition: all var(--bb-duration-fast) var(--bb-ease);
+    outline: none;
+}
+.bb-source-pill:hover {
+    border-color: var(--bb-accent);
+    color: var(--bb-accent);
+}
+.bb-source-pill.active {
+    border-color: var(--bb-accent);
+    background: var(--bb-accent-light);
+    color: var(--bb-accent-text);
+    font-weight: var(--bb-weight-semibold);
+}
+
+/* ---------- 上传区 ---------- */
+.bb-upload-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 52px 24px;
+    border: 2px dashed var(--bb-border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all var(--bb-duration-fast) var(--bb-ease);
+    background: var(--bb-bg-input);
+}
+.bb-upload-zone:hover {
+    border-color: var(--bb-accent);
+    background: var(--bb-accent-lighter);
+}
+.bb-upload-zone__icon {
+    color: var(--bb-text-tertiary);
+}
+.bb-upload-zone:hover .bb-upload-zone__icon {
+    color: var(--bb-accent);
+}
+.bb-upload-zone__text {
+    font-size: 15px;
+    font-weight: var(--bb-weight-medium);
+    color: var(--bb-text-secondary);
+}
+.bb-upload-zone__hint {
+    font-size: 12px;
+    color: var(--bb-text-tertiary);
+}
+
+/* ---------- 月份导航 ---------- */
+.bb-month-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+.bb-month-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 36px;
+    border: 1px solid var(--bb-border);
+    border-radius: 10px;
+    background: var(--bb-bg-card);
+    color: var(--bb-text-secondary);
+    cursor: pointer;
+    transition: all var(--bb-duration-fast) var(--bb-ease);
+}
+.bb-month-arrow:hover {
+    border-color: var(--bb-accent);
+    color: var(--bb-accent);
+    background: var(--bb-accent-lighter);
+}
+.bb-month-label {
+    font-size: 18px;
+    font-weight: var(--bb-weight-bold);
+    min-width: 140px;
+    text-align: center;
+    color: var(--bb-text-primary);
+}
+
+/* ---------- 卡片头部 ---------- */
+.bb-card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: var(--bb-weight-semibold);
+    color: var(--bb-text-primary);
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--bb-border);
+}
+.bb-card-head__icon {
+    color: var(--bb-accent);
+}
+
+/* ---------- 页面主内容区容器 ----------
+ * 统一导航子页面的水平居中与底部留白，
+ * 水平 padding 由 AppLayout 的 .content 提供（28px 36px），
+ * 此处仅约束最大宽度并居中，避免各页面各自写死 max-width。
+ * 用法：<div class="bb-page-container bb-page-container--wide">
+ */
+.bb-page-container {
+    width: 100%;
+    margin: 0 auto;
+    padding-bottom: var(--bb-page-pad-bottom);
+}
+
+/* 宽版：图表 / 流水等信息密集型页面（首页、明细、导入） */
+.bb-page-container--wide {
+    max-width: var(--bb-page-w-wide);
+}
+
+/* 中版：卡片网格 / 列表型页面（账户、分类） */
+.bb-page-container--medium {
+    max-width: var(--bb-page-w-medium);
+}
+
+/* 窄版：表单 / 设置型页面（设置、预算） */
+.bb-page-container--narrow {
+    max-width: var(--bb-page-w-narrow);
+}

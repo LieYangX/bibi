@@ -1,0 +1,64 @@
+appId: com.personal.bibi
+productName: 笔笔
+directories:
+    buildResources: build
+files:
+    # 仅排除开发目录与文档，生产依赖由 electron-builder 自动收集
+    - '!.omo/**'
+    - '!doc/**'
+    - '!scripts/**'
+    - '!tests/**'
+    - '!**/.vscode/*'
+    - '!**/*.tsbuildinfo'
+    # 源码（由 electron-vite 编译到 out/）
+    - '!src/*'
+    # 构建配置
+    - '!electron.vite.config.{js,ts,mjs,cjs}'
+    - '!{dev-app-update.yml,CHANGELOG.md,README.md,AGENTS.md}'
+    - '!{drizzle.config.ts,vitest.config.ts,vitest.integration.config.ts}'
+    - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,.editorconfig,.gitignore,.npmrc}'
+    - '!{.env,.env.*,pnpm-lock.yaml}'
+    - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+    # 开发数据库文件
+    - '!bibi-dev.db'
+    - '!bibi-dev.db-wal'
+    - '!bibi-dev.db-shm'
+    # 开发 STT 模型缓存
+    - '!stt-cache/**'
+    # 开发日志、会话、自定义 Skill、本地记忆
+    - '!logs/**'
+    - '!last-user.json'
+    - '!skills/**'
+    - '!memories/**'
+    # 打包中间产物
+    - '!dist/**'
+    # better-sqlite3 运行时不需要 C++ 源码与构建脚本
+    - '!node_modules/better-sqlite3/{src,deps}/**'
+    - '!node_modules/better-sqlite3/binding.gyp'
+asar: true
+asarUnpack:
+    - 'node_modules/better-sqlite3/build/Release/*.node'
+win:
+    executableName: bibi
+nsis:
+    artifactName: ${name}-${version}-setup.${ext}
+    shortcutName: ${productName}
+    uninstallDisplayName: ${productName}
+    createDesktopShortcut: always
+mac:
+    entitlementsInherit: build/entitlements.mac.plist
+    notarize: false
+dmg:
+    artifactName: ${name}-${version}.${ext}
+linux:
+    target:
+        - AppImage
+        - snap
+        - deb
+    maintainer: bibi
+    category: Utility
+appImage:
+    artifactName: ${name}-${version}.${ext}
+npmRebuild: true
+electronDownload:
+    mirror: https://npmmirror.com/mirrors/electron/

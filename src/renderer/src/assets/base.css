@@ -1,0 +1,243 @@
+/* 笔笔 — 暖金色主题设计系统 */
+
+:root {
+    /* 品牌色 */
+    --bb-accent: #d9a404;
+    --bb-accent-hover: #b8860b;
+    --bb-accent-light: rgba(217, 164, 4, 0.08);
+    --bb-accent-lighter: rgba(217, 164, 4, 0.12);
+    --bb-accent-text: #9b7000;
+    --bb-accent-soft: rgba(217, 164, 4, 0.06);
+
+    /* 功能色 */
+    --bb-success: #16a34a;
+    --bb-success-light: rgba(22, 163, 74, 0.1);
+    --bb-danger: #ef4444;
+    --bb-danger-light: rgba(239, 68, 68, 0.1);
+    --bb-warning: #f59e0b;
+    --bb-warning-light: rgba(245, 158, 11, 0.1);
+    --bb-info: #6366f1;
+    --bb-info-light: rgba(99, 102, 241, 0.1);
+
+    /* 背景色 */
+    --bb-bg-page: #f1f5f9;
+    --bb-bg-card: #ffffff;
+    --bb-bg-sidebar: #ffffff;
+    --bb-bg-hover: #f8fafc;
+    --bb-bg-input: #f1f5f9;
+    --bb-bg-overlay: rgba(15, 23, 42, 0.3);
+
+    /* 文本色 */
+    --bb-text-primary: #0f172a;
+    --bb-text-secondary: #475569;
+    --bb-text-tertiary: #94a3b8;
+    --bb-text-disabled: #cbd5e1;
+
+    /* 边框与分割线 */
+    --bb-border: #e2e8f0;
+    --bb-border-light: #f1f5f9;
+
+    /* 阴影 */
+    --bb-shadow-xs: 0 1px 2px rgba(217, 164, 4, 0.04);
+    --bb-shadow-sm: 0 2px 6px rgba(217, 164, 4, 0.06);
+    --bb-shadow-md: 0 4px 12px rgba(217, 164, 4, 0.08);
+    --bb-shadow-lg: 0 8px 24px rgba(217, 164, 4, 0.1);
+    --bb-shadow-card: 0 2px 8px rgba(217, 164, 4, 0.05);
+    --bb-shadow-float: 0 8px 32px rgba(217, 164, 4, 0.12);
+
+    /* 圆角 */
+    --bb-radius-sm: 6px;
+    --bb-radius-md: 10px;
+    --bb-radius-lg: 14px;
+    --bb-radius-xl: 18px;
+
+    /* 页面主内容区宽度档位（导航子页面统一容器） */
+    --bb-page-w-wide: 1100px;
+    --bb-page-w-medium: 900px;
+    --bb-page-w-narrow: 720px;
+    /* 页面底部留白，避免内容贴边 */
+    --bb-page-pad-bottom: 48px;
+
+    /* 字体 */
+    --bb-font: 'MiSans', 'PingFang SC', 'Microsoft YaHei', -apple-system, sans-serif;
+    --bb-font-mono: 'MiSans', 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+
+    /* 字重 */
+    --bb-weight-normal: 400;
+    --bb-weight-medium: 500;
+    --bb-weight-semibold: 600;
+    --bb-weight-bold: 700;
+
+    /* 动效 */
+    --bb-duration-fast: 0.15s;
+    --bb-duration: 0.2s;
+    --bb-duration-slow: 0.3s;
+    --bb-duration-page-enter: 0.2s;
+    --bb-duration-page-leave: 0.1s;
+    --bb-ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --bb-ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --bb-ease-page-enter: cubic-bezier(0.22, 1, 0.36, 1);
+    --bb-ease-page-leave: cubic-bezier(0.4, 0, 1, 1);
+    --bb-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --bb-ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* 玻璃拟态 */
+    --bb-glass-bg: rgba(255, 255, 255, 0.72);
+    --bb-glass-bg-strong: rgba(255, 255, 255, 0.92);
+    --bb-glass-blur: blur(12px);
+    --bb-glass-saturate: saturate(180%);
+    --bb-glass-border: rgba(226, 232, 240, 0.8);
+
+    /* 旧变量兼容别名（视图迁移期保留，统一指向 --bb-*） */
+    --c-brand: var(--bb-accent);
+    --c-brand-hover: var(--bb-accent-hover);
+    --c-brand-light: #fefce8;
+    --c-brand-soft: var(--bb-accent-soft);
+    --c-success: var(--bb-success);
+    --c-danger: var(--bb-danger);
+    --c-warning: var(--bb-warning);
+    --c-info: var(--bb-info);
+
+    --bg-page: var(--bb-bg-page);
+    --bg-card: var(--bb-bg-card);
+    --bg-sidebar: var(--bb-bg-sidebar);
+    --bg-hover: var(--bb-bg-hover);
+    --bg-input: var(--bb-bg-input);
+
+    --text-1: var(--bb-text-primary);
+    --text-2: var(--bb-text-secondary);
+    --text-3: var(--bb-text-tertiary);
+    --text-4: var(--bb-text-disabled);
+
+    --border: var(--bb-border);
+    --border-light: var(--bb-border-light);
+
+    --shadow-sm: var(--bb-shadow-sm);
+    --shadow-md: var(--bb-shadow-md);
+    --shadow-lg: var(--bb-shadow-lg);
+
+    --radius-sm: var(--bb-radius-sm);
+    --radius-md: var(--bb-radius-md);
+    --radius-lg: var(--bb-radius-lg);
+    --radius-xl: var(--bb-radius-xl);
+
+    --font: var(--bb-font);
+    --font-mono: var(--bb-font-mono);
+
+    --trans: var(--bb-duration-fast) var(--bb-ease);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+}
+
+html,
+body {
+    min-height: 100vh;
+    color: var(--bb-text-primary);
+    background: var(--bb-bg-page);
+    font-family: var(--bb-font);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+}
+
+::selection {
+    background: var(--bb-accent-light);
+    color: var(--bb-accent);
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bb-text-disabled);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--bb-text-tertiary);
+}
+
+/* 工具类 */
+.text-mono {
+    font-family: var(--bb-font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+/* 页面切换动效：先淡出旧页再平滑引入新页，避免并发重排抖动 */
+.page-enter-active {
+    transition:
+        opacity var(--bb-duration-page-enter) var(--bb-ease-page-enter),
+        transform var(--bb-duration-page-enter) var(--bb-ease-page-enter);
+}
+
+.page-leave-active {
+    pointer-events: none;
+    transition: opacity var(--bb-duration-page-leave) var(--bb-ease-page-leave);
+}
+
+.page-enter-active,
+.page-leave-active {
+    width: 100%;
+    min-width: 0;
+    backface-visibility: hidden;
+    will-change: opacity, transform;
+}
+
+.page-enter-from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+}
+
+.page-leave-to {
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-enter-active,
+    .page-leave-active {
+        transition-duration: 0.01ms;
+    }
+
+    .page-enter-from {
+        transform: none;
+    }
+}
+
+/* 弹窗/浮层面板通用动效 */
+.panel-enter-active {
+    transition:
+        opacity var(--bb-duration) var(--bb-ease-out),
+        transform var(--bb-duration) var(--bb-ease-spring);
+}
+
+.panel-leave-active {
+    transition: opacity var(--bb-duration-fast) var(--bb-ease);
+}
+
+.panel-enter-from,
+.panel-leave-to {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+}
+
+/* 列表项依次入场 */
+.stagger-enter-active {
+    transition:
+        opacity var(--bb-duration) var(--bb-ease-out),
+        transform var(--bb-duration) var(--bb-ease-spring);
+}
+
+.stagger-enter-from {
+    opacity: 0;
+    transform: translateY(10px);
+}

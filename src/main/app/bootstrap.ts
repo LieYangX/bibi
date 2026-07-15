@@ -1,0 +1,190 @@
+/**
+ * Electron 应用启动编排
+ * @author xiangwei
+ */
+
+import { app, BrowserWindow, dialog } from 'electron'
+import { electronApp, optimizer } from '@electron-toolkit/utils'
+import { registerTelemetry } from 'ai'
+import { DevToolsTelemetry } from '@ai-sdk/devtools'
+import { closeDatabase, initDatabase } from '../database'
+import { registerIpcHandlers } from '../ipc'
+import { createMainWindow } from '../windows/main-window'
+import { getLogDirectoryInfo, logger } from '../utils/logger'
+import { resetModel } from '../services/stt.service'
+
+const APP_ID = 'com.personal.bibi'
+const STARTUP_ERROR_TITLE = '笔笔启动失败'
+
+let mainWindow: BrowserWindow | null = null
+let processErrorHandlersRegistered = false
+
+/**
+ * 注册主进程兜底异常日志
+ *
+ * @author xiangwei
+ */
+function registerProcessErrorHandlers(): void {
+    if (processErrorHandlersRegistered) return
+    processErrorHandlersRegistered = true
+
+    process.on('uncaughtExceptionMonitor', (error, origin) => {
+        logger.error('Process', '捕获到未处理异常', { origin, error })
+    })
+    process.on('unhandledRejection', (reason) => {
+        logger.error('Process', '捕获到未处理 Promise 拒绝', { reason })
+    })
+}
+
+/**
+ * 聚焦现有主窗口
+ *
+ * @author xiangwei
+ */
+function focusMainWindow(): void {
+    const window = mainWindow
+    if (!window || window.isDestroyed()) return
+    if (window.isMinimized()) window.restore()
+    window.show()
+    window.focus()
+}
+
+/**
+ * 获取异常信息
+ *
+ * @param error 异常
+ * @returns 异常信息
+ * @author xiangwei
+ */
+function getErrorMessage(error: unknown): string {
+    return error instanceof Error ? error.message : String(error)
+}
+
+/**
+ * 展示启动错误并记录日志
+ *
+ * @param logMessage 日志信息
+ * @param userMessage 用户提示
+ * @param error 异常
+ * @author xiangwei
+ */
+function reportStartupError(logMessage: string, userMessage: string, error: unknown): void {
+    const message = getErrorMessage(error)
+    logger.error('Bootstrap', logMessage, { error: message })
+    dialog.showErrorBox(STARTUP_ERROR_TITLE, `${userMessage}：${message}`)
+}
+
+/**
+ * 登记当前主窗口及其关闭生命周期
+ *
+ * @param window 主窗口
+ * @author xiangwei
+ */
+function trackMainWindow(window: BrowserWindow): void {
+    mainWindow = window
+    window.once('closed', () => {
+        if (mainWindow === window) mainWindow = null
+    })
+}
+
+/**
+ * 创建并登记主窗口
+ *
+ * @author xiangwei
+ */
+async function openMainWindow(): Promise<void> {
+    const window = await createMainWindow()
+    trackMainWindow(window)
+}
+
+/**
+ * 在 macOS 激活应用时按需重建主窗口
+ *
+ * @author xiangwei
+ */
+function handleActivate(): void {
+    if (BrowserWindow.getAllWindows().length > 0) return
+
+    void openMainWindow().catch((error: unknown) => {
+        reportStartupError('重建主窗口失败', '重新打开主窗口失败', error)
+    })
+}
+
+/**
+ * 初始化应用运行环境
+ *
+ * @author xiangwei
+ */
+async function initializeApplication(): Promise<void> {
+    await app.whenReady()
+
+    app.name = '笔笔'
+    electronApp.setAppUserModelId(APP_ID)
+    logger.info('Bootstrap', '应用启动', {
+        appVersion: app.getVersion(),
+        electronVersion: process.versions.electron,
+        platform: process.platform,
+        arch: process.arch,
+        packaged: app.isPackaged,
+        log: getLogDirectoryInfo()
+    })
+    app.on('browser-window-created', (_event, window) => {
+        optimizer.watchWindowShortcuts(window)
+    })
+
+    // 开发环境下注册 AI SDK DevTools 遥测，用于调试和监控 AI 运行状态
+    if (!app.isPackaged) {
+        registerTelemetry(DevToolsTelemetry())
+        logger.info('Bootstrap', 'AI SDK DevTools 遥测已注册（开发环境）')
+    }
+
+    try {
+        await initDatabase()
+    } catch (error: unknown) {
+        reportStartupError('数据库初始化失败', '数据库初始化失败', error)
+        app.quit()
+        return
+    }
+
+    registerIpcHandlers()
+
+    try {
+        await openMainWindow()
+    } catch (error: unknown) {
+        reportStartupError('创建主窗口失败', '主窗口加载失败', error)
+        app.quit()
+        return
+    }
+
+    app.on('activate', handleActivate)
+    logger.info('Bootstrap', '应用初始化完成')
+}
+
+/**
+ * 启动 Electron 应用
+ *
+ * @author xiangwei
+ */
+export function bootstrapApplication(): void {
+    registerProcessErrorHandlers()
+    if (!app.requestSingleInstanceLock()) {
+        logger.warn('Bootstrap', '检测到已有运行实例，当前进程退出')
+        app.quit()
+        return
+    }
+
+    app.on('second-instance', focusMainWindow)
+    app.on('before-quit', () => {
+        logger.info('Bootstrap', '应用即将退出')
+        resetModel()
+        closeDatabase()
+    })
+    app.on('window-all-closed', () => {
+        if (process.platform !== 'darwin') app.quit()
+    })
+
+    void initializeApplication().catch((error: unknown) => {
+        reportStartupError('应用初始化失败', '应用初始化失败', error)
+        app.quit()
+    })
+}

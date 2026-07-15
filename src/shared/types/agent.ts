@@ -1,0 +1,280 @@
+/**
+ * AI 智能体共享类型定义（Skill 驱动架构）
+ * @author xiangwei
+ */
+
+import type { IpcResult } from './api'
+
+// ========== Skill 相关 ==========
+
+export interface SkillMeta {
+    name: string
+    displayName: string
+    description: string
+    version: string
+    author?: string
+    isSystem: boolean
+    isEnabled: boolean
+}
+
+/** Agent 工具展示信息 */
+export interface AgentToolInfo {
+    name: string
+    description: string
+    parameters: Record<string, unknown>
+}
+
+// ========== MCP 相关 ==========
+
+/** MCP 服务配置 */
+export interface McpServerConfig {
+    name: string
+    url: string
+    headers: Record<string, string>
+    enabled: boolean
+    isDefault: boolean
+}
+
+/** MCP 服务新增或更新参数 */
+export interface McpServerInput {
+    previousName?: string
+    name: string
+    url: string
+    headers: Record<string, string>
+    enabled: boolean
+}
+
+/** MCP 服务提供的工具摘要 */
+export interface McpToolInfo {
+    serverName: string
+    name: string
+    description: string
+}
+
+/** MCP 服务连接检测结果 */
+export interface McpConnectionResult {
+    serverName: string
+    serverDisplayName: string
+    serverVersion: string
+    tools: McpToolInfo[]
+}
+
+// ========== 对话相关 ==========
+
+/** 默认记忆提炼阈值 */
+export const DEFAULT_MEMORY_DISTILLATION_THRESHOLD = 10
+
+/** 最小记忆提炼阈值 */
+export const MIN_MEMORY_DISTILLATION_THRESHOLD = 1
+
+/** 最大记忆提炼阈值 */
+export const MAX_MEMORY_DISTILLATION_THRESHOLD = 50
+
+export interface AgentConfig {
+    apiKey: string
+    model: string
+    temperature: number
+    maxTokens: number
+    memoryDistillationThreshold: number
+    enabled: boolean
+}
+
+/** 允许下载和加载的本地语音模型 ID */
+export const STT_MODEL_IDS = [
+    'Xenova/whisper-tiny',
+    'Xenova/whisper-base',
+    'Xenova/whisper-small',
+    'Xenova/whisper-medium'
+] as const
+
+/** 本地语音模型 ID */
+export type SttModelId = (typeof STT_MODEL_IDS)[number]
+
+/** 本地语音模型列表 */
+export const STT_MODELS: ReadonlyArray<{
+    id: SttModelId
+    name: string
+    size: string
+    desc: string
+}> = [
+    { id: STT_MODEL_IDS[0], name: 'tiny', size: '~75MB', desc: '速度最快，适合轻量使用' },
+    {
+        id: STT_MODEL_IDS[1],
+        name: 'base',
+        size: '~150MB',
+        desc: '速度和准确率平衡（默认）'
+    },
+    {
+        id: STT_MODEL_IDS[2],
+        name: 'small',
+        size: '~466MB',
+        desc: '中文识别质量明显提升'
+    },
+    { id: STT_MODEL_IDS[3], name: 'medium', size: '~1.5GB', desc: '最高准确率，需较好硬件' }
+]
+
+export interface Conversation {
+    id: string
+    user_id: string
+    title: string
+    message_count: number
+    model: string | null
+    created_at: string
+    updated_at: string
+}
+
+export interface ConversationListItem {
+    id: string
+    title: string
+    message_count: number
+    last_message: string | null
+    total_tokens: number
+    model: string | null
+    updated_at: string
+}
+
+/** 会话摘要分页游标 */
+export interface ConversationCursor {
+    updated_at: string
+    id: string
+}
+
+/** 会话摘要分页结果 */
+export interface ConversationListPage {
+    items: ConversationListItem[]
+    next_cursor: ConversationCursor | null
+}
+
+export interface AgentChatMessage {
+    id: string
+    conversation_id: string
+    role: 'user' | 'assistant' | 'system' | 'tool'
+    content: string
+    skill_used?: string
+    skill_display_name?: string
+    tool_used?: string
+    tool_args?: string
+    tool_result?: string
+    thinking?: string
+    created_at: string
+}
+
+/** 智能体消息分页游标 */
+export interface AgentMessageCursor {
+    created_at: string
+    id: string
+}
+
+/** 会话详情及最近一页消息 */
+export interface ConversationDetail extends Conversation {
+    messages: AgentChatMessage[]
+    next_cursor: AgentMessageCursor | null
+}
+
+// ========== 流式事件 ==========
+
+export type StreamEventType =
+    | 'message'
+    | 'thinking'
+    | 'skill_selected'
+    | 'tool_called'
+    | 'tool_result'
+    | 'chunk'
+    | 'done'
+    | 'error'
+
+export interface StreamEvent {
+    type: StreamEventType
+    /** 可用于关联本轮智能体对话日志的排查编号 */
+    traceId?: string
+    content?: string
+    skillName?: string
+    displayName?: string
+    toolName?: string
+    toolArgs?: Record<string, unknown>
+    toolResult?: unknown
+    conversationId?: string
+    error?: string
+    /** message 事件携带的消息体 */
+    message?: {
+        id: string
+        role: string
+        content: string
+        tool_used?: string
+        streaming?: boolean
+        thinking?: string
+    }
+    /** chunk 事件携带的增量数据 */
+    id?: string
+}
+
+// ========== STT 进度事件 ==========
+
+export interface SttProgressEvent {
+    status: 'initiate' | 'download' | 'progress' | 'done' | 'ready' | 'error'
+    file?: string
+    progress?: number
+    loaded?: number
+    total?: number
+    error?: string
+}
+
+// ========== Agent API 声明 ==========
+
+export interface AgentAPI {
+    chat: (conversationId: string | null, message: string) => Promise<IpcResult<string>>
+    cancelChat: () => Promise<IpcResult>
+    listConversations: (cursor?: ConversationCursor) => Promise<IpcResult<ConversationListPage>>
+    deleteConversation: (id: string) => Promise<IpcResult>
+    getConversation: (
+        id: string,
+        cursor?: AgentMessageCursor
+    ) => Promise<IpcResult<ConversationDetail | null>>
+    getConfig: () => Promise<IpcResult<AgentConfig>>
+    updateConfig: (config: Partial<AgentConfig>) => Promise<IpcResult>
+    listLocalTools: () => Promise<IpcResult<AgentToolInfo[]>>
+    listSkills: () => Promise<IpcResult<SkillMeta[]>>
+    getSkillDetail: (name: string) => Promise<IpcResult<SkillDetail>>
+    reloadSkills: () => Promise<IpcResult>
+    toggleSkill: (name: string, enabled: boolean) => Promise<IpcResult>
+    createSkill: (data: {
+        name: string
+        displayName: string
+        description: string
+        markdown: string
+    }) => Promise<IpcResult>
+    deleteSkill: (name: string) => Promise<IpcResult>
+    listMcpServers: () => Promise<IpcResult<McpServerConfig[]>>
+    saveMcpServer: (server: McpServerInput) => Promise<IpcResult<McpServerConfig[]>>
+    deleteMcpServer: (name: string) => Promise<IpcResult<McpServerConfig[]>>
+    toggleMcpServer: (name: string, enabled: boolean) => Promise<IpcResult<McpServerConfig[]>>
+    inspectMcpServer: (name: string) => Promise<IpcResult<McpConnectionResult>>
+    renameConversation: (id: string, title: string) => Promise<IpcResult>
+    getToolCallCounts: () => Promise<IpcResult<Record<string, number>>>
+    setToolCallCounts: (counts: Record<string, number>) => Promise<IpcResult>
+    /** 语音转文字——接收音频 Float32Array Buffer，返回转录文本 */
+    transcribeAudio: (buffer: ArrayBuffer) => Promise<IpcResult<string>>
+    /** 语音转文字进度事件监听 */
+    onTranscribeProgress: (callback: (event: SttProgressEvent) => void) => () => void
+    /** 下载 STT 模型（触发下载，进度由 onTranscribeProgress 推送） */
+    sttDownloadModel: (modelId: string) => Promise<IpcResult>
+    /** 查询 STT 模型状态（可选指定 modelId 检查特定模型是否就绪） */
+    sttModelStatus: (modelId?: string) => Promise<
+        IpcResult<{
+            status: 'none' | 'loading' | 'ready' | 'error'
+            currentModel: string | null
+            error: string | null
+            cached: boolean
+            models: Array<{ id: string; name: string; size: string; desc: string }>
+        }>
+    >
+    /** 删除已下载的 STT 模型缓存 */
+    sttDeleteModel: (modelId: string) => Promise<IpcResult<boolean>>
+    /** 事件监听（流式） */
+    onEvent: (callback: (event: StreamEvent) => void) => () => void
+}
+
+export interface SkillDetail {
+    meta: SkillMeta
+    markdown: string
+}

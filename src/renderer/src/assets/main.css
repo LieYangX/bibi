@@ -1,0 +1,30 @@
+@import './base.css';
+
+@font-face {
+    font-family: 'MiSans';
+    src: url('./MiSans-Normal.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+body {
+    display: flex;
+    overflow: hidden;
+    background: var(--bb-bg-page);
+    user-select: none;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+input,
+textarea,
+[contenteditable] {
+    user-select: text;
+}

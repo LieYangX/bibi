@@ -1,0 +1,8 @@
+out
+dist
+.omo
+pnpm-lock.yaml
+LICENSE.md
+tsconfig.json
+tsconfig.*.json
+AGENTS.md
