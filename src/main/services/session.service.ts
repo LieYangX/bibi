@@ -4,10 +4,9 @@
  * @author xiangwei
  */
 
-import { app } from 'electron'
 import { AsyncLocalStorage } from 'async_hooks'
 import { readFile, writeFile } from 'fs/promises'
-import { join } from 'path'
+import { getAppDataPath } from '../utils/app-data-path'
 
 interface SessionData {
     lastUserId: string | null
@@ -24,10 +23,7 @@ const boundUserStorage = new AsyncLocalStorage<string>()
  * @author xiangwei
  */
 function getSessionPath(): string {
-    if (app.isPackaged) {
-        return join(app.getPath('userData'), 'last-user.json')
-    }
-    return join(app.getAppPath(), 'last-user.json')
+    return getAppDataPath('last-user.json')
 }
 
 /**

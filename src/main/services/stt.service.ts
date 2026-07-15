@@ -7,7 +7,6 @@
  * @author xiangwei
  */
 
-import { app } from 'electron'
 import { isAbsolute, join, relative, resolve } from 'path'
 import { existsSync, rmSync, readdirSync } from 'fs'
 import { Worker } from 'node:worker_threads'
@@ -18,6 +17,7 @@ import {
     type SttProgressEvent
 } from '@shared/types'
 import type { SttWorkerRequest, SttWorkerResponse } from '../workers/stt-worker.types'
+import { getAppDataPath } from '../utils/app-data-path'
 import { logger } from '../utils/logger'
 
 const DEFAULT_STT_MODEL_ID: SttModelId = 'Xenova/whisper-base'
@@ -33,10 +33,7 @@ const STT_REMOTE_HOST = 'https://hf-mirror.com/'
  * @author xiangwei
  */
 function getSttCacheDir(): string {
-    if (app.isPackaged) {
-        return join(app.getPath('userData'), 'stt-cache')
-    }
-    return join(app.getAppPath(), 'stt-cache')
+    return getAppDataPath('stt-cache')
 }
 
 /** 可用模型列表 */

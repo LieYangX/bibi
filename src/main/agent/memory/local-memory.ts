@@ -5,10 +5,10 @@
  * @author xiangwei
  */
 
-import { app } from 'electron'
 import { createHash, randomUUID } from 'crypto'
 import { mkdir, readFile, rename, rm, writeFile } from 'fs/promises'
 import { join } from 'path'
+import { getAppDataPath } from '../../utils/app-data-path'
 
 /** 本地记忆类型 */
 export type LocalMemoryType = 'profile' | 'soul'
@@ -142,7 +142,7 @@ export class LocalMemoryStore {
      * @author xiangwei
      */
     private getBaseDirectory(): string {
-        return this.baseDirectory ?? join(app.getPath('userData'), 'memories')
+        return this.baseDirectory ?? getAppDataPath('memories')
     }
 
     /**

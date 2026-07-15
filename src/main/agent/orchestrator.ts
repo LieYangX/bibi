@@ -23,6 +23,7 @@ import type { AgentConfig, StreamEvent } from '@shared/types'
 import { logger, runWithLogContext } from '../utils/logger'
 import { summarizeLogValue } from '../utils/log-sanitizer'
 import { closeMcpClients, loadMcpRuntimeTools } from './mcp-service'
+import { getRuntimeSystemInfo } from './runtime-system-info'
 
 /** 流式事件发射器 */
 export type EventEmitter = (event: StreamEvent) => void
@@ -179,7 +180,8 @@ async function runConversation(
         history,
         userMessage,
         maxUserTurns: config.memoryDistillationThreshold,
-        soulMemory: soulMemory.content
+        soulMemory: soulMemory.content,
+        systemInfo: getRuntimeSystemInfo()
     })
     const localTools = toolRegistry.createTools(userId)
     const mcpRuntime = await loadMcpRuntimeTools()

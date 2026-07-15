@@ -1,15 +1,15 @@
 /**
  * Skill 注册中心
  * 管理所有内置 Skill 和自定义 Skill 的注册、查询、加载
- * 自定义 Skill 存储在 userData/skills/ 目录下的 JSON 文件中
+ * 自定义 Skill 存储在应用运行数据目录下的 skills/ JSON 文件中
  * @author xiangwei
  */
 
-import { app } from 'electron'
 import { readFile, writeFile, mkdir, readdir, unlink } from 'fs/promises'
 import { isAbsolute, join, relative, resolve } from 'path'
 import type { SkillMeta } from '@shared/types'
 import { getSetting, setSetting } from '../services/setting.service'
+import { getAppDataPath } from '../utils/app-data-path'
 import { logger } from '../utils/logger'
 
 import dataQueryMarkdown from './skills/data-query/SKILL.md?raw'
@@ -80,10 +80,7 @@ export class SkillRegistry {
 
     /** 自定义 Skill 存储目录 */
     private getCustomSkillsDir(): string {
-        if (app.isPackaged) {
-            return join(app.getPath('userData'), 'skills')
-        }
-        return join(app.getAppPath(), 'skills')
+        return getAppDataPath('skills')
     }
 
     /**
@@ -130,7 +127,7 @@ export class SkillRegistry {
         await setSetting('agent_skill_states', states)
     }
 
-    /** 加载自定义 Skill（从 userData/skills/ 目录读取 JSON 文件） */
+    /** 加载自定义 Skill（从应用运行数据目录下的 skills/ 读取 JSON 文件） */
     private async loadCustomSkills(): Promise<void> {
         const dir = this.getCustomSkillsDir()
         try {

@@ -10,7 +10,7 @@ import { AsyncLocalStorage } from 'async_hooks'
 import { randomUUID } from 'crypto'
 import { appendFileSync, existsSync, mkdirSync, renameSync, statSync, unlinkSync } from 'fs'
 import { join } from 'path'
-import { app } from 'electron'
+import { getAppDataPath } from './app-data-path'
 import { sanitizeLogData } from './log-sanitizer'
 
 const LOG_FILE_NAME = 'bibi.log'
@@ -52,9 +52,7 @@ let currentLogSize = -1
  */
 export function getLogDirectory(): string {
     if (!logDirectory) {
-        logDirectory = app.isPackaged
-            ? join(app.getPath('userData'), 'logs')
-            : join(app.getAppPath(), 'logs')
+        logDirectory = getAppDataPath('logs')
         if (!existsSync(logDirectory)) mkdirSync(logDirectory, { recursive: true })
     }
     return logDirectory

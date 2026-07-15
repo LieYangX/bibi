@@ -4,10 +4,10 @@
  */
 
 import { app } from 'electron'
-import { join } from 'path'
 import { closeDatabaseConnection, getNativeDatabase, initializeDatabaseConnection } from './drizzle'
 import { runMigrations } from './drizzle/migrations'
 import { migrationsDir } from './drizzle/migrations/paths'
+import { getAppDataPath } from '../utils/app-data-path'
 
 let initialized = false
 
@@ -21,10 +21,7 @@ let initialized = false
  * @author xiangwei
  */
 export function getDbPath(): string {
-    if (app.isPackaged) {
-        return join(app.getPath('userData'), 'bibi.db')
-    }
-    return join(app.getAppPath(), 'bibi-dev.db')
+    return getAppDataPath(app.isPackaged ? 'bibi.db' : 'bibi-dev.db')
 }
 
 /**
