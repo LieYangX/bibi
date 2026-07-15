@@ -1,0 +1,215 @@
+doc/AI智能体集成方案.md
+  s_044e9f021a93ff::t_7e9ff16deae517 1-1340
+package-lock.json
+  s_2c65a40b49b18d::t_ca47ed3ec4ffa4 1-11468
+src/main/agent/memory/soul-distiller.ts
+  s_a3c61a2e13ea8b::t_fc7ad1db818991 1-123
+src/main/agent/tools/analysis/tools/analyze-trend.tool.ts
+  s_044e9f021a93ff::t_8af16e3aaa2f2d 1-98
+src/main/agent/tools/analysis/tools/compare-periods.tool.ts
+  s_044e9f021a93ff::t_323bb8a806225c 1-102
+src/main/agent/tools/analysis/tools/detect-anomalies.tool.ts
+  s_044e9f021a93ff::t_764696d421f8fd 1-107
+src/main/agent/tools/calculator/tools/evaluate.tool.ts
+  s_044e9f021a93ff::t_34fe03af6a71d8 1-36
+src/main/agent/tools/data-query/tools/query-budget-progress.tool.ts
+  s_044e9f021a93ff::t_212df4f3c3a3dd 1-46
+src/main/agent/tools/data-query/tools/query-monthly-summary.tool.ts
+  s_044e9f021a93ff::t_1ed02ea218f248 1-70
+src/main/agent/tools/data-query/tools/query-recent-transactions.tool.ts
+  s_044e9f021a93ff::t_0f535e69d11f41 1-53
+src/main/agent/tools/data-query/tools/query-transactions.tool.ts
+  s_044e9f021a93ff::t_6610b70833287d 1-63
+src/main/agent/tools/data-query/tools/query-yearly-summary.tool.ts
+  s_044e9f021a93ff::t_7f4da5f6896446 1-68
+src/main/agent/tools/transaction-write/tools/create-transaction.tool.ts
+  s_044e9f021a93ff::t_c962f20afd0b19 1-136
+src/main/agent/tools/transaction-write/tools/delete-transaction.tool.ts
+  s_044e9f021a93ff::t_574de632f3df32 1-33
+src/main/database/drizzle/migrations/0000_puzzling_magma.sql
+  s_363eee54455e54::t_643e1115fab0b6 1-88
+src/main/database/drizzle/migrations/0001_amused_blonde_phantom.sql
+  s_06406422b6a910::t_0194904e746e07 1-43
+src/main/database/drizzle/migrations/meta/0000_snapshot.json
+  s_363eee54455e54::t_77d192736fa6c3 1-612
+src/main/database/drizzle/migrations/meta/0001_snapshot.json
+  s_06406422b6a910::t_7e5533a78f2bb7 1-937
+src/main/database/drizzle/migrations/meta/0003_snapshot.json
+  s_044e9f021a93ff::t_df4856f7467e81 1-1127
+src/main/database/drizzle/migrations/meta/_journal.json
+  s_044e9f021a93ff::t_c194aee1c90497 1-34
+src/main/ipc/budget.ipc.ts
+  s_91c278749d4889::t_652a4c8eb64172 1-41
+src/main/ipc/handle-ipc.ts
+  s_c7cc7f69c8949f::t_e4fb2dd061adde 1-103
+src/main/ipc/import.ipc.ts
+  s_06406422b6a910::t_082f8bdd06256f 1-206
+src/main/services/budget.service.ts
+  s_91c278749d4889::t_060bb7526d6d0b 1-227
+src/main/services/import-bill-parser.ts
+  s_06406422b6a910::t_e97089f64f74bb 1-471
+src/main/services/import-draft.service.ts
+  s_06406422b6a910::t_919b50aa8f74e7 1-319
+src/main/services/import-mapping.service.ts
+  s_06406422b6a910::t_4f6d05356d6584 1-189
+src/main/services/stt.service.ts
+  s_03e9883f7b1cb0::t_bae7762c5ad6d2 1-486
+src/main/utils/http-client.ts
+  s_326215e74540be::t_b1593740185922 1-190
+src/main/utils/log-sanitizer.ts
+  s_c7cc7f69c8949f::t_d4cc01ddad0ff5 1-160
+src/main/utils/logger.ts
+  s_c7cc7f69c8949f::t_c2bac28fd8dd62 1-233
+src/main/windows/web-security.ts
+  s_157a378c2be81e::t_91bd49b94bc8f2 1-107
+src/renderer/src/components/AgentMessage.vue
+  s_326215e74540be::t_ed82fec13632ea 1-358
+src/renderer/src/components/ToolResultDetail.vue
+  s_326215e74540be::t_f5fbcbacf59db2 1-79
+src/renderer/src/components/ui/BbCascader.vue
+  s_06406422b6a910::t_82c4e2c7834490 1-302
+src/renderer/src/components/ui/BbDatePicker.vue
+  s_91c278749d4889::t_a36cf11ad828e1 1-459
+src/renderer/src/env.d.ts
+  s_a5a6c34c3499b2::t_c03214da664c15 1
+src/renderer/src/stores/agent.store.ts
+  s_a3c61a2e13ea8b::t_e2faf4a7191a31 1-706
+src/renderer/src/views/CategoriesView.vue
+  s_901fa1a0c1218b::t_998e400547d103 1-108
+src/renderer/src/views/sections/AgentSettings.vue
+  s_a3c61a2e13ea8b::t_62c4300b05ae90 1-358
+src/renderer/src/views/sections/import/ConfirmBar.vue
+  s_06406422b6a910::t_0eee34e08ceb85 1-195
+src/renderer/src/views/sections/import/DraftTable.vue
+  s_06406422b6a910::t_edb28702be79f8 1-783
+src/renderer/src/views/sections/import/MappingPanel.vue
+  s_06406422b6a910::t_76d6995ffd25ba 1-516
+tests/integration/import-mapping.integration.test.ts
+  s_06406422b6a910::t_6d3da81f98ace8 1-94
+tests/integration/import-workflow.integration.test.ts
+  s_06406422b6a910::t_d55fdcef6e42a6 1-348
+tests/integration/mcp-settings.integration.test.ts
+  s_a0d5b7b92aead9::t_11aa2ae35f44fe 1-92
+tests/unit/http-client.test.ts
+  s_326215e74540be::t_cdb8cf4d6d629a 1-57
+tests/unit/ipc-schemas.test.ts
+  s_a3c61a2e13ea8b::t_9f65b0baa9d7de 1-164
+tests/unit/local-memory.test.ts
+  s_a3c61a2e13ea8b::t_91fc8449d70134 1-58
+tests/unit/stt-status-policy.test.ts
+  s_03e9883f7b1cb0::t_df0a9a78984d71 1-26
+tests/unit/weather.service.test.ts
+  s_326215e74540be::t_033e482e39d2af 1-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "b8ab51ac1ee263dbab85c4269d05d8fd06e98de2",
+  "prompts": {},
+  "sessions": {
+    "s_03e9883f7b1cb0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f605b-ca1a-7a10-bd5f-ce0d60d4bfa5",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_044e9f021a93ff": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0aa19dfe5ffeI6op4hMW6TjEcP",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_06406422b6a910": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f4fd5-1123-7183-8300-a82ac7f5461c",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_157a378c2be81e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f5a59-381e-7f31-84e1-4b4a5a57f8ed",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_2c65a40b49b18d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_09c0dbb4affeyyRL87Lf58UCu6",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_326215e74540be": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f5f95-fd8f-7873-b96c-3d2e61d971a2",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_363eee54455e54": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0c5da8379ffeKLVdFuBrIENHJL",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_901fa1a0c1218b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f5a9e-eec3-72d0-a643-905c46b21cfa",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_91c278749d4889": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0ae136348ffeZjRBSDqYMzU00c",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_a0d5b7b92aead9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f6037-2af0-7fb2-9fdb-f54510f58e61",
+        "model": "gpt-5.4"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_a3c61a2e13ea8b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f6426-71ab-70d2-87df-3defc8082732",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_a5a6c34c3499b2": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_0a9d04bd7ffeB7631F2t9u5wKA",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_c7cc7f69c8949f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f5b73-6e9b-7283-b356-eebbeab0b042",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
