@@ -14,7 +14,7 @@ import {
     listTransactions,
     updateTransaction
 } from '../../src/main/services/transaction.service'
-import { createUser } from '../../src/main/services/user.service'
+import { createUser, getUser } from '../../src/main/services/user.service'
 
 describe('核心记账事务', () => {
     beforeAll(() => {
@@ -23,6 +23,13 @@ describe('核心记账事务', () => {
     })
 
     afterAll(() => closeDatabaseConnection())
+
+    it('按用户 ID 获取当前用户名', async () => {
+        const user = await createUser('上下文用户')
+
+        expect(await getUser(user.id)).toMatchObject({ id: user.id, name: '上下文用户' })
+        expect(await getUser('missing-user')).toBeNull()
+    })
 
     it('创建、修改和删除流水时原子维护账户余额', async () => {
         const user = await createUser('测试用户')

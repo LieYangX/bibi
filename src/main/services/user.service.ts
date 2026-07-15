@@ -31,6 +31,18 @@ export async function listUsers(): Promise<User[]> {
 }
 
 /**
+ * 获取指定用户
+ *
+ * @param id 用户 ID
+ * @returns 用户信息，不存在时返回 null
+ * @author xiangwei
+ */
+export async function getUser(id: string): Promise<User | null> {
+    const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1)
+    return user ?? null
+}
+
+/**
  * 判断用户是否存在
  *
  * @param id 用户 ID

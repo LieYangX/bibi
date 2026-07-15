@@ -67,6 +67,16 @@ function clearActiveChat(chatKey: string, chat: ActiveChat): void {
 }
 
 /**
+ * 让出主进程事件循环，确保刚发送的流事件及时交付给渲染进程。
+ *
+ * @returns 下一轮事件循环完成信号
+ * @author xiangwei
+ */
+function flushStreamEvent(): Promise<void> {
+    return new Promise((resolve) => setImmediate(resolve))
+}
+
+/**
  * 注册 Agent IPC 处理器
  * @author xiangwei
  */
@@ -95,9 +105,10 @@ export function registerAgentIpc(): void {
             const parentTraceId = getLogContext().traceId
             activeChats.set(chatKey, chat)
 
-            const sendEvent: EventEmitter = (streamEvent) => {
+            const sendEvent: EventEmitter = async (streamEvent) => {
                 if (activeChats.get(chatKey) === chat && !event.sender.isDestroyed()) {
                     event.sender.send(IPC_CHANNELS.agent.event, { ...streamEvent, traceId })
+                    await flushStreamEvent()
                 }
             }
 
@@ -130,7 +141,7 @@ export function registerAgentIpc(): void {
                             durationMs: Date.now() - startedAt,
                             conversationId: newConversationId
                         })
-                        sendEvent({ type: 'done', conversationId: newConversationId })
+                        await sendEvent({ type: 'done', conversationId: newConversationId })
                     } catch (error: unknown) {
                         const cancelled = chat.controller.signal.aborted
                         const errorMessage = cancelled
@@ -148,7 +159,7 @@ export function registerAgentIpc(): void {
                         } else {
                             logger.error('Agent', '智能体对话失败', logData)
                         }
-                        sendEvent({ type: 'error', error: errorMessage })
+                        await sendEvent({ type: 'error', error: errorMessage })
                     } finally {
                         clearActiveChat(chatKey, chat)
                     }

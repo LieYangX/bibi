@@ -24,9 +24,10 @@ import { logger, runWithLogContext } from '../utils/logger'
 import { summarizeLogValue } from '../utils/log-sanitizer'
 import { closeMcpClients, loadMcpRuntimeTools } from './mcp-service'
 import { getRuntimeSystemInfo } from './runtime-system-info'
+import { getUser } from '../services/user.service'
 
 /** 流式事件发射器 */
-export type EventEmitter = (event: StreamEvent) => void
+export type EventEmitter = (event: StreamEvent) => Promise<void>
 
 /** Agent 运行时配置 */
 type AgentRuntimeConfig = AgentConfig
@@ -170,17 +171,22 @@ async function runConversation(
 
     const systemPrompt = buildSystemPrompt(enabledSkills)
     const model = createModel(config.apiKey, config.model)
-    const soulMemory = await localMemoryStore.readMemory(userId, 'soul')
-    const history = await conversationStore.restoreRecentMessages(
-        conversationId,
-        userId,
-        Math.max(0, config.memoryDistillationThreshold - 1)
-    )
+    const [soulMemory, history, currentUser] = await Promise.all([
+        localMemoryStore.readMemory(userId, 'soul'),
+        conversationStore.restoreRecentMessages(
+            conversationId,
+            userId,
+            Math.max(0, config.memoryDistillationThreshold - 1)
+        ),
+        getUser(userId)
+    ])
+    if (!currentUser) throw new Error('当前用户不存在')
     const messages = buildMessages({
         history,
         userMessage,
         maxUserTurns: config.memoryDistillationThreshold,
         soulMemory: soulMemory.content,
+        userName: currentUser.name,
         systemInfo: getRuntimeSystemInfo()
     })
     const localTools = toolRegistry.createTools(userId)
@@ -205,8 +211,11 @@ async function runConversation(
 
     // 保存并发射 user 消息
     await conversationStore.saveMessage(conversationId, userId, 'user', userMessage)
-    emit({ type: 'message', message: { id: randomUUID(), role: 'user', content: userMessage } })
-    emit({ type: 'thinking', content: '' })
+    await emit({
+        type: 'message',
+        message: { id: randomUUID(), role: 'user', content: userMessage }
+    })
+    await emit({ type: 'thinking', content: '' })
 
     let fullResponse = ''
     let currentAsstId: string | null = null
@@ -229,96 +238,94 @@ async function runConversation(
             abortSignal,
             providerOptions: {
                 deepseek: { reasoningEffort: 'high' as const }
-            },
-            onChunk: ({ chunk }) => {
-                const c = chunk
-                if (c.type === 'reasoning-delta') {
-                    thinkingText += (c.text ?? '') as string
-                    emit({ type: 'thinking', content: thinkingText })
-                    return
-                }
-                if (c.type === 'reasoning-end') {
-                    thinkingForNextMsg = thinkingText
-                    thinkingText = ''
-                    return
-                }
-                if (c.type === 'text-delta') {
-                    const text = (c.text ?? '') as string
-                    fullResponse += text
-                    if (!currentAsstId) {
-                        currentAsstId = randomUUID()
-                        emit({
-                            type: 'message',
-                            message: {
-                                id: currentAsstId,
-                                role: 'assistant',
-                                content: text,
-                                streaming: true,
-                                thinking: thinkingForNextMsg || undefined
-                            }
-                        })
-                        if (!firstPhaseThinking && thinkingForNextMsg) {
-                            firstPhaseThinking = thinkingForNextMsg
-                            logger.debug('Agent', '模型开始输出回复', {
-                                thinkingLength: firstPhaseThinking.length
-                            })
-                        }
-                        thinkingForNextMsg = ''
-                    } else {
-                        emit({ type: 'chunk', content: text, id: currentAsstId })
-                    }
-                    return
-                }
-                if (c.type === 'tool-result') {
-                    const toolName = c.toolName as string
-                    const cnName =
-                        TOOL_CN[toolName] || mcpRuntime.displayNames[toolName] || toolName
-                    const resultStr = JSON.stringify(c.output ?? '') || '完成'
-                    toolResultCount++
-                    logger.info('Agent', '模型工具调用返回', {
-                        toolName,
-                        displayName: cnName,
-                        result: summarizeLogValue(c.output)
-                    })
-                    emit({
-                        type: 'message',
-                        message: {
-                            id: randomUUID(),
-                            role: 'tool',
-                            content: resultStr.slice(0, MAX_TOOL_MESSAGE_LENGTH),
-                            tool_used: cnName
-                        }
-                    })
-                    currentAsstId = null
-                    thinkingForNextMsg = ''
-                    void conversationStore
-                        .saveMessage(
-                            conversationId,
-                            userId,
-                            'tool',
-                            resultStr.slice(0, MAX_TOOL_MESSAGE_LENGTH),
-                            { tool_used: cnName }
-                        )
-                        .catch((error: unknown) => {
-                            logger.error('Agent', '工具结果持久化失败', { toolName, error })
-                        })
-                    return
-                }
-                if (c.type === 'finish-step') {
-                    const usage = c.usage
-                    if (usage?.totalTokens) totalTokens += usage.totalTokens as number
-                    logger.debug('Agent', '模型步骤完成', {
-                        totalTokens: usage?.totalTokens ?? 0,
-                        accumulatedTokens: totalTokens
-                    })
-                }
             }
         })
 
-        // 等待流完成
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        for await (const _chunk of result.textStream) {
-            /* no-op */
+        // 直接消费完整事件流，收到一个模型事件就立即转发一个 IPC 事件。
+        for await (const part of result.fullStream) {
+            if (part.type === 'reasoning-delta') {
+                thinkingText += part.text
+                await emit({ type: 'thinking', content: thinkingText })
+                continue
+            }
+            if (part.type === 'reasoning-end') {
+                thinkingForNextMsg = thinkingText
+                thinkingText = ''
+                continue
+            }
+            if (part.type === 'text-delta') {
+                const text = part.text
+                fullResponse += text
+                if (!currentAsstId) {
+                    currentAsstId = randomUUID()
+                    await emit({
+                        type: 'message',
+                        message: {
+                            id: currentAsstId,
+                            role: 'assistant',
+                            content: text,
+                            streaming: true,
+                            thinking: thinkingForNextMsg || undefined
+                        }
+                    })
+                    if (!firstPhaseThinking && thinkingForNextMsg) {
+                        firstPhaseThinking = thinkingForNextMsg
+                        logger.debug('Agent', '模型开始输出回复', {
+                            thinkingLength: firstPhaseThinking.length
+                        })
+                    }
+                    thinkingForNextMsg = ''
+                } else {
+                    await emit({ type: 'chunk', content: text, id: currentAsstId })
+                }
+                continue
+            }
+            if (part.type === 'tool-result') {
+                const toolName = part.toolName as string
+                const cnName = TOOL_CN[toolName] || mcpRuntime.displayNames[toolName] || toolName
+                const resultStr = JSON.stringify(part.output ?? '') || '完成'
+                toolResultCount++
+                logger.info('Agent', '模型工具调用返回', {
+                    toolName,
+                    displayName: cnName,
+                    result: summarizeLogValue(part.output)
+                })
+                await emit({
+                    type: 'message',
+                    message: {
+                        id: randomUUID(),
+                        role: 'tool',
+                        content: resultStr.slice(0, MAX_TOOL_MESSAGE_LENGTH),
+                        tool_used: cnName
+                    }
+                })
+                currentAsstId = null
+                thinkingForNextMsg = ''
+                void conversationStore
+                    .saveMessage(
+                        conversationId,
+                        userId,
+                        'tool',
+                        resultStr.slice(0, MAX_TOOL_MESSAGE_LENGTH),
+                        { tool_used: cnName }
+                    )
+                    .catch((error: unknown) => {
+                        logger.error('Agent', '工具结果持久化失败', { toolName, error })
+                    })
+                continue
+            }
+            if (part.type === 'finish-step') {
+                const usage = part.usage
+                if (usage?.totalTokens) totalTokens += usage.totalTokens
+                logger.debug('Agent', '模型步骤完成', {
+                    totalTokens: usage?.totalTokens ?? 0,
+                    accumulatedTokens: totalTokens
+                })
+                continue
+            }
+            if (part.type === 'error') {
+                throw part.error instanceof Error ? part.error : new Error(String(part.error))
+            }
         }
     } finally {
         await closeMcpClients(mcpRuntime.clients)

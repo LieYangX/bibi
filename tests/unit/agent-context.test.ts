@@ -42,16 +42,29 @@ describe('智能体上下文构建', () => {
         expect(prompt).not.toContain('这是不应进入固定上下文的完整内容')
         expect(prompt).not.toMatch(/当前时间|当前日期/)
         expect(prompt).not.toMatch(/## Skill 工作流程|## 工具工作流程|is_deleted/)
-        expect(prompt.indexOf('## 可用 Skills')).toBeGreaterThan(prompt.indexOf('## 财务规则'))
+        expect(prompt.indexOf('## 可用 Skills')).toBeGreaterThan(
+            prompt.indexOf('## 财务数据处理规范')
+        )
     })
 
     it('System Prompt 要求温柔、具体且有边界地关心用户', () => {
         const prompt = buildSystemPrompt([])
 
         expect(prompt).toContain('可靠、温柔的个人记账助手')
-        expect(prompt).toContain('先用一两句具体、真诚的话回应感受')
+        expect(prompt).toContain('用1-2句具体、真诚的话先回应他的情绪')
         expect(prompt).toContain('不评判、不说教、不堆砌模板化安慰')
-        expect(prompt).toContain('关心要克制并尊重边界')
+        expect(prompt).toContain('关心要克制且尊重边界')
+    })
+
+    it('System Prompt 要求识别意图、规划任务并完成闭环', () => {
+        const prompt = buildSystemPrompt([])
+
+        expect(prompt).toContain('识别用户的真实意图')
+        expect(prompt).toContain('任务目标、期望产出、约束和完成标准')
+        expect(prompt).toContain('复杂任务先在内部拆解步骤、依赖和所需工具')
+        expect(prompt).toContain('工具调用和中间结果只是过程，不代表任务已经完成')
+        expect(prompt).toContain('结束前核对结果是否满足用户目标')
+        expect(prompt).toContain('禁止虚假宣称完成')
     })
 
     it('按阈值保留最近用户轮次并在当前消息附带最新灵魂', () => {
@@ -68,6 +81,7 @@ describe('智能体上下文构建', () => {
             userMessage: '用户四',
             maxUserTurns: 3,
             soulMemory: '# 灵魂\n\n偏好简洁沟通',
+            userName: ' 小 明 ',
             systemInfo,
             currentDate: '2026年7月15日'
         })
@@ -83,6 +97,8 @@ describe('智能体上下文构建', () => {
         expect(getText(messages.at(-1)!)).toContain('应用版本：3.0.5')
         expect(getText(messages.at(-1)!)).toContain('语言区域：zh-CN')
         expect(getText(messages.at(-1)!)).toContain('时区：Asia/Shanghai')
+        expect(getText(messages.at(-1)!)).toContain('用户名：小 明')
+        expect(getText(messages.at(-1)!)).not.toMatch(/用户账户|账户余额|默认账户/)
     })
 
     it('阈值为一时只发送当前用户轮次', () => {
@@ -94,6 +110,7 @@ describe('智能体上下文构建', () => {
             userMessage: '新问题',
             maxUserTurns: 1,
             soulMemory: '',
+            userName: '小明',
             systemInfo,
             currentDate: '2026年7月15日'
         })

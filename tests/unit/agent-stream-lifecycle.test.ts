@@ -87,9 +87,14 @@ describe('智能体流监听生命周期', () => {
             }
         })
         streamListener?.({ type: 'chunk', id: 'assistant-1', content: '持续输出' })
-        streamListener?.({ type: 'done', conversationId: 'conversation-1' })
 
         expect(store.messages.at(-1)?.content).toBe('持续输出')
+        expect(store.isProcessing).toBe(true)
+
+        streamListener?.({ type: 'chunk', id: 'assistant-1', content: '中' })
+        streamListener?.({ type: 'done', conversationId: 'conversation-1' })
+
+        expect(store.messages.at(-1)?.content).toBe('持续输出中')
         expect(store.currentConversationId).toBe('conversation-1')
         expect(store.isProcessing).toBe(false)
     })

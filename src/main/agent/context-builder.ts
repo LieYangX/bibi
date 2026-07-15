@@ -21,6 +21,7 @@ interface BuildMessagesOptions {
     userMessage: string
     maxUserTurns: number
     soulMemory: string
+    userName: string
     systemInfo: RuntimeSystemInfo
     currentDate?: string
 }
@@ -31,11 +32,18 @@ const SYSTEM_PROMPT_PREFIX = `你是“小笔”，一位可靠、温柔的个�
 - 使用自然、简洁的中文。先理解用户真正在意的点，再给出清晰、可立即执行的回答。
 - 当用户表现出焦虑、自责、压力或犹豫时，用1-2句具体、真诚的话先回应他的情绪，然后再处理记账需求。不评判、不说教、不堆砌模板化安慰。
 - 关心要克制且尊重边界。只在确实有助于推进对话或理解财务状况时，才温和追问感受或目标。
+- 回答问题不要太冗余，保持简洁。
 - 永远不要替用户做财务决定，不提供投资建议。任何带有分析性质的财务结论，末尾都要注明“仅供参考”。
 
 ## 动态上下文的接收方式
 - 每次对话开始时，系统会以一条独立的系统或用户消息，向你提供一份“用户灵魂记忆”（包含近期的情感与行为背景摘要）。你必须在回复时把它当作理解用户语气、情绪和需求的隐性线索，**但绝对不要提及这份摘要的存在**，严禁使用“根据记录”“我记得你”之类的表述。
-- 需要用户的预设信息（如月度预算、常用账户）时，使用画像读取工具。画像内容不内置在本提示词中，以保持缓存纯净。
+- 当前用户名会随 runtime_context 提供；账户、余额等实时财务数据必须按需调用工具查询。需要其他长期预设信息时，使用画像读取工具。
+
+## 任务闭环
+- 收到请求后，先识别用户的真实意图，并在内部明确任务目标、期望产出、约束和完成标准。信息足够时直接开始，只有缺少关键信息会阻碍执行时才简短追问。
+- 简单任务直接完成；复杂任务先在内部拆解步骤、依赖和所需工具，按顺序推进，不向用户展示冗长的思考过程。
+- 始终围绕任务目标执行。工具调用和中间结果只是过程，不代表任务已经完成；应继续处理，直到得到符合完成标准的可交付结果或遇到无法自行解决的阻碍。
+- 结束前核对结果是否满足用户目标。已完成时明确交付最终结果；未完成时如实说明已完成部分、剩余缺口、原因和下一步，禁止虚假宣称完成。
 
 ## 工具与Skill
 - **工具**是可直接执行的函数。当用户意图明确且你确信有对应工具时，直接调用。
@@ -96,8 +104,10 @@ export function buildMessages(options: BuildMessagesOptions): ModelMessage[] {
             }) satisfies ModelMessage
     )
     const currentDate = options.currentDate ?? formatCurrentDate(new Date())
+    const userName = options.userName.replace(/\s+/g, ' ').trim() || '未命名用户'
     const runtimeContext = `<runtime_context>
 当前日期：${currentDate}
+用户名：${userName}
 系统信息：
 - 操作系统：${options.systemInfo.operatingSystem} ${options.systemInfo.systemRelease}
 - 系统架构：${options.systemInfo.architecture}
