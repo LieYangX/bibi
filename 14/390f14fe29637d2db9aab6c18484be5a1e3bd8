@@ -1,0 +1,280 @@
+src/main/app/bootstrap.ts
+  s_a5648343957d20::t_454443467d84ed 15,210
+  s_a5648343957d20::t_cde11967af9513 16-17,116-142,179
+src/shared/ipc/schemas.ts
+  s_182970eb2cdf1a::t_458f1def81af8e 168
+  s_a5648343957d20::t_b7c5e3edcd6c65 366-368
+  s_182970eb2cdf1a::t_d91df12a6b9ca5 137
+  s_a5648343957d20::t_3d593edff676da 375-376
+  s_182970eb2cdf1a::t_c48c823590f416 33-39
+src/main/database/drizzle/migrations/meta/0004_snapshot.json
+  s_a5648343957d20::t_08868febc94538 1-1098,1101-1102,1104-1106,1109-1114,1117-1122,1125-1132
+  s_a5648343957d20::t_e386cbd1ee67ef 1099-1100,1103,1107-1108,1115-1116,1123-1124,1133-1134
+src/main/agent/skill-registry.ts
+  s_5de8e7e1307bdf::t_4330e992ee87e3 15-19
+src/main/agent/runtime/index.ts
+  s_5de8e7e1307bdf::t_dea4502e935fee 1-39
+tests/unit/wechat-channel-policy.test.ts
+  s_a5648343957d20::t_1ac1ef2b82f23c 1-11
+src/main/services/import-draft.service.ts
+  s_182970eb2cdf1a::t_b8a3a1992f09cd 293
+  s_182970eb2cdf1a::t_0cca755a0659ff 27
+src/preload/index.ts
+  s_a5648343957d20::t_454443467d84ed 167-170,175-179
+  s_a5648343957d20::t_7e30b444563f84 26-27,171-174
+  s_a5648343957d20::t_3d593edff676da 140-141
+src/main/agent/index.ts
+  s_5de8e7e1307bdf::t_7cd14e1bab79ae 9-10
+src/main/database/drizzle/migrations/index.ts
+  s_a5648343957d20::t_6ae332d54feaf9 46-48
+src/shared/ipc/channels.ts
+  s_a5648343957d20::t_b7c5e3edcd6c65 97-104
+src/renderer/src/views/sections/import/DraftTable.vue
+  s_182970eb2cdf1a::t_c0d969b16e5e4f 617-626
+  s_182970eb2cdf1a::t_9480f32200260c 89-92
+src/renderer/src/components/ui/index.ts
+  s_182970eb2cdf1a::t_aba63bbb78d699 10
+src/renderer/src/components/ui/BbTimePicker.vue
+  s_182970eb2cdf1a::t_a735261b6e899e 1-118,120-398
+  s_182970eb2cdf1a::t_584a89edae1424 119
+src/main/ipc/user.ipc.ts
+  s_a5648343957d20::t_454443467d84ed 15,44-45,60-63,74
+  s_a5648343957d20::t_cde11967af9513 16-31,65
+src/main/agent/capabilities/report/index.ts
+  s_5de8e7e1307bdf::t_f2cab168747702 1-3
+src/main/agent/capabilities/calculator/index.ts
+  s_5de8e7e1307bdf::t_f2cab168747702 1-13
+src/main/services/import.service.ts
+  s_182970eb2cdf1a::t_7a627605897010 204-205,219
+  s_182970eb2cdf1a::t_fada37990afbf4 127
+src/main/database/drizzle/migrations/0005_melted_stryfe.sql
+  s_182970eb2cdf1a::t_fbb716d3e7f7ac 1
+src/main/agent/capabilities/data-query/SKILL.md
+  s_5de8e7e1307bdf::t_a391dbfe05aac5 13-23
+  s_5de8e7e1307bdf::t_d9516f4c0c6d3b 1-12,24-31
+src/main/agent/capabilities/transaction-write/SKILL.md
+  s_5de8e7e1307bdf::t_092b277b77afc5 1-12,19-40
+  s_5de8e7e1307bdf::t_a391dbfe05aac5 13-18
+.gitignore
+  s_a5648343957d20::t_454443467d84ed 30-32
+src/main/agent/capabilities/transaction-write/index.ts
+  s_5de8e7e1307bdf::t_f2cab168747702 1-11
+tsconfig.node.json
+  s_a5648343957d20::t_b7c5e3edcd6c65 13-14
+src/main/database/drizzle/migrations/meta/0005_snapshot.json
+  s_182970eb2cdf1a::t_fbb716d3e7f7ac 1,1129-1130,1137,1140
+  s_182970eb2cdf1a::t_0dcf18644287a6 2-1128,1131-1136,1138-1139,1141
+src/main/agent/capabilities/transaction-write/tools/delete-transaction.tool.ts
+  s_02408c045920a3::t_505ede6b2cde4c 1-33
+tests/unit/import-bill-parser.test.ts
+  s_182970eb2cdf1a::t_41631816f694d1 183
+  s_182970eb2cdf1a::t_d7c7514b16e70d 60
+src/main/agent/context/system-prompt.ts
+  s_5de8e7e1307bdf::t_d6312e34cfb050 1-143
+src/renderer/src/stores/agent.store.ts
+  s_a5648343957d20::t_0c9635a758f2af 482,496,498-502
+  s_a5648343957d20::t_df066d3cc8b39b 483-487
+  s_a5648343957d20::t_545cfb3f46f56d 53-56,98-99,120-121,134-146,227,230,233,236-247,249-250,461,471-472,488,497,506-610,618-619,915,939-942,968-969,987-990
+  s_a5648343957d20::t_3200394dfd0167 26-27,102,117,122,155-165,169-185,222-225,266-314,388,393-409,423,436-460,912-914,944-945,972,985-986
+  s_a5648343957d20::t_629fb1913d3182 97,202-204,215-218,476,505,620,938,967
+  s_a5648343957d20::t_cd409c1ae85ace 29-32
+  s_a5648343957d20::t_4ffed8f28110cc 96
+  s_a5648343957d20::t_6ae332d54feaf9 50,190,198-199,639-640
+  s_a5648343957d20::t_5e1e2ebf5c4078 51-52
+  s_a5648343957d20::t_1420b58a21c065 147
+  s_a5648343957d20::t_743c0f529e47fe 462
+  s_a5648343957d20::t_e1e89ee6e41d55 503-504
+src/main/agent/context/message-builder.ts
+  s_5de8e7e1307bdf::t_332fdb99bcf83e 2-3,9,23,63-64
+  s_182970eb2cdf1a::t_ad602966409eb2 51,54-56
+  s_182970eb2cdf1a::t_f3892678f2a710 122-134
+src/main/agent/capabilities/calculator/SKILL.md
+  s_5de8e7e1307bdf::t_446c3010bd8b0e 1-14,21-27
+  s_5de8e7e1307bdf::t_a391dbfe05aac5 15-20
+src/main/agent/capabilities/analysis/SKILL.md
+  s_5de8e7e1307bdf::t_b19d3d0a54f8eb 1-12,20-26
+  s_5de8e7e1307bdf::t_a391dbfe05aac5 13-19
+tests/integration/agent-conversation.integration.test.ts
+  s_a5648343957d20::t_6ae332d54feaf9 142-157
+src/shared/types/agent.ts
+  s_a5648343957d20::t_545cfb3f46f56d 215-217
+  s_a5648343957d20::t_6ae332d54feaf9 159,209
+  s_a5648343957d20::t_b7c5e3edcd6c65 189-190,218-233,300-307
+  s_a5648343957d20::t_3d593edff676da 248-252
+src/main/agent/wechat-channel.service.ts
+  s_a5648343957d20::t_d23db53068fa9f 15,196-209,476-487
+  s_a5648343957d20::t_1ac1ef2b82f23c 23-24,40
+  s_a5648343957d20::t_cb0284fa623dc0 1-14,16-22,25-39,41-59,61-115,117-195,210-433,435-447,451-465,468,474-475,494-499,501-535,538-582,584-707
+  s_a5648343957d20::t_454443467d84ed 60,116,449-450,466-467,469-473,488-493,500,536-537,583
+  s_a5648343957d20::t_cddb4cbb1605f3 434,448
+src/main/agent/tools/registry.ts
+  s_5de8e7e1307bdf::t_07be33aa2dee7f 13-16
+  s_5de8e7e1307bdf::t_580d0467d3586d 32-37
+  s_5de8e7e1307bdf::t_c1dcba900ac2c5 93-126
+  s_5de8e7e1307bdf::t_5b067f55c9551a 17
+  s_5de8e7e1307bdf::t_4553d759119bda 92
+src/main/database/drizzle/migrations/0004_add_thinking_duration.sql
+  s_a5648343957d20::t_08868febc94538 1
+src/main/agent/ipc/agent.ipc.ts
+  s_a5648343957d20::t_545cfb3f46f56d 15,180
+  s_a5648343957d20::t_d23db53068fa9f 50,210-213
+  s_a5648343957d20::t_454443467d84ed 28-29,40-49,51-55,108-117,214-246
+  s_a5648343957d20::t_3d593edff676da 124,160,168
+  s_a5648343957d20::t_4eac9cddca47a1 118
+electron-builder.yml
+  s_a5648343957d20::t_454443467d84ed 33
+src/main/agent/runtime/skill-loader.tool.ts
+  s_5de8e7e1307bdf::t_4708722b5b1d63 1-67
+src/renderer/src/views/DetailView.vue
+  s_182970eb2cdf1a::t_9f44431460ce0d 905-913
+  s_182970eb2cdf1a::t_e79b52b82177c9 180-185
+src/main/agent/memory/conversation-store.ts
+  s_a5648343957d20::t_6ae332d54feaf9 101,122,250,266-267
+package.json
+  s_a5648343957d20::t_165340baefe08f 34,44,56
+  s_182970eb2cdf1a::t_db2255a6b56efb 3
+src/main/services/transaction.service.ts
+  s_182970eb2cdf1a::t_3884e4b88e5122 261,276
+  s_182970eb2cdf1a::t_6a5492529d8c0e 162,165,178
+  s_182970eb2cdf1a::t_d760d68acf7369 452,514
+  s_182970eb2cdf1a::t_eb29a3b09d4929 119-131
+  s_182970eb2cdf1a::t_7602fc26427e76 236
+electron.vite.config.ts
+  s_a5648343957d20::t_b7c5e3edcd6c65 43-45,56-59
+tests/unit/ipc-schemas.test.ts
+  s_a5648343957d20::t_1ac1ef2b82f23c 107-110
+  s_a5648343957d20::t_b23642ab6e9f70 111,113-114,116-117
+src/renderer/src/components/AgentMessage.vue
+  s_a5648343957d20::t_6ae332d54feaf9 83-85,98,105,114,125-147,254-258
+  s_a5648343957d20::t_4de4f23e9e88ac 122-124
+src/shared/types/import.ts
+  s_182970eb2cdf1a::t_b60ebdb4d35650 30
+tests/integration/database.integration.test.ts
+  s_a5648343957d20::t_6ae332d54feaf9 61
+src/main/agent/wechat-channel.policy.ts
+  s_a5648343957d20::t_1ac1ef2b82f23c 1-19
+src/main/agent/capabilities/data-query/index.ts
+  s_5de8e7e1307bdf::t_f2cab168747702 1-18
+src/main/agent/capabilities/transaction-write/tools/create-transaction.tool.ts
+  s_182970eb2cdf1a::t_b3065080d6097c 1-31,33-107,109-128,130,132-139
+  s_182970eb2cdf1a::t_e79b52b82177c9 32
+  s_182970eb2cdf1a::t_460c6b258f5d8c 129,131
+  s_182970eb2cdf1a::t_3061b8cfdbf562 108
+src/shared/types/transaction.ts
+  s_182970eb2cdf1a::t_2675c70e9b3787 40,52
+  s_182970eb2cdf1a::t_eb819c0dded77a 18
+src/main/agent/capabilities/analysis/index.ts
+  s_5de8e7e1307bdf::t_f2cab168747702 1-12
+src/renderer/src/components/TransactionModal.vue
+  s_182970eb2cdf1a::t_5b23ce89a99588 108,110-111
+  s_182970eb2cdf1a::t_3e037eb69efd71 155
+  s_182970eb2cdf1a::t_88c66ef9182739 105-107,109,112-113
+  s_182970eb2cdf1a::t_6476959517436a 170
+  s_182970eb2cdf1a::t_529d978c9fca04 255
+  s_182970eb2cdf1a::t_16a34b7efb7986 344
+  s_182970eb2cdf1a::t_431a2dbde37b39 194,202
+  s_182970eb2cdf1a::t_4a690395b69aa5 370
+  s_182970eb2cdf1a::t_18175719fffb00 494-501
+  s_182970eb2cdf1a::t_52dbb734ea61bb 277
+src/renderer/src/views/AgentChatView.vue
+  s_a5648343957d20::t_629fb1913d3182 165
+  s_a5648343957d20::t_3b31244bd6e152 106-134,696-731,884-886,909,1262-1265,1585-1641,1750-1754,1937-2040
+  s_a5648343957d20::t_864848844dadac 309,311
+  s_a5648343957d20::t_565ba96a419ac5 2251-2260,2264-2268
+  s_a5648343957d20::t_a4798f82d97acd 2261-2263
+  s_a5648343957d20::t_737fc4674f1594 183-210,218,297-302,307,312,882-883,1642,1658,1661-1666,1670-1691,2041,2269-2342,2535-2556
+  s_a5648343957d20::t_4ffed8f28110cc 163
+  s_a5648343957d20::t_40ca14105dc0c4 303-306
+  s_a5648343957d20::t_25d068a311099e 308
+  s_a5648343957d20::t_26ab25fbaab5fb 732
+src/main/database/drizzle/migrations/meta/_journal.json
+  s_182970eb2cdf1a::t_0dcf18644287a6 32-45
+src/renderer/src/utils/date.ts
+  s_182970eb2cdf1a::t_701ef33b25d2e5 19-31
+src/main/database/drizzle/schema.ts
+  s_a5648343957d20::t_6ae332d54feaf9 51
+  s_182970eb2cdf1a::t_d03cb968c86a91 165
+src/renderer/src/app/release-notes.ts
+  s_182970eb2cdf1a::t_f5d9f07e77cdef 27-32
+  s_a5648343957d20::t_d898a37d96ec79 35,39,41-44,48-53
+tests/unit/release-notes.test.ts
+  s_a5648343957d20::t_d898a37d96ec79 33,37,39-42,46-51
+tests/unit/agent-stream-lifecycle.test.ts
+  s_a5648343957d20::t_6ae332d54feaf9 106,116-118,122-123
+  s_a5648343957d20::t_7a45554a36885d 321-331,372-374
+  s_a5648343957d20::t_8a9798e90943ca 108,255-259,285-286
+  s_a5648343957d20::t_f5110d80e19ac3 3,20,71,229,241-254,260-284,287-291,375
+  s_a5648343957d20::t_1ac1ef2b82f23c 4,7,21-25,40,72-83,91-93,95,152-228
+  s_a5648343957d20::t_629fb1913d3182 109,115,121,124,135,151
+  s_a5648343957d20::t_0c9635a758f2af 231-240
+  s_a5648343957d20::t_a3fc4a45dd58e8 94
+  s_a5648343957d20::t_ef42205cf14233 96
+  s_a5648343957d20::t_60de238970bd78 230
+src/main/agent/orchestrator.ts
+  s_5de8e7e1307bdf::t_17d27d09fbe7a3 17-18
+  s_a5648343957d20::t_0c9635a758f2af 384-390,392
+  s_a5648343957d20::t_545cfb3f46f56d 230
+  s_a5648343957d20::t_3d593edff676da 74,83,113,159,170,254-259
+  s_5de8e7e1307bdf::t_5d8aff3319f9d3 181,196
+  s_a5648343957d20::t_7a45554a36885d 266
+  s_5de8e7e1307bdf::t_f46dc360cfa79a 200-204
+  s_a5648343957d20::t_6ae332d54feaf9 237-238,265,267-268,270,276-279,296-297,367-368,398
+  s_5de8e7e1307bdf::t_4de64750bf1664 179,187-188
+src/main/agent/capabilities/report/SKILL.md
+  s_5de8e7e1307bdf::t_a391dbfe05aac5 21,29,39
+  s_5de8e7e1307bdf::t_31e7a0ab7ed949 1-20,22-28,30-38,40-52
+src/main/agent/mcp-service.ts
+  s_5de8e7e1307bdf::t_ff6db69b8769e0 29-35,41
+  s_5de8e7e1307bdf::t_31bc960722bc88 373,389-393,396
+src/main/services/import-bill-parser.ts
+  s_182970eb2cdf1a::t_5ead138491491b 154
+  s_182970eb2cdf1a::t_cb169eaeb6734e 372-395
+  s_182970eb2cdf1a::t_9b3668467170a2 126-128,132
+  s_182970eb2cdf1a::t_c48865abaad34a 185
+  s_182970eb2cdf1a::t_9ad4dd45cda968 16
+  s_182970eb2cdf1a::t_299b253c32f2e7 371
+src/main/agent/runtime/memory-tools.ts
+  s_5de8e7e1307bdf::t_cd9b43954640f6 1-110
+package-lock.json
+  s_a5648343957d20::t_39b1b47c82a73c 16,26,38,2911-2919,3482-3491,4902-4910,5296-5304,5422-5427,8320-8328,8820-8963,9083-9088,9310-9315,11446-11451
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "14390f14fe29637d2db9aab6c18484be5a1e3bd8",
+  "prompts": {},
+  "sessions": {
+    "s_02408c045920a3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_097180414ffeH3Z0A1rFeb4cBP",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_182970eb2cdf1a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_09718745fffextAOIZ7FaldM8z",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_5de8e7e1307bdf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_0977350c2ffefK2YLWb6eEcxkf",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_a5648343957d20": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f654c-0e38-7fe0-9a90-316a7d0dcbaf",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
