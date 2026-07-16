@@ -1,0 +1,103 @@
+src/renderer/src/views/AgentChatView.vue
+  s_0c20b78190c174::t_4c872870d68f07 245-250
+  s_0c20b78190c174::t_f8557cbdd27ab7 640-643
+  s_0c20b78190c174::t_f1307f8e52df55 3080-3091
+  s_0c20b78190c174::t_a42bdfbefce05d 2472-2478
+src/main/agent/context/system-prompt.ts
+  s_a88322fee4cacf::t_8d5ca7eb830108 31,75-78,82-83,97,104,111,114,130,134-136
+  s_a88322fee4cacf::t_2daaba4d6c93c6 3
+  s_a88322fee4cacf::t_0da6e9a128d717 12-30,32-55,58-61,67-68,118-121,133,137-139
+src/main/database/drizzle/migrations/0006_simple_ma_gnuci.sql
+  s_0c20b78190c174::t_74662c05aff0ec 1
+src/main/database/drizzle/migrations/meta/_journal.json
+  s_0c20b78190c174::t_74662c05aff0ec 46-52
+src/main/database/drizzle/migrations/index.ts
+  s_182970eb2cdf1a::t_011502a4382a2f 49-51
+  s_0c20b78190c174::t_4d67ea32a9e46b 52-54
+src/main/agent/orchestrator.ts
+  s_8170e77967c969::t_b0f1142a590935 264
+tests/integration/database.integration.test.ts
+  s_0c20b78190c174::t_67966cf3478f66 61
+tests/unit/release-notes.test.ts
+  s_182970eb2cdf1a::t_bb9901a666d475 83-84
+  s_182970eb2cdf1a::t_4dd14ce810e345 85-87
+src/main/agent/memory/conversation-store.ts
+  s_0c20b78190c174::t_08030c775b4dca 171
+  s_0c20b78190c174::t_93c93a4bd490b1 38-39,46-47,55-56
+  s_0c20b78190c174::t_850dde01d4217a 201
+src/main/agent/runtime/skill-loader.tool.ts
+  s_a88322fee4cacf::t_0da6e9a128d717 15
+src/renderer/src/stores/agent.store.ts
+  s_0c20b78190c174::t_8491e053a12c23 104
+  s_0c20b78190c174::t_c9ab792296e364 102-103,105-108
+  s_0c20b78190c174::t_6802e0a7288500 675
+  s_0c20b78190c174::t_315e3b2f718918 11
+  s_0c20b78190c174::t_af444196faf6da 982
+  s_0c20b78190c174::t_d7f5fac2bb125e 624
+  s_0c20b78190c174::t_549c7c40f8a886 945
+src/main/database/drizzle/schema.ts
+  s_0c20b78190c174::t_25dff2d60f3550 23
+src/shared/types/agent.ts
+  s_0c20b78190c174::t_f27bdba738a105 122,134
+tests/unit/system-prompt.test.ts
+  s_a88322fee4cacf::t_0da6e9a128d717 1-12,14-41,43-52
+  s_a88322fee4cacf::t_8d5ca7eb830108 13,42
+src/main/database/drizzle/migrations/meta/0006_snapshot.json
+  s_0c20b78190c174::t_74662c05aff0ec 1-1138,1144-1145,1147-1148
+  s_4f868997dbb1a3::t_badaac832f57ba 1139-1143,1146,1149
+src/main/agent/wechat-channel.service.ts
+  s_8170e77967c969::t_0a48d5480ee4e7 493-494,517-520
+  s_8170e77967c969::t_2a296f9351d449 435-447
+  s_8170e77967c969::t_82a2e3fe7c0d7a 470,472-475,485-486
+  s_0c20b78190c174::t_100288e771e8c3 546
+  s_0c20b78190c174::t_4f3f0c4118b9cb 466-467
+  s_0c20b78190c174::t_8d57cd71b107ff 314-316
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "e40e12aa37544ea6b55e1b9cb9d58cc8cf163a29",
+  "prompts": {},
+  "sessions": {
+    "s_0c20b78190c174": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_095571645ffecXEWavJ97HwUZk",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_182970eb2cdf1a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_09718745fffextAOIZ7FaldM8z",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_4f868997dbb1a3": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_095571645ffecXEWavJ97HwUZk",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_8170e77967c969": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_0961bd098ffeqeOtK1P6mhFdL8",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_a88322fee4cacf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f6a96-04a7-7360-819b-9f7fa26b6178",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
