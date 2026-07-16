@@ -8,7 +8,7 @@
  * @author xiangwei
  */
 
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { desktopApi } from '../api/desktop-api'
 import type {
@@ -99,6 +99,13 @@ export const useAgentStore = defineStore('agent', () => {
     const queuedMessages = ref<QueuedAgentMessage[]>([])
     const currentThinking = ref('')
     const deepThink = ref(false)
+    const currentConversationSource = ref<'desktop' | 'wechat'>('desktop')
+    /** 当前会话是否为微信会话 */
+    const isWechatConversation = computed(() => currentConversationSource.value === 'wechat')
+    // 微信会话强制开启深度思考，且不允许关闭
+    watch(isWechatConversation, (isWechat) => {
+        if (isWechat) deepThink.value = true
+    })
     const wechatStatus = ref<WechatConnectionStatus | null>(null)
     const loading = ref(false)
     const error = ref<string | null>(null)
@@ -614,6 +621,7 @@ export const useAgentStore = defineStore('agent', () => {
     function newConversation(): void {
         if (isProcessing.value) return
         currentConversationId.value = null
+        currentConversationSource.value = 'desktop'
         messages.value = []
         queuedMessages.value = []
         priorityQueuedMessage = null
@@ -664,6 +672,7 @@ export const useAgentStore = defineStore('agent', () => {
         }
 
         currentConversationId.value = result.data.id
+        currentConversationSource.value = result.data.source
         messages.value = mapConversationMessages(result.data)
         nextMessageCursor.value = result.data.next_cursor
         return true
@@ -933,6 +942,7 @@ export const useAgentStore = defineStore('agent', () => {
         mcpConnectionResults.value = {}
         mcpConnectionErrors.value = {}
         currentConversationId.value = null
+        currentConversationSource.value = 'desktop'
         messages.value = []
         isProcessing.value = false
         isAwaitingResponse.value = false
@@ -969,6 +979,7 @@ export const useAgentStore = defineStore('agent', () => {
         queuedMessages,
         currentThinking,
         deepThink,
+        isWechatConversation,
         wechatStatus,
         loading,
         error,

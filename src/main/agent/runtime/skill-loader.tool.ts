@@ -12,7 +12,7 @@ import { logger } from '../../utils/logger'
 import { skillRegistry } from '../skill-registry'
 
 const SKILL_LOADER_DESCRIPTION =
-    '按 Skill 名称获取完整指令。需要使用某个 Skill 时必须先调用本工具，再遵循返回的 Markdown 内容选择业务工具。'
+    '按名称加载 Skill 完整指令。匹配到 Skill 时必须先调用本工具，读取内容并制定执行计划后，才能调用业务或 MCP 工具。'
 
 /**
  * 校验工具执行期间登录用户没有发生切换

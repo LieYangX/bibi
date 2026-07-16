@@ -242,6 +242,12 @@
                         <button
                             class="agent-foot-btn"
                             :class="{ 'agent-foot-btn--active': agentStore.deepThink }"
+                            :disabled="agentStore.isWechatConversation"
+                            :title="
+                                agentStore.isWechatConversation
+                                    ? '微信会话默认开启深度思考'
+                                    : '深度思考'
+                            "
                             @click="agentStore.deepThink = !agentStore.deepThink"
                         >
                             <BrainCircuit :size="15" /> 深度思考
@@ -631,6 +637,10 @@
                                                 v-if="editingConvId !== conv.id"
                                                 class="drawer-conv-title"
                                                 @dblclick.stop="startEditConv(conv)"
+                                                ><span
+                                                    v-if="conv.source === 'wechat'"
+                                                    class="drawer-conv-wechat-tag"
+                                                    >微信会话</span
                                                 >{{ conv.title }}</span
                                             >
                                             <div v-else class="drawer-conv-edit-row">
@@ -2459,6 +2469,13 @@ onUnmounted(() => {
     background: var(--bb-accent-soft);
     color: var(--bb-accent-text);
 }
+.agent-foot-btn:disabled {
+    cursor: not-allowed;
+}
+.agent-foot-btn:disabled:hover {
+    background: var(--bb-accent-soft);
+    color: var(--bb-accent-text);
+}
 
 /* 麦克风录音按钮 */
 .agent-mic-btn {
@@ -3059,6 +3076,18 @@ onUnmounted(() => {
     text-overflow: ellipsis;
     white-space: nowrap;
     margin-bottom: 2px;
+}
+.drawer-conv-wechat-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: var(--bb-weight-semibold);
+    color: #16a34a;
+    background: rgba(22, 163, 74, 0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-right: 6px;
+    line-height: 1.4;
+    vertical-align: middle;
 }
 .drawer-conv-meta {
     font-size: 12px;

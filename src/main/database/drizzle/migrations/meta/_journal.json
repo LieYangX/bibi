@@ -43,6 +43,13 @@
             "when": 1784171668326,
             "tag": "0005_melted_stryfe",
             "breakpoints": true
+        },
+        {
+            "idx": 6,
+            "version": "6",
+            "when": 1784202851154,
+            "tag": "0006_simple_ma_gnuci",
+            "breakpoints": true
         }
     ]
 }

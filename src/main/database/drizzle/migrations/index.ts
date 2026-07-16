@@ -46,6 +46,12 @@ const LEGACY_MIGRATION_COLUMNS: Record<string, Record<string, string[]>> = {
     },
     '0004_add_thinking_duration': {
         agent_messages: ['id', 'conversation_id', 'role', 'content', 'thinking_duration_ms']
+    },
+    '0005_melted_stryfe': {
+        transactions: ['id', 'time']
+    },
+    '0006_simple_ma_gnuci': {
+        agent_conversations: ['source']
     }
 }
 

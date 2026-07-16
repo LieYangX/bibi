@@ -119,6 +119,7 @@ export interface Conversation {
     title: string
     message_count: number
     model: string | null
+    source: 'desktop' | 'wechat'
     created_at: string
     updated_at: string
 }
@@ -130,6 +131,7 @@ export interface ConversationListItem {
     last_message: string | null
     total_tokens: number
     model: string | null
+    source: 'desktop' | 'wechat'
     updated_at: string
 }
 

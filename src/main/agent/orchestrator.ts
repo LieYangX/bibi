@@ -261,7 +261,7 @@ async function runConversation(
         })
 
         // 直接消费完整事件流，收到一个模型事件就立即转发一个 IPC 事件。
-        for await (const part of result.fullStream) {
+        for await (const part of result.stream) {
             if (part.type === 'reasoning-start') {
                 thinkingStartedAt ??= Date.now()
                 continue

@@ -28,7 +28,10 @@ export const RELEASE_NOTES: Readonly<Record<string, ReleaseNotes>> = {
         version: '3.0.6',
         date: '2026-07-16',
         additions: ['记账支持记录交易时间，记一笔、AI 记账和账单导入均可填写时间。'],
-        fixes: []
+        fixes: [
+            '修复小笔呆呆的问题。调教了一下，嗯好多了',
+            '优化微信渠道消息回复慢的问题，小优化哈哈哈哈不能太多了'
+        ]
     },
     '3.0.5': {
         version: '3.0.5',

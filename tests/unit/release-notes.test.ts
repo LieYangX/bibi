@@ -80,8 +80,13 @@ describe('版本更新公告', () => {
     it('全部公告按版本号从新到旧排列', () => {
         const releases = getAllReleaseNotes()
 
-        expect(releases.map((release) => release.version)).toEqual(['3.0.5', '3.0.4', '3.0.3'])
-        expect(releases[0]?.version).toBe('3.0.5')
+        expect(releases.map((release) => release.version)).toEqual([
+            '3.0.6',
+            '3.0.5',
+            '3.0.4',
+            '3.0.3'
+        ])
+        expect(releases[0]?.version).toBe('3.0.6')
     })
 
     it('同一版本仅在首次进入时展示公告', () => {

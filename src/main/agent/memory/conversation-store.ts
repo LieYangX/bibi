@@ -35,13 +35,16 @@ function createMessageTimestamp(): string {
  *
  * @param userId 用户 ID
  * @param title 会话标题（可由 LLM 自动生成）
+ * @param model 模型名称
+ * @param source 会话来源，默认 desktop
  * @returns 会话 ID
  * @author xiangwei
  */
 export async function createConversation(
     userId: string,
     title?: string,
-    model?: string
+    model?: string,
+    source: 'desktop' | 'wechat' = 'desktop'
 ): Promise<string> {
     const id = randomUUID()
     await db.insert(agentConversations).values({
@@ -49,7 +52,8 @@ export async function createConversation(
         user_id: userId,
         title: title || '新对话',
         message_count: 0,
-        model: model ?? null
+        model: model ?? null,
+        source
     })
     return id
 }
@@ -164,6 +168,7 @@ export async function listConversations(
             id: agentConversations.id,
             title: agentConversations.title,
             model: agentConversations.model,
+            source: agentConversations.source,
             message_count: agentConversations.message_count,
             updated_at: agentConversations.updated_at,
             last_message: sql<string | null>`(
@@ -193,6 +198,7 @@ export async function listConversations(
         last_message: row.last_message?.slice(0, 100) ?? null,
         total_tokens: Number(row.total_tokens ?? 0),
         model: row.model,
+        source: row.source,
         updated_at: row.updated_at
     }))
     const lastConversation = pageRows.at(-1)

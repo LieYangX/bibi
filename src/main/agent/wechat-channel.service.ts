@@ -26,7 +26,6 @@ import type { WechatQrStatus } from './wechat-channel.policy'
 const WECHAT_BASE_URL = 'https://ilinkai.weixin.qq.com'
 const QR_POLL_INTERVAL_MS = 2_000
 const QR_IMAGE_WIDTH = 224
-const WECHAT_CONVERSATION_TITLE = '微信会话'
 const UNSUPPORTED_MESSAGE_REPLY = '当前仅支持文字消息，请发送文字内容。'
 const EMPTY_MESSAGE_REPLY = '没有识别到文字内容，请重新发送。'
 const AGENT_ERROR_REPLY = '小笔暂时无法处理这条消息，请稍后再试。'
@@ -312,8 +311,9 @@ class WechatChannelService {
         const config = await loadAgentConfig()
         const conversationId = await conversationStore.createConversation(
             userId,
-            WECHAT_CONVERSATION_TITLE,
-            config.model
+            undefined,
+            config.model,
+            'wechat'
         )
         return {
             token: result.bot_token,
@@ -432,6 +432,19 @@ class WechatChannelService {
         })
 
         let messageController: AbortController | null = null
+        // 按消息单元分批发送，避免等全部响应完才一次性发出
+        let pendingText = ''
+        let hasSentReply = false
+
+        // 将当前积攒的文本立即发送到微信，发送后清空
+        const flushPending = async (): Promise<void> => {
+            const text = pendingText
+            pendingText = ''
+            if (!text.trim()) return
+            hasSentReply = true
+            await bot.reply(message, text)
+        }
+
         try {
             const credentials = await this.requireCredentials(runtime.ownerUserId)
             const conversationId = await this.ensureConversation(runtime.ownerUserId, credentials)
@@ -444,19 +457,22 @@ class WechatChannelService {
                 })
             }
 
-            let responseText = ''
             messageController = new AbortController()
             runtime.messageController = messageController
             const resolvedConversationId = await processMessage(
                 conversationId,
                 content,
                 runtime.ownerUserId,
-                false,
+                // 微信渠道默认开启深度思考
+                true,
                 async (event) => {
                     if (event.type === 'message' && event.message?.role === 'assistant') {
-                        responseText += event.message.content
+                        pendingText += event.message.content
                     } else if (event.type === 'chunk' && event.content) {
-                        responseText += event.content
+                        pendingText += event.content
+                    } else if (event.type === 'message' && event.message?.role === 'tool') {
+                        // 工具调用结果到达前，先把已积累的 assistant 文本发出去
+                        await flushPending()
                     }
                     this.publishAgentEvent(runtime.ownerUserId, {
                         ...event,
@@ -466,13 +482,16 @@ class WechatChannelService {
                 },
                 messageController.signal
             )
+            // 流结束后发送剩余文本
+            await flushPending()
             this.publishAgentEvent(runtime.ownerUserId, {
                 type: 'done',
                 source: 'wechat',
                 conversationId: resolvedConversationId
             })
-            await bot.reply(message, responseText || AGENT_ERROR_REPLY)
         } catch (error: unknown) {
+            // 出错时先尝试发送已积累的部分文本
+            await flushPending().catch(() => undefined)
             if (messageController?.signal.aborted) {
                 if (messageController.signal.reason === AGENT_CHAT_CANCELLED_MESSAGE) {
                     this.publishAgentEvent(runtime.ownerUserId, {
@@ -495,7 +514,10 @@ class WechatChannelService {
                 userId: runtime.ownerUserId,
                 error: this.getErrorMessage(error)
             })
-            await bot.reply(message, AGENT_ERROR_REPLY)
+            // 仅在未发送过任何回复时才发送错误提示，避免追加多余消息
+            if (!hasSentReply) {
+                await bot.reply(message, AGENT_ERROR_REPLY)
+            }
         } finally {
             runtime.messageController = null
             void bot.stopTyping(message.userId).catch(() => undefined)
@@ -521,7 +543,7 @@ class WechatChannelService {
             return credentials.conversationId
         }
         const config = await loadAgentConfig()
-        return conversationStore.createConversation(userId, WECHAT_CONVERSATION_TITLE, config.model)
+        return conversationStore.createConversation(userId, undefined, config.model, 'wechat')
     }
 
     /**

@@ -20,6 +20,7 @@ export const agentConversations = sqliteTable(
         title: text('title').notNull().default('新对话'),
         message_count: integer('message_count').notNull().default(0),
         model: text('model'),
+        source: text('source').$type<'desktop' | 'wechat'>().notNull().default('desktop'),
         created_at: text('created_at')
             .notNull()
             .default(sql`(datetime('now', 'localtime'))`),

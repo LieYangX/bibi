@@ -1,0 +1,1 @@
+ALTER TABLE `agent_conversations` ADD `source` text DEFAULT 'desktop' NOT NULL;
