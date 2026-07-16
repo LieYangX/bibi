@@ -116,6 +116,19 @@ function validateTransaction(data: CreateTransactionDTO): void {
     ) {
         throw new Error('日期不存在')
     }
+
+    // 校验时间格式（可选，格式 HH:mm）
+    if (data.time) {
+        const timeParts = /^(\d{2}):(\d{2})$/.exec(data.time)
+        if (!timeParts) {
+            throw new Error('时间格式必须为 HH:mm')
+        }
+        const hour = Number(timeParts[1])
+        const minute = Number(timeParts[2])
+        if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+            throw new Error('时间不存在')
+        }
+    }
 }
 
 /**
@@ -146,10 +159,10 @@ export async function createTransaction(
             .prepare(
                 `INSERT INTO transactions (
                     id, user_id, type, account_id, target_account_id, category_id,
-                    sub_category_id, amount_cents, date, note, created_at, updated_at
+                    sub_category_id, amount_cents, date, time, note, created_at, updated_at
                 ) VALUES (
                     @id, @userId, @type, @accountId, @targetAccountId, @categoryId,
-                    @subCategoryId, @amountCents, @date, @note, @now, @now
+                    @subCategoryId, @amountCents, @date, @time, @note, @now, @now
                 )`
             )
             .run({
@@ -162,6 +175,7 @@ export async function createTransaction(
                 subCategoryId,
                 amountCents: data.amount_cents,
                 date: data.date,
+                time: data.time ?? null,
                 note: data.note || null,
                 now
             })
@@ -219,6 +233,7 @@ export async function updateTransaction(
                     : data.sub_category_id,
             amount_cents: data.amount_cents ?? oldTransaction.amount_cents,
             date: data.date ?? oldTransaction.date,
+            time: data.time === undefined ? oldTransaction.time : data.time,
             note: data.note === undefined ? oldTransaction.note : data.note
         }
         validateTransaction(nextData)
@@ -243,6 +258,7 @@ export async function updateTransaction(
                      sub_category_id = @subCategoryId,
                      amount_cents = @amountCents,
                      date = @date,
+                     time = @time,
                      note = @note,
                      updated_at = @updatedAt
                  WHERE id = @id AND user_id = @userId`
@@ -257,6 +273,7 @@ export async function updateTransaction(
                 subCategoryId,
                 amountCents: nextData.amount_cents,
                 date: nextData.date,
+                time: nextData.time ?? null,
                 note: nextData.note || null,
                 updatedAt: new Date().toISOString()
             })
@@ -432,6 +449,7 @@ export async function listTransactions(
             sub_category_id: transactions.sub_category_id,
             amount_cents: transactions.amount_cents,
             date: transactions.date,
+            time: transactions.time,
             note: transactions.note,
             transfer_pair_id: transactions.transfer_pair_id,
             is_deleted: transactions.is_deleted,
@@ -493,6 +511,7 @@ export async function getTransactionById(id: string, userId: string): Promise<Tr
             sub_category_id: transactions.sub_category_id,
             amount_cents: transactions.amount_cents,
             date: transactions.date,
+            time: transactions.time,
             note: transactions.note,
             transfer_pair_id: transactions.transfer_pair_id,
             is_deleted: transactions.is_deleted,

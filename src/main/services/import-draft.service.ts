@@ -24,6 +24,7 @@ export interface ImportDraftEntry {
     category_id: string | null
     sub_category_id: string | null
     date: string
+    time: string | null
     amount_cents: number
     note: string
     source: ImportSourceFields
@@ -289,6 +290,7 @@ function toPublicItem(item: ImportDraftEntry): ImportDraftItem {
         category_id: item.category_id,
         sub_category_id: item.sub_category_id,
         date: item.date,
+        time: item.time,
         amount_cents: item.amount_cents,
         note: item.note,
         state: presentation.state,

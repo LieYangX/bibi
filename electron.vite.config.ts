@@ -40,7 +40,9 @@ export default defineConfig({
     main: {
         resolve: {
             alias: {
-                '@shared': resolve('src/shared')
+                '@shared': resolve('src/shared'),
+                // npm 1.2.0 包缺少声明中的 dist 目录，直接打包官方 SDK 源码。
+                '@pinixai/weixin-bot': resolve('node_modules/@pinixai/weixin-bot/src/index.ts')
             }
         },
         build: {
@@ -51,7 +53,10 @@ export default defineConfig({
                 }
             }
         },
-        plugins: [externalizeDepsPlugin(), copyMigrationPlugin()]
+        plugins: [
+            externalizeDepsPlugin({ exclude: ['@pinixai/weixin-bot'] }),
+            copyMigrationPlugin()
+        ]
     },
     preload: {
         resolve: {

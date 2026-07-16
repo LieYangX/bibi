@@ -23,7 +23,8 @@ import type {
     UpdateTransactionDTO,
     StreamEvent,
     SttProgressEvent,
-    RendererErrorReport
+    RendererErrorReport,
+    WechatConnectionStatus
 } from '@shared/types'
 
 /**
@@ -136,8 +137,8 @@ const electronAPI: ElectronAPI = {
         }
     },
     agent: {
-        chat: (conversationId, message) =>
-            invokeWithLog(IPC_CHANNELS.agent.chat, conversationId, message),
+        chat: (conversationId, message, deepThink) =>
+            invokeWithLog(IPC_CHANNELS.agent.chat, conversationId, message, deepThink),
         cancelChat: () => invokeWithLog(IPC_CHANNELS.agent.cancelChat),
         listConversations: (cursor) => invokeWithLog(IPC_CHANNELS.agent.listConversations, cursor),
         deleteConversation: (id) => invokeWithLog(IPC_CHANNELS.agent.deleteConversation, id),
@@ -163,6 +164,19 @@ const electronAPI: ElectronAPI = {
         toggleMcpServer: (name, enabled) =>
             invokeWithLog(IPC_CHANNELS.agent.toggleMcpServer, name, enabled),
         inspectMcpServer: (name) => invokeWithLog(IPC_CHANNELS.agent.inspectMcpServer, name),
+        connectWechat: () => invokeWithLog(IPC_CHANNELS.agent.connectWechat),
+        disconnectWechat: () => invokeWithLog(IPC_CHANNELS.agent.disconnectWechat),
+        getWechatStatus: () => invokeWithLog(IPC_CHANNELS.agent.getWechatStatus),
+        onWechatStatus: (callback) => {
+            const listener = (
+                _event: Electron.IpcRendererEvent,
+                status: WechatConnectionStatus
+            ): void => {
+                callback(status)
+            }
+            ipcRenderer.on(IPC_CHANNELS.agent.wechatStatus, listener)
+            return () => ipcRenderer.removeListener(IPC_CHANNELS.agent.wechatStatus, listener)
+        },
         transcribeAudio: (buffer) => invokeWithLog(IPC_CHANNELS.agent.transcribeAudio, buffer),
         sttDownloadModel: (modelId) => invokeWithLog(IPC_CHANNELS.agent.sttDownloadModel, modelId),
         sttModelStatus: (modelId?) => invokeWithLog(IPC_CHANNELS.agent.sttModelStatus, modelId),

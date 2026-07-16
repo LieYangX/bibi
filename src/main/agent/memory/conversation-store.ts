@@ -98,6 +98,7 @@ export async function saveMessage(
         skill_used?: string
         tool_used?: string
         thinking?: string
+        thinking_duration_ms?: number
         token_count?: number
     }
 ): Promise<void> {
@@ -118,6 +119,7 @@ export async function saveMessage(
         skill_used: extras?.skill_used ?? null,
         tool_used: extras?.tool_used ?? null,
         thinking: extras?.thinking ?? null,
+        thinking_duration_ms: extras?.thinking_duration_ms ?? null,
         token_count: extras?.token_count ?? null,
         created_at: createdAt
     })
@@ -245,6 +247,7 @@ export async function getConversation(
             skill_used: agentMessages.skill_used,
             tool_used: agentMessages.tool_used,
             thinking: agentMessages.thinking,
+            thinking_duration_ms: agentMessages.thinking_duration_ms,
             created_at: agentMessages.created_at
         })
         .from(agentMessages)
@@ -260,7 +263,8 @@ export async function getConversation(
         role: message.role as 'user' | 'assistant' | 'system' | 'tool',
         skill_used: message.skill_used ?? undefined,
         tool_used: message.tool_used ?? undefined,
-        thinking: message.thinking ?? undefined
+        thinking: message.thinking ?? undefined,
+        thinking_duration_ms: message.thinking_duration_ms ?? undefined
     }))
 
     return {

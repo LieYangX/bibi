@@ -16,3 +16,16 @@ export function formatLocalDate(date = new Date()): string {
     const day = String(date.getDate()).padStart(2, '0')
     return `${year}-${month}-${day}`
 }
+
+/**
+ * 格式化本地时间
+ *
+ * @param date 日期对象
+ * @returns HH:mm 时间
+ * @author xiangwei
+ */
+export function formatLocalTime(date = new Date()): string {
+    const hour = String(date.getHours()).padStart(2, '0')
+    const minute = String(date.getMinutes()).padStart(2, '0')
+    return `${hour}:${minute}`
+}

@@ -14,7 +14,8 @@ import { randomUUID } from 'crypto'
 import { createModel } from './llm-gateway'
 import { skillRegistry } from './skill-registry'
 import { toolRegistry } from './tools/registry'
-import { buildSystemPrompt, buildMessages } from './context-builder'
+import { buildSystemPrompt } from './context/system-prompt'
+import { buildMessages } from './context/message-builder'
 import * as conversationStore from './memory/conversation-store'
 import { localMemoryStore } from './memory/local-memory'
 import { distillSoulIfNeeded } from './memory/soul-distiller'
@@ -70,6 +71,7 @@ const CONVERSATION_TITLE_MAX_LENGTH = 20
  * @param conversationId 会话 ID（null 表示新建）
  * @param userMessage 用户输入
  * @param userId 当前用户 ID
+ * @param deepThink 是否启用深度思考
  * @param emit 事件发射器
  * @returns 会话 ID
  * @author xiangwei
@@ -78,6 +80,7 @@ export async function processMessage(
     conversationId: string | null,
     userMessage: string,
     userId: string,
+    deepThink: boolean,
     emit: EventEmitter,
     abortSignal?: AbortSignal
 ): Promise<string> {
@@ -107,6 +110,7 @@ export async function processMessage(
                     resolvedConversationId,
                     userMessage,
                     userId,
+                    deepThink,
                     emit,
                     config,
                     abortSignal
@@ -152,6 +156,7 @@ async function resolveConversationId(
  * @param conversationId 已校验的会话 ID
  * @param userMessage 用户输入
  * @param userId 当前用户 ID
+ * @param deepThink 是否启用深度思考
  * @param emit 流式事件发射器
  * @param config 智能体运行配置
  * @param abortSignal 取消信号
@@ -162,6 +167,7 @@ async function runConversation(
     conversationId: string,
     userMessage: string,
     userId: string,
+    deepThink: boolean,
     emit: EventEmitter,
     config: AgentRuntimeConfig,
     abortSignal?: AbortSignal
@@ -169,16 +175,17 @@ async function runConversation(
     const startedAt = Date.now()
     const enabledSkills = skillRegistry.getEnabledSkills()
 
-    const systemPrompt = buildSystemPrompt(enabledSkills)
     const model = createModel(config.apiKey, config.model)
-    const [soulMemory, history, currentUser] = await Promise.all([
+    const [soulMemory, profileMemory, history, currentUser, mcpRuntime] = await Promise.all([
         localMemoryStore.readMemory(userId, 'soul'),
+        localMemoryStore.readMemory(userId, 'profile'),
         conversationStore.restoreRecentMessages(
             conversationId,
             userId,
             Math.max(0, config.memoryDistillationThreshold - 1)
         ),
-        getUser(userId)
+        getUser(userId),
+        loadMcpRuntimeTools()
     ])
     if (!currentUser) throw new Error('当前用户不存在')
     const messages = buildMessages({
@@ -186,11 +193,16 @@ async function runConversation(
         userMessage,
         maxUserTurns: config.memoryDistillationThreshold,
         soulMemory: soulMemory.content,
+        profileMemory: profileMemory.content,
         userName: currentUser.name,
         systemInfo: getRuntimeSystemInfo()
     })
+    const systemPrompt = buildSystemPrompt(
+        enabledSkills,
+        toolRegistry.getGroupedToolInfos(),
+        mcpRuntime.toolInfos
+    )
     const localTools = toolRegistry.createTools(userId)
-    const mcpRuntime = await loadMcpRuntimeTools()
     const allTools: Record<string, Tool> = {
         ...localTools,
         ...mcpRuntime.tools
@@ -215,13 +227,15 @@ async function runConversation(
         type: 'message',
         message: { id: randomUUID(), role: 'user', content: userMessage }
     })
-    await emit({ type: 'thinking', content: '' })
+    await emit({ type: 'thinking', content: '', conversationId })
 
     let fullResponse = ''
     let currentAsstId: string | null = null
     let thinkingText = ''
     let thinkingForNextMsg = ''
     let firstPhaseThinking = ''
+    let thinkingStartedAt: number | null = null
+    let thinkingDurationMs = 0
     let totalTokens = 0
     let toolResultCount = 0
 
@@ -237,18 +251,32 @@ async function runConversation(
             stopWhen: isStepCount(MAX_AGENT_STEPS),
             abortSignal,
             providerOptions: {
-                deepseek: { reasoningEffort: 'high' as const }
+                deepseek: deepThink
+                    ? {
+                          thinking: { type: 'enabled' as const },
+                          reasoningEffort: 'high' as const
+                      }
+                    : { thinking: { type: 'disabled' as const } }
             }
         })
 
         // 直接消费完整事件流，收到一个模型事件就立即转发一个 IPC 事件。
         for await (const part of result.fullStream) {
+            if (part.type === 'reasoning-start') {
+                thinkingStartedAt ??= Date.now()
+                continue
+            }
             if (part.type === 'reasoning-delta') {
+                thinkingStartedAt ??= Date.now()
                 thinkingText += part.text
                 await emit({ type: 'thinking', content: thinkingText })
                 continue
             }
             if (part.type === 'reasoning-end') {
+                if (thinkingStartedAt !== null) {
+                    thinkingDurationMs += Date.now() - thinkingStartedAt
+                    thinkingStartedAt = null
+                }
                 thinkingForNextMsg = thinkingText
                 thinkingText = ''
                 continue
@@ -265,7 +293,8 @@ async function runConversation(
                             role: 'assistant',
                             content: text,
                             streaming: true,
-                            thinking: thinkingForNextMsg || undefined
+                            thinking: thinkingForNextMsg || undefined,
+                            thinking_duration_ms: thinkingDurationMs || undefined
                         }
                     })
                     if (!firstPhaseThinking && thinkingForNextMsg) {
@@ -335,7 +364,8 @@ async function runConversation(
         await conversationStore.saveMessage(conversationId, userId, 'assistant', fullResponse, {
             finish_reason: 'stop',
             token_count: totalTokens || undefined,
-            thinking: firstPhaseThinking || undefined
+            thinking: firstPhaseThinking || undefined,
+            thinking_duration_ms: thinkingDurationMs || undefined
         })
     }
 
@@ -351,21 +381,21 @@ async function runConversation(
         await conversationStore.updateConversationTitle(conversationId, title, userId)
     }
 
-    try {
-        await distillSoulIfNeeded({
-            userId,
-            threshold: config.memoryDistillationThreshold,
-            model,
-            maxOutputTokens: config.maxTokens
-        })
-    } catch (error: unknown) {
+    // 灵魂记忆提炼属于非关键后台任务，不能阻塞对话完成事件和输入框解锁。
+    void distillSoulIfNeeded({
+        userId,
+        threshold: config.memoryDistillationThreshold,
+        model,
+        maxOutputTokens: config.maxTokens
+    }).catch((error: unknown) => {
         logger.error('AgentMemory', '灵魂记忆自动提炼失败', { error })
-    }
+    })
 
     logger.info('Agent', '模型流式响应结束', {
         durationMs: Date.now() - startedAt,
         assistantMessageLength: fullResponse.length,
         thinkingLength: firstPhaseThinking.length,
+        thinkingDurationMs,
         totalTokens,
         toolResultCount
     })

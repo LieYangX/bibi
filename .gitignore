@@ -27,3 +27,6 @@ last-user.json
 
 # 本地 AI 记忆
 memories/
+
+# 开发微信连接凭证（打包后使用用户数据目录）
+wechat/

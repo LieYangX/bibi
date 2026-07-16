@@ -124,6 +124,7 @@ export async function createImportDraft(
             category_id: categorySelection.categoryId,
             sub_category_id: categorySelection.subCategoryId,
             date: row.date,
+            time: row.time,
             amount_cents: row.amount_cents,
             note: row.note,
             source: {
@@ -200,8 +201,8 @@ export async function confirmImportDraft(
         const insertTransaction = database.prepare(
             `INSERT INTO transactions (
                 id, user_id, type, account_id, category_id, sub_category_id,
-                amount_cents, date, note, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                amount_cents, date, time, note, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         )
 
         for (const item of importableItems) {
@@ -215,6 +216,7 @@ export async function confirmImportDraft(
                 item.sub_category_id,
                 item.amount_cents,
                 item.date,
+                item.time,
                 item.note || null,
                 now,
                 now

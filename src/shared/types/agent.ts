@@ -156,6 +156,7 @@ export interface AgentChatMessage {
     tool_args?: string
     tool_result?: string
     thinking?: string
+    thinking_duration_ms?: number
     created_at: string
 }
 
@@ -185,6 +186,8 @@ export type StreamEventType =
 
 export interface StreamEvent {
     type: StreamEventType
+    /** 事件来源，微信事件会同步到当前桌面会话 */
+    source?: 'desktop' | 'wechat'
     /** 可用于关联本轮智能体对话日志的排查编号 */
     traceId?: string
     content?: string
@@ -203,9 +206,29 @@ export interface StreamEvent {
         tool_used?: string
         streaming?: boolean
         thinking?: string
+        thinking_duration_ms?: number
     }
     /** chunk 事件携带的增量数据 */
     id?: string
+}
+
+/** 智能体回答被用户主动取消时的统一消息 */
+export const AGENT_CHAT_CANCELLED_MESSAGE = '对话已取消'
+
+// ========== 微信渠道 ==========
+
+/** 微信渠道连接阶段 */
+export type WechatConnectionPhase =
+    'disconnected' | 'connecting' | 'awaiting_scan' | 'scanned' | 'connected' | 'error'
+
+/** 微信渠道连接状态 */
+export interface WechatConnectionStatus {
+    userId: string
+    phase: WechatConnectionPhase
+    qrCodeDataUrl?: string
+    conversationId?: string
+    accountId?: string
+    error?: string
 }
 
 // ========== STT 进度事件 ==========
@@ -222,7 +245,11 @@ export interface SttProgressEvent {
 // ========== Agent API 声明 ==========
 
 export interface AgentAPI {
-    chat: (conversationId: string | null, message: string) => Promise<IpcResult<string>>
+    chat: (
+        conversationId: string | null,
+        message: string,
+        deepThink: boolean
+    ) => Promise<IpcResult<string>>
     cancelChat: () => Promise<IpcResult>
     listConversations: (cursor?: ConversationCursor) => Promise<IpcResult<ConversationListPage>>
     deleteConversation: (id: string) => Promise<IpcResult>
@@ -270,6 +297,14 @@ export interface AgentAPI {
     >
     /** 删除已下载的 STT 模型缓存 */
     sttDeleteModel: (modelId: string) => Promise<IpcResult<boolean>>
+    /** 发起微信扫码连接 */
+    connectWechat: () => Promise<IpcResult<WechatConnectionStatus>>
+    /** 断开微信并清除当前用户的连接凭证 */
+    disconnectWechat: () => Promise<IpcResult<WechatConnectionStatus>>
+    /** 获取微信渠道状态，已有凭证时自动恢复消息监听 */
+    getWechatStatus: () => Promise<IpcResult<WechatConnectionStatus>>
+    /** 微信渠道状态事件监听 */
+    onWechatStatus: (callback: (status: WechatConnectionStatus) => void) => () => void
     /** 事件监听（流式） */
     onEvent: (callback: (event: StreamEvent) => void) => () => void
 }

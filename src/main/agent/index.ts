@@ -6,5 +6,6 @@
 export { createModel } from './llm-gateway'
 export { SkillRegistry, skillRegistry } from './skill-registry'
 export { ToolRegistry, toolRegistry } from './tools/registry'
-export { buildSystemPrompt, buildMessages } from './context-builder'
+export { buildSystemPrompt } from './context/system-prompt'
+export { buildMessages } from './context/message-builder'
 export * as conversationStore from './memory/conversation-store'

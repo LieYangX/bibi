@@ -12,6 +12,7 @@ import { processMessage } from '../orchestrator'
 import type { EventEmitter } from '../orchestrator'
 import { skillRegistry } from '../skill-registry'
 import * as conversationStore from '../memory/conversation-store'
+import { AGENT_CHAT_CANCELLED_MESSAGE } from '@shared/types'
 import type { AgentConfig } from '@shared/types'
 import { createTraceId, getLogContext, logger, runWithLogContext } from '../../utils/logger'
 import { summarizeLogValue } from '../../utils/log-sanitizer'
@@ -24,6 +25,8 @@ import {
 } from '../mcp-service'
 import { loadAgentConfig, updateAgentConfig } from '../agent-config'
 import { toolRegistry } from '../tools/registry'
+import { wechatChannelService } from '../wechat-channel.service'
+import type { WebContents } from 'electron'
 
 /** 活跃的智能体对话任务 */
 interface ActiveChat {
@@ -34,6 +37,22 @@ interface ActiveChat {
 
 /** 活跃的处理任务，用于取消 */
 const activeChats = new Map<string, ActiveChat>()
+const wechatRenderers = new Map<string, WebContents>()
+
+/**
+ * 记录负责接收指定用户微信事件的渲染进程
+ *
+ * @param userId 用户 ID
+ * @param sender 渲染进程
+ * @author xiangwei
+ */
+function rememberWechatRenderer(userId: string, sender: WebContents): void {
+    if (wechatRenderers.get(userId) === sender) return
+    wechatRenderers.set(userId, sender)
+    sender.once('destroyed', () => {
+        if (wechatRenderers.get(userId) === sender) wechatRenderers.delete(userId)
+    })
+}
 
 /**
  * 取消指定用户的全部活跃对话
@@ -86,12 +105,23 @@ export function registerAgentIpc(): void {
         logger.error('SkillRegistry', '启动时初始化 Skill 失败', { error })
     })
 
+    wechatChannelService.onStatus((status) => {
+        const sender = wechatRenderers.get(status.userId)
+        if (!sender || sender.isDestroyed()) return
+        sender.send(IPC_CHANNELS.agent.wechatStatus, status)
+    })
+    wechatChannelService.onAgentEvent((userId, streamEvent) => {
+        const sender = wechatRenderers.get(userId)
+        if (!sender || sender.isDestroyed()) return
+        sender.send(IPC_CHANNELS.agent.event, streamEvent)
+    })
+
     // 流式对话通过 invoke 初始化，并使用 event.sender.send 推流
     registerUserIpcHandler(
         IPC_CHANNELS.agent.chat,
         IPC_SCHEMAS.agent.chat,
         '发送消息失败',
-        async (userId, event, conversationId, message) => {
+        async (userId, event, conversationId, message, deepThink) => {
             // 取消该用户上次未完成的流，防止竞态
             cancelUserChats(userId)
 
@@ -127,6 +157,7 @@ export function registerAgentIpc(): void {
                     const startedAt = Date.now()
                     logger.info('Agent', '接收智能体对话请求', {
                         requestedConversationId: conversationId,
+                        deepThink,
                         message: summarizeLogValue(message)
                     })
                     try {
@@ -134,6 +165,7 @@ export function registerAgentIpc(): void {
                             conversationId,
                             message,
                             userId,
+                            deepThink,
                             sendEvent,
                             chat.controller.signal
                         )
@@ -145,7 +177,7 @@ export function registerAgentIpc(): void {
                     } catch (error: unknown) {
                         const cancelled = chat.controller.signal.aborted
                         const errorMessage = cancelled
-                            ? '对话已取消'
+                            ? AGENT_CHAT_CANCELLED_MESSAGE
                             : error instanceof Error
                               ? error.message
                               : '处理失败'
@@ -175,7 +207,43 @@ export function registerAgentIpc(): void {
         IPC_CHANNELS.agent.cancelChat,
         IPC_SCHEMAS.none,
         '取消失败',
-        async (userId) => cancelUserChats(userId)
+        async (userId) => {
+            cancelUserChats(userId)
+            wechatChannelService.cancelActiveResponse(userId)
+        }
+    )
+
+    // 发起微信扫码连接
+    registerUserIpcHandler(
+        IPC_CHANNELS.agent.connectWechat,
+        IPC_SCHEMAS.agent.connectWechat,
+        '连接微信失败',
+        async (userId, event) => {
+            rememberWechatRenderer(userId, event.sender)
+            return wechatChannelService.connect(userId)
+        }
+    )
+
+    // 断开微信连接
+    registerUserIpcHandler(
+        IPC_CHANNELS.agent.disconnectWechat,
+        IPC_SCHEMAS.agent.disconnectWechat,
+        '断开微信失败',
+        async (userId, event) => {
+            rememberWechatRenderer(userId, event.sender)
+            return wechatChannelService.disconnect(userId)
+        }
+    )
+
+    // 获取微信连接状态并恢复已有连接
+    registerUserIpcHandler(
+        IPC_CHANNELS.agent.getWechatStatus,
+        IPC_SCHEMAS.agent.getWechatStatus,
+        '获取微信连接状态失败',
+        async (userId, event) => {
+            rememberWechatRenderer(userId, event.sender)
+            return wechatChannelService.getStatus(userId)
+        }
     )
 
     // 列出会话

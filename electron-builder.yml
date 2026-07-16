@@ -30,6 +30,7 @@ files:
     - '!last-user.json'
     - '!skills/**'
     - '!memories/**'
+    - '!wechat/**'
     # 打包中间产物
     - '!dist/**'
     # better-sqlite3 运行时不需要 C++ 源码与构建脚本

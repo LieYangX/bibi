@@ -104,11 +104,17 @@ describe('IPC 参数契约', () => {
     })
 
     it('限制 Agent 消息、语音模型和音频缓冲区', () => {
-        expect(IPC_SCHEMAS.agent.chat.parse([null, '帮我分析本月支出'])).toEqual([
+        expect(IPC_SCHEMAS.agent.connectWechat.parse([])).toEqual([])
+        expect(IPC_SCHEMAS.agent.disconnectWechat.parse([])).toEqual([])
+        expect(IPC_SCHEMAS.agent.getWechatStatus.parse([])).toEqual([])
+        expect(() => IPC_SCHEMAS.agent.connectWechat.parse(['unexpected'])).toThrow()
+        expect(IPC_SCHEMAS.agent.chat.parse([null, '帮我分析本月支出', false])).toEqual([
             null,
-            '帮我分析本月支出'
+            '帮我分析本月支出',
+            false
         ])
-        expect(() => IPC_SCHEMAS.agent.chat.parse([null, '   '])).toThrow()
+        expect(() => IPC_SCHEMAS.agent.chat.parse([null, '帮我分析本月支出'])).toThrow()
+        expect(() => IPC_SCHEMAS.agent.chat.parse([null, '   ', true])).toThrow()
         expect(() => IPC_SCHEMAS.agent.sttDeleteModel.parse(['../../documents'])).toThrow()
         expect(() => IPC_SCHEMAS.agent.transcribeAudio.parse([new ArrayBuffer(3)])).toThrow()
         expect(IPC_SCHEMAS.agent.sttDownloadModel.parse(['Xenova/whisper-base'])).toEqual([

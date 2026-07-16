@@ -29,6 +29,7 @@ export const createTransactionTool = tool({
             .describe('二级分类名称，如"午餐"、"打车"（如有二级分类时填写）'),
         amount_cents: z.number().int().positive().describe('金额（单位：分），如 3500 表示 35 元'),
         date: z.string().describe('日期，格式 YYYY-MM-DD'),
+        time: z.string().optional().describe('时间，格式 HH:mm（如 14:30）。未提供时记为 null'),
         note: z.string().optional().describe('备注说明')
     }),
     execute: async (input) => {
@@ -104,6 +105,7 @@ export const createTransactionTool = tool({
                     sub_category_id: subCategoryId ?? null,
                     amount_cents: input.amount_cents,
                     date: input.date,
+                    time: input.time ?? null,
                     note: input.note ?? null
                 },
                 userId
@@ -124,8 +126,9 @@ export const createTransactionTool = tool({
                 account: input.account_name,
                 amount: `¥${amountYuan}`,
                 date: transaction.date,
+                time: transaction.time,
                 note: transaction.note,
-                formatted: `✅ 已记录${typeMap[transaction.type] || transaction.type}：${input.account_name} ¥${amountYuan}（${transaction.date}）${transaction.note ? ` - ${transaction.note}` : ''}`
+                formatted: `✅ 已记录${typeMap[transaction.type] || transaction.type}：${input.account_name} ¥${amountYuan}（${transaction.date}${transaction.time ? ` ${transaction.time}` : ''}）${transaction.note ? ` - ${transaction.note}` : ''}`
             }
         } catch (error) {
             return {

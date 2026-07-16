@@ -12,6 +12,9 @@ import { registerIpcHandlers } from '../ipc'
 import { createMainWindow } from '../windows/main-window'
 import { getLogDirectoryInfo, logger } from '../utils/logger'
 import { resetModel } from '../services/stt.service'
+import { wechatChannelService } from '../agent/wechat-channel.service'
+import { getCurrentUserId } from '../services/session.service'
+import { userExists } from '../services/user.service'
 
 const APP_ID = 'com.personal.bibi'
 const STARTUP_ERROR_TITLE = '笔笔启动失败'
@@ -111,6 +114,33 @@ function handleActivate(): void {
 }
 
 /**
+ * 恢复上次登录用户保存的微信连接
+ *
+ * 微信连接失败不阻断应用启动，用户仍可进入小笔页面重新扫码。
+ *
+ * @author xiangwei
+ */
+async function restoreLastWechatConnection(): Promise<void> {
+    const userId = await getCurrentUserId()
+    if (!userId || !(await userExists(userId))) return
+
+    try {
+        const status = await wechatChannelService.getStatus(userId)
+        if (status.phase === 'connected') {
+            logger.info('Bootstrap', '已恢复上次微信连接', {
+                userId,
+                conversationId: status.conversationId
+            })
+        }
+    } catch (error: unknown) {
+        logger.warn('Bootstrap', '恢复上次微信连接失败', {
+            userId,
+            error: getErrorMessage(error)
+        })
+    }
+}
+
+/**
  * 初始化应用运行环境
  *
  * @author xiangwei
@@ -146,6 +176,7 @@ async function initializeApplication(): Promise<void> {
         return
     }
 
+    await restoreLastWechatConnection()
     registerIpcHandlers()
 
     try {
@@ -176,6 +207,7 @@ export function bootstrapApplication(): void {
     app.on('second-instance', focusMainWindow)
     app.on('before-quit', () => {
         logger.info('Bootstrap', '应用即将退出')
+        wechatChannelService.stopAll()
         resetModel()
         closeDatabase()
     })

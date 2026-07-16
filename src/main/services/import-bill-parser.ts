@@ -13,6 +13,7 @@ export interface ParsedBillRow {
     default_included: boolean
     exclusion_reason: string | null
     date: string
+    time: string | null
     amount_cents: number
     note: string
     source_category: string
@@ -122,11 +123,13 @@ export function parseBillRecords(records: BillRecord[], source: ImportSource): P
     const parsedRows: ParsedBillRow[] = []
 
     for (const row of records.slice(header.rowIndex + 1)) {
-        const date = normalizeDate(readField(row, header.indexes.date))
+        const rawDate = readField(row, header.indexes.date)
+        const date = normalizeDate(rawDate)
+        const time = normalizeTime(rawDate)
         const amountCents = parseAmountCents(readField(row, header.indexes.amount))
         if (!date || amountCents === null) continue
 
-        parsedRows.push(parseDataRow(row, header.indexes, source, date, amountCents))
+        parsedRows.push(parseDataRow(row, header.indexes, source, date, time, amountCents))
     }
 
     return parsedRows
@@ -148,6 +151,7 @@ function parseDataRow(
     indexes: HeaderLocation['indexes'],
     source: ImportSource,
     date: string,
+    time: string | null,
     amountCents: number
 ): ParsedBillRow {
     const sourceDirection = readText(row, indexes.direction, 50)
@@ -178,6 +182,7 @@ function parseDataRow(
         default_included: type !== 'skip',
         exclusion_reason: exclusionReason,
         date,
+        time,
         amount_cents: amountCents,
         note: buildNote(row, indexes),
         source_category: sourceCategory,
@@ -361,6 +366,31 @@ function normalizeDate(rawDate: BillCell): string | null {
     const match = cleanCell(rawDate).match(/(\d{4})[-/.年](\d{1,2})[-/.月](\d{1,2})/u)
     if (!match) return null
     return formatDate(Number(match[1]), Number(match[2]), Number(match[3]))
+}
+
+/**
+ * 从账单日期时间单元格中提取 HH:mm 时间部分
+ *
+ * @param rawDate 原始日期时间
+ * @returns 标准时间 HH:mm，无时间信息时返回 null
+ * @author xiangwei
+ */
+function normalizeTime(rawDate: BillCell): string | null {
+    if (rawDate instanceof Date) {
+        if (Number.isNaN(rawDate.getTime())) return null
+        const hour = String(rawDate.getHours()).padStart(2, '0')
+        const minute = String(rawDate.getMinutes()).padStart(2, '0')
+        return `${hour}:${minute}`
+    }
+    if (rawDate === null) return null
+
+    // 从字符串中提取 HH:mm 时间部分（日期部分用 - / . 年月日 分隔，不会与冒号冲突）
+    const match = cleanCell(rawDate).match(/(\d{1,2}):(\d{2})/u)
+    if (!match) return null
+    const hour = Number(match[1])
+    const minute = Number(match[2])
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null
+    return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
 }
 
 /**

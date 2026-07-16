@@ -10,11 +10,11 @@ import type { AgentToolInfo } from '@shared/types'
 import { getPersistedCurrentUserId, runWithBoundUserId } from '../../services/session.service'
 import { logger } from '../../utils/logger'
 import { summarizeLogValue } from '../../utils/log-sanitizer'
-import * as dataQueryTools from './data-query'
-import * as calculatorTools from './calculator'
-import * as analysisTools from './analysis'
-import * as transactionTools from './transaction-write'
-import { createRuntimeTools, getRuntimeToolInfos } from './runtime-tools'
+import * as dataQueryTools from '../capabilities/data-query'
+import * as calculatorTools from '../capabilities/calculator'
+import * as analysisTools from '../capabilities/analysis'
+import * as transactionTools from '../capabilities/transaction-write'
+import { createRuntimeTools, getRuntimeToolInfos } from '../runtime'
 
 /** 工具分组定义 */
 interface ToolGroupDefinition {
@@ -27,6 +27,12 @@ interface RegisteredTool {
     name: string
     group: string
     tool: Tool
+}
+
+/** 工具分组展示信息，用于系统提示词 */
+export interface ToolGroupInfo {
+    label: string
+    tools: { name: string; description: string }[]
 }
 
 const TOOL_GROUPS: ToolGroupDefinition[] = [
@@ -81,6 +87,41 @@ export class ToolRegistry {
             }
         })
         return [...getRuntimeToolInfos(), ...businessTools]
+    }
+
+    /**
+     * 获取按分组组织的工具用途说明，用于系统提示词展示
+     *
+     * @returns 分组工具信息
+     * @author xiangwei
+     */
+    getGroupedToolInfos(): ToolGroupInfo[] {
+        const groupLabels: Record<string, string> = {
+            'data-query': '数据查询',
+            calculator: '数学计算',
+            analysis: '消费分析',
+            transaction: '记账操作'
+        }
+        const groups: ToolGroupInfo[] = []
+        for (const [groupKey, label] of Object.entries(groupLabels)) {
+            const tools = this.registeredTools
+                .filter((registered) => registered.group === groupKey)
+                .map(({ name, tool: rawTool }) => ({
+                    name,
+                    description: (rawTool as Tool & { description?: string }).description ?? ''
+                }))
+            if (tools.length > 0) {
+                groups.push({ label, tools })
+            }
+        }
+        groups.push({
+            label: '运行时',
+            tools: getRuntimeToolInfos().map((info) => ({
+                name: info.name,
+                description: info.description
+            }))
+        })
+        return groups
     }
 
     /**

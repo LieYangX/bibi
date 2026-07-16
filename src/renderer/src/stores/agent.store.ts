@@ -23,9 +23,13 @@ import type {
     McpServerInput,
     SkillMeta,
     SkillDetail,
-    StreamEvent
+    StreamEvent,
+    WechatConnectionStatus
 } from '@shared/types'
-import { DEFAULT_MEMORY_DISTILLATION_THRESHOLD } from '../../../shared/types/agent'
+import {
+    AGENT_CHAT_CANCELLED_MESSAGE,
+    DEFAULT_MEMORY_DISTILLATION_THRESHOLD
+} from '../../../shared/types/agent'
 import {
     captureUserRequestGeneration,
     isUserRequestCurrent
@@ -43,6 +47,13 @@ export interface AgentMsg {
     toolArgs?: string
     isStreaming?: boolean
     thinking?: string
+    thinkingDurationMs?: number
+}
+
+/** 等待发送的智能体消息 */
+export interface QueuedAgentMessage {
+    id: string
+    content: string
 }
 
 let _seq = 0
@@ -82,8 +93,13 @@ export const useAgentStore = defineStore('agent', () => {
     const currentConversationId = ref<string | null>(null)
     const messages = ref<AgentMsg[]>([])
     const isProcessing = ref(false)
+    /** 是否仍在等待本轮首个可见响应 */
+    const isAwaitingResponse = ref(false)
+    const isStopping = ref(false)
+    const queuedMessages = ref<QueuedAgentMessage[]>([])
     const currentThinking = ref('')
     const deepThink = ref(false)
+    const wechatStatus = ref<WechatConnectionStatus | null>(null)
     const loading = ref(false)
     const error = ref<string | null>(null)
     const isLoadingMessages = ref(false)
@@ -98,8 +114,12 @@ export const useAgentStore = defineStore('agent', () => {
     const hasConfig = computed(() => !!config.value.apiKey && config.value.enabled)
 
     let cleanupListener: (() => void) | null = null
+    let cleanupWechatStatusListener: (() => void) | null = null
     let initializeRequestId = 0
     let conversationRequestId = 0
+    let priorityQueuedMessage: QueuedAgentMessage | null = null
+    let queueDispatchScheduled = false
+    let activatingWechatConversationId: string | null = null
 
     /**
      * 持久化工具调用次数到后端
@@ -112,20 +132,62 @@ export const useAgentStore = defineStore('agent', () => {
     }
 
     /**
+     * 结束当前流式处理状态
+     * @author xiangwei
+     */
+    function finishStreamProcessing(): void {
+        for (const message of messages.value) {
+            if (message.isStreaming) message.isStreaming = false
+        }
+        isProcessing.value = false
+        isAwaitingResponse.value = false
+        isStopping.value = false
+        currentThinking.value = ''
+    }
+
+    /**
      * 处理主进程推送的流式事件
      *
      * @param event 流式事件
      * @author xiangwei
      */
     function handleStreamEvent(event: StreamEvent): void {
+        if (
+            event.source === 'wechat' &&
+            event.conversationId &&
+            event.conversationId !== currentConversationId.value
+        ) {
+            if (event.type === 'done' || event.type === 'error') {
+                void refreshConversationList()
+            }
+            return
+        }
+
         switch (event.type) {
             case 'message': {
                 const message = event.message
-                if (!message || message.role === 'user') break
+                if (!message) break
+                if (message.role === 'user') {
+                    if (event.source !== 'wechat') break
+                    isProcessing.value = true
+                    isAwaitingResponse.value = true
+                    const existingUserMessage = messages.value.find(
+                        (item) => item.id === message.id
+                    )
+                    if (!existingUserMessage) {
+                        messages.value.push({
+                            id: message.id,
+                            role: 'user',
+                            content: message.content || ''
+                        })
+                    }
+                    break
+                }
                 const existing = messages.value.find((item) => item.id === message.id)
                 if (existing) {
                     existing.content = message.content || ''
                     existing.toolName = message.tool_used
+                    existing.thinkingDurationMs = message.thinking_duration_ms
                 } else {
                     messages.value.push({
                         id: message.id,
@@ -133,8 +195,12 @@ export const useAgentStore = defineStore('agent', () => {
                         content: message.content || '',
                         toolName: message.tool_used,
                         isStreaming: message.streaming ?? false,
-                        thinking: deepThink.value ? message.thinking || undefined : undefined
+                        thinking: deepThink.value ? message.thinking || undefined : undefined,
+                        thinkingDurationMs: message.thinking_duration_ms
                     })
+                }
+                if (message.role === 'assistant' && message.content) {
+                    isAwaitingResponse.value = false
                 }
                 if (message.role === 'tool' && message.tool_used) {
                     const name = message.tool_used
@@ -146,34 +212,42 @@ export const useAgentStore = defineStore('agent', () => {
             case 'chunk': {
                 if (!event.content || !event.id) break
                 const target = messages.value.find((item) => item.id === event.id)
-                if (target) target.content += event.content
+                if (target) {
+                    target.content += event.content
+                    isAwaitingResponse.value = false
+                }
                 break
             }
             case 'thinking':
+                if (event.source === 'wechat') {
+                    isProcessing.value = true
+                    isAwaitingResponse.value = true
+                }
                 currentThinking.value = event.content || ''
+                currentConversationId.value = event.conversationId || currentConversationId.value
                 break
             case 'done':
-                for (const message of messages.value) {
-                    if (message.isStreaming) message.isStreaming = false
-                }
-                isProcessing.value = false
+                finishStreamProcessing()
                 currentConversationId.value = event.conversationId || currentConversationId.value
                 void refreshConversationList()
+                scheduleQueuedMessageDispatch()
                 break
             case 'error': {
-                const errorMessage = formatStreamError(event)
-                const lastMessage = messages.value.at(-1)
-                if (lastMessage?.role === 'assistant') {
-                    lastMessage.content += `\n\n${errorMessage}`
-                    lastMessage.isStreaming = false
-                } else {
-                    messages.value.push({
-                        id: uid(),
-                        role: 'assistant',
-                        content: errorMessage
-                    })
+                if (event.error !== AGENT_CHAT_CANCELLED_MESSAGE) {
+                    const errorMessage = formatStreamError(event)
+                    const lastMessage = messages.value.at(-1)
+                    if (lastMessage?.role === 'assistant') {
+                        lastMessage.content += `\n\n${errorMessage}`
+                    } else {
+                        messages.value.push({
+                            id: uid(),
+                            role: 'assistant',
+                            content: errorMessage
+                        })
+                    }
                 }
-                isProcessing.value = false
+                finishStreamProcessing()
+                scheduleQueuedMessageDispatch()
                 break
             }
         }
@@ -187,6 +261,55 @@ export const useAgentStore = defineStore('agent', () => {
     function ensureStreamListener(): void {
         if (cleanupListener) return
         cleanupListener = desktopApi.agent.onEvent(handleStreamEvent)
+    }
+
+    /**
+     * 处理微信渠道连接状态
+     *
+     * @param status 微信连接状态
+     * @author xiangwei
+     */
+    function handleWechatStatus(status: WechatConnectionStatus): void {
+        if (wechatStatus.value && wechatStatus.value.userId !== status.userId) return
+        wechatStatus.value = status
+        if (status.phase === 'connected' && status.conversationId) {
+            void activateWechatConversation(status.conversationId)
+        }
+    }
+
+    /**
+     * 确保微信状态监听在 Store 生命周期内持续存在
+     *
+     * @author xiangwei
+     */
+    function ensureWechatStatusListener(): void {
+        if (cleanupWechatStatusListener) return
+        cleanupWechatStatusListener = desktopApi.agent.onWechatStatus(handleWechatStatus)
+    }
+
+    /**
+     * 刷新会话列表并进入微信专属会话
+     *
+     * @param conversationId 微信会话 ID
+     * @author xiangwei
+     */
+    async function activateWechatConversation(conversationId: string): Promise<void> {
+        if (
+            activatingWechatConversationId === conversationId ||
+            currentConversationId.value === conversationId ||
+            isProcessing.value
+        ) {
+            return
+        }
+        activatingWechatConversationId = conversationId
+        try {
+            await refreshConversationList()
+            await loadConversation(conversationId)
+        } finally {
+            if (activatingWechatConversationId === conversationId) {
+                activatingWechatConversationId = null
+            }
+        }
     }
 
     /**
@@ -262,19 +385,28 @@ export const useAgentStore = defineStore('agent', () => {
      */
     async function initialize(): Promise<void> {
         ensureStreamListener()
+        ensureWechatStatusListener()
         const requestId = ++initializeRequestId
         const generation = captureUserRequestGeneration()
         loading.value = true
         error.value = null
-        const [configResult, localToolsResult, skillsResult, convResult, countsResult, mcpResult] =
-            await Promise.all([
-                desktopApi.agent.getConfig(),
-                desktopApi.agent.listLocalTools(),
-                desktopApi.agent.listSkills(),
-                desktopApi.agent.listConversations(),
-                desktopApi.agent.getToolCallCounts(),
-                desktopApi.agent.listMcpServers()
-            ])
+        const [
+            configResult,
+            localToolsResult,
+            skillsResult,
+            convResult,
+            countsResult,
+            mcpResult,
+            wechatResult
+        ] = await Promise.all([
+            desktopApi.agent.getConfig(),
+            desktopApi.agent.listLocalTools(),
+            desktopApi.agent.listSkills(),
+            desktopApi.agent.listConversations(),
+            desktopApi.agent.getToolCallCounts(),
+            desktopApi.agent.listMcpServers(),
+            desktopApi.agent.getWechatStatus()
+        ])
         if (requestId !== initializeRequestId || !isUserRequestCurrent(generation)) return
 
         if (configResult.ok) config.value = configResult.data
@@ -288,6 +420,7 @@ export const useAgentStore = defineStore('agent', () => {
             toolCallCounts.value = countsResult.data || {}
         }
         if (mcpResult.ok) mcpServers.value = mcpResult.data
+        if (wechatResult.ok) handleWechatStatus(wechatResult.data)
         const failedResult = [
             configResult,
             localToolsResult,
@@ -301,6 +434,33 @@ export const useAgentStore = defineStore('agent', () => {
     }
 
     /**
+     * 发起微信扫码连接
+     *
+     * @returns 是否成功发起
+     * @author xiangwei
+     */
+    async function connectWechat(): Promise<boolean> {
+        ensureWechatStatusListener()
+        const result = await desktopApi.agent.connectWechat()
+        if (!result.ok) return false
+        handleWechatStatus(result.data)
+        return true
+    }
+
+    /**
+     * 断开微信渠道
+     *
+     * @returns 是否断开成功
+     * @author xiangwei
+     */
+    async function disconnectWechat(): Promise<boolean> {
+        const result = await desktopApi.agent.disconnectWechat()
+        if (!result.ok) return false
+        handleWechatStatus(result.data)
+        return true
+    }
+
+    /**
      * 发送消息（流式）
      *
      * 后端事件流：
@@ -308,25 +468,146 @@ export const useAgentStore = defineStore('agent', () => {
      *
      * @author xiangwei
      */
-    async function sendMessage(message: string): Promise<void> {
-        if (!message.trim() || isProcessing.value) return
+    async function sendMessage(message: string): Promise<boolean> {
+        if (!message.trim() || isProcessing.value) return false
 
         ensureStreamListener()
         isProcessing.value = true
+        isAwaitingResponse.value = true
         currentThinking.value = ''
 
         // 本地先添加用户消息（即时反馈，后端也会发但会跳过）
         messages.value.push({ id: uid(), role: 'user', content: message })
 
-        const result = await desktopApi.agent.chat(currentConversationId.value, message)
+        try {
+            const result = await desktopApi.agent.chat(
+                currentConversationId.value,
+                message,
+                deepThink.value
+            )
+            if (result.ok) return true
 
-        if (!result.ok) {
             messages.value.push({
                 id: uid(),
                 role: 'assistant',
                 content: `❌ ${result.error || '发送失败'}`
             })
             isProcessing.value = false
+            isAwaitingResponse.value = false
+            return false
+        } catch {
+            messages.value.push({
+                id: uid(),
+                role: 'assistant',
+                content: '❌ 发送失败，请重试'
+            })
+            isProcessing.value = false
+            isAwaitingResponse.value = false
+            return false
+        }
+    }
+
+    /**
+     * 将消息加入等待队列
+     *
+     * @param message 待发送内容
+     * @returns 队列消息 ID，空内容返回 null
+     * @author xiangwei
+     */
+    function enqueueMessage(message: string): string | null {
+        const content = message.trim()
+        if (!content) return null
+        const id = uid()
+        queuedMessages.value.push({ id, content })
+        return id
+    }
+
+    /**
+     * 删除等待队列中的消息
+     *
+     * @param id 队列消息 ID
+     * @returns 是否删除成功
+     * @author xiangwei
+     */
+    function removeQueuedMessage(id: string): boolean {
+        const index = queuedMessages.value.findIndex((message) => message.id === id)
+        if (index < 0) return false
+        queuedMessages.value.splice(index, 1)
+        return true
+    }
+
+    /**
+     * 停止当前智能体回答
+     *
+     * @returns 是否成功发起停止请求
+     * @author xiangwei
+     */
+    async function stopResponse(): Promise<boolean> {
+        if (!isProcessing.value || isStopping.value) return false
+        isStopping.value = true
+        try {
+            const result = await desktopApi.agent.cancelChat()
+            if (result.ok) return true
+        } catch {
+            // 统一在下方恢复停止状态
+        }
+        isStopping.value = false
+        return false
+    }
+
+    /**
+     * 使用指定队列消息引导当前回答
+     *
+     * @param id 队列消息 ID
+     * @returns 是否成功发起引导
+     * @author xiangwei
+     */
+    async function guideQueuedMessage(id: string): Promise<boolean> {
+        if (priorityQueuedMessage || isStopping.value) return false
+        const index = queuedMessages.value.findIndex((message) => message.id === id)
+        if (index < 0) return false
+        const [message] = queuedMessages.value.splice(index, 1)
+
+        if (!isProcessing.value) {
+            const sent = await sendMessage(message.content)
+            if (!sent) queuedMessages.value.splice(index, 0, message)
+            return sent
+        }
+
+        priorityQueuedMessage = message
+        const stopped = await stopResponse()
+        if (!stopped) {
+            priorityQueuedMessage = null
+            queuedMessages.value.splice(index, 0, message)
+        }
+        return stopped
+    }
+
+    /**
+     * 调度下一条队列消息
+     * @author xiangwei
+     */
+    function scheduleQueuedMessageDispatch(): void {
+        if (queueDispatchScheduled) return
+        queueDispatchScheduled = true
+        queueMicrotask(() => {
+            queueDispatchScheduled = false
+            void dispatchQueuedMessage()
+        })
+    }
+
+    /**
+     * 发送引导消息或普通队首消息
+     * @author xiangwei
+     */
+    async function dispatchQueuedMessage(): Promise<void> {
+        if (isProcessing.value) return
+        const nextMessage = priorityQueuedMessage ?? queuedMessages.value.shift()
+        priorityQueuedMessage = null
+        if (!nextMessage) return
+
+        if (!(await sendMessage(nextMessage.content))) {
+            queuedMessages.value.unshift(nextMessage)
         }
     }
 
@@ -334,6 +615,9 @@ export const useAgentStore = defineStore('agent', () => {
         if (isProcessing.value) return
         currentConversationId.value = null
         messages.value = []
+        queuedMessages.value = []
+        priorityQueuedMessage = null
+        isAwaitingResponse.value = false
         currentThinking.value = ''
         nextMessageCursor.value = null
         messageError.value = null
@@ -352,7 +636,8 @@ export const useAgentStore = defineStore('agent', () => {
             role: message.role === 'tool' ? 'tool' : message.role === 'user' ? 'user' : 'assistant',
             content: message.content,
             toolName: message.tool_used,
-            thinking: message.thinking
+            thinking: message.thinking,
+            thinkingDurationMs: message.thinking_duration_ms
         }))
     }
 
@@ -624,6 +909,10 @@ export const useAgentStore = defineStore('agent', () => {
             cleanupListener()
             cleanupListener = null
         }
+        if (cleanupWechatStatusListener) {
+            cleanupWechatStatusListener()
+            cleanupWechatStatusListener = null
+        }
     }
 
     /**
@@ -646,7 +935,14 @@ export const useAgentStore = defineStore('agent', () => {
         currentConversationId.value = null
         messages.value = []
         isProcessing.value = false
+        isAwaitingResponse.value = false
+        isStopping.value = false
+        queuedMessages.value = []
+        priorityQueuedMessage = null
+        queueDispatchScheduled = false
         currentThinking.value = ''
+        wechatStatus.value = null
+        activatingWechatConversationId = null
         toolCallCounts.value = {}
         loading.value = false
         error.value = null
@@ -668,8 +964,12 @@ export const useAgentStore = defineStore('agent', () => {
         messages,
         toolCallCounts,
         isProcessing,
+        isAwaitingResponse,
+        isStopping,
+        queuedMessages,
         currentThinking,
         deepThink,
+        wechatStatus,
         loading,
         error,
         isLoadingMessages,
@@ -682,6 +982,12 @@ export const useAgentStore = defineStore('agent', () => {
         initialize,
         loadMoreConversations,
         sendMessage,
+        connectWechat,
+        disconnectWechat,
+        enqueueMessage,
+        removeQueuedMessage,
+        stopResponse,
+        guideQueuedMessage,
         newConversation,
         loadConversation,
         loadOlderMessages,

@@ -1,0 +1,1 @@
+ALTER TABLE `agent_messages` ADD `thinking_duration_ms` integer;

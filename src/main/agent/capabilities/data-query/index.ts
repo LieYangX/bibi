@@ -3,6 +3,8 @@
  * @author xiangwei
  */
 
+import skillMarkdown from './SKILL.md?raw'
+
 export { queryMonthlySummaryTool } from './tools/query-monthly-summary.tool'
 export { queryYearlySummaryTool } from './tools/query-yearly-summary.tool'
 export { queryTransactionsTool } from './tools/query-transactions.tool'
@@ -12,3 +14,5 @@ export { queryBudgetProgressTool } from './tools/query-budget-progress.tool'
 export { queryCategorySummaryTool } from './tools/query-category-summary.tool'
 export { queryAllAccountsTool } from './tools/query-all-accounts.tool'
 export { queryAllCategoriesTool } from './tools/query-all-categories.tool'
+
+export { skillMarkdown }

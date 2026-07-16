@@ -3,7 +3,11 @@
  * @author xiangwei
  */
 
+import skillMarkdown from './SKILL.md?raw'
+
 export { evaluateTool } from './tools/evaluate.tool'
 export { summarizeTool } from './tools/summarize.tool'
 export { compareValuesTool } from './tools/compare-values.tool'
 export { convertCentsToYuanTool } from './tools/convert-cents-to-yuan.tool'
+
+export { skillMarkdown }

@@ -48,6 +48,7 @@ export const agentMessages = sqliteTable(
         skill_used: text('skill_used'),
         tool_used: text('tool_used'),
         thinking: text('thinking'),
+        thinking_duration_ms: integer('thinking_duration_ms'),
         token_count: integer('token_count'),
         created_at: text('created_at')
             .notNull()
@@ -161,6 +162,7 @@ export const transactions = sqliteTable(
         sub_category_id: text('sub_category_id').references(() => subCategories.id),
         amount_cents: integer('amount_cents').notNull(),
         date: text('date').notNull(),
+        time: text('time'),
         note: text('note'),
         transfer_pair_id: text('transfer_pair_id'),
         is_deleted: integer('is_deleted').notNull().default(0),

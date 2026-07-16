@@ -27,6 +27,7 @@ export interface ImportDraftItem {
     category_id: string | null
     sub_category_id: string | null
     date: string
+    time: string | null
     amount_cents: number
     note: string
     state: ImportRowState

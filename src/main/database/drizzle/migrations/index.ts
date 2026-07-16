@@ -43,6 +43,9 @@ const LEGACY_MIGRATION_COLUMNS: Record<string, Record<string, string[]>> = {
             'updated_at',
             'model'
         ]
+    },
+    '0004_add_thinking_duration': {
+        agent_messages: ['id', 'conversation_id', 'role', 'content', 'thinking_duration_ms']
     }
 }
 

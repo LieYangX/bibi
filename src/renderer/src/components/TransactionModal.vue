@@ -102,8 +102,15 @@
                 <div class="form-row">
                     <div class="form-row__icon"><Calendar :size="16" /></div>
                     <div class="form-row__body">
-                        <div class="form-row__label">日期</div>
-                        <BbDatePicker v-model="formData.date" placeholder="选择日期" />
+                        <div class="form-row__label">日期时间</div>
+                        <div class="datetime-row">
+                            <BbDatePicker v-model="formData.date" placeholder="选择日期" />
+                            <BbTimePicker
+                                v-model="formData.time"
+                                placeholder="时间"
+                                width="110px"
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -145,7 +152,7 @@ import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { useAccountStore } from '../stores/account.store'
 import { useCategoryStore } from '../stores/category.store'
 import { useTransactionStore } from '../stores/transaction.store'
-import { BbModal, BbCascader, BbSelect, BbDatePicker, Message } from './ui'
+import { BbModal, BbCascader, BbSelect, BbDatePicker, BbTimePicker, Message } from './ui'
 import {
     Shield,
     ArrowLeftRight,
@@ -160,7 +167,7 @@ import {
 import type { Component } from 'vue'
 import type { CreateTransactionDTO, TransactionType, UpdateTransactionDTO } from '@shared/types'
 import type { Transaction } from '@shared/types'
-import { formatLocalDate } from '../utils/date'
+import { formatLocalDate, formatLocalTime } from '../utils/date'
 
 const props = defineProps<{ visible: boolean; editTransaction?: Transaction | null }>()
 const emit = defineEmits<{
@@ -184,6 +191,7 @@ const formData = reactive<{
     target_account_id: string
     amount_cents: number
     date: string
+    time: string
     note: string
 }>({
     type: 'expense',
@@ -191,6 +199,7 @@ const formData = reactive<{
     target_account_id: '',
     amount_cents: 0,
     date: formatLocalDate(),
+    time: '',
     note: ''
 })
 const amountDisplay = ref('')
@@ -243,6 +252,7 @@ watch(
             formData.target_account_id = edit.target_account_id || ''
             formData.amount_cents = edit.amount_cents
             formData.date = edit.date
+            formData.time = edit.time || ''
             formData.note = edit.note || ''
             amountDisplay.value = (edit.amount_cents / 100).toLocaleString('zh-CN', {
                 minimumFractionDigits: 2,
@@ -264,6 +274,7 @@ watch(
             amountDisplay.value = ''
             categoryPath.value = []
             formData.date = formatLocalDate()
+            formData.time = formatLocalTime()
         }
         await Promise.all([accountStore.loadAccounts(), categoryStore.loadCategories(true)])
         const d = accountStore.accounts.find((a) => a.is_default)
@@ -330,6 +341,7 @@ async function handleSave(): Promise<void> {
                 account_id: formData.account_id,
                 amount_cents: formData.amount_cents,
                 date: formData.date || formatLocalDate(),
+                time: formData.time || null,
                 note: formData.note || null
             }
             if (formData.type === 'transfer') {
@@ -355,6 +367,7 @@ async function handleSave(): Promise<void> {
                 account_id: formData.account_id,
                 amount_cents: formData.amount_cents,
                 date: formData.date || formatLocalDate(),
+                time: formData.time || null,
                 note: formData.note || undefined
             }
             if (formData.type === 'transfer') {
@@ -477,6 +490,14 @@ async function handleSave(): Promise<void> {
     color: var(--bb-text-tertiary);
     margin-bottom: 4px;
     font-weight: 500;
+}
+.datetime-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.datetime-row .bb-datepicker {
+    flex: 1;
 }
 
 .save-btn {

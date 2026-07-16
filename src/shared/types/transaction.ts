@@ -15,6 +15,7 @@ export interface Transaction {
     sub_category_id: string | null
     amount_cents: number
     date: string
+    time: string | null
     note: string | null
     transfer_pair_id: string | null
     is_deleted: number
@@ -36,6 +37,7 @@ export interface CreateTransactionDTO {
     sub_category_id?: string | null
     amount_cents: number
     date: string
+    time?: string | null
     note?: string | null
 }
 
@@ -47,6 +49,7 @@ export interface UpdateTransactionDTO {
     sub_category_id?: string | null
     amount_cents?: number
     date?: string
+    time?: string | null
     note?: string | null
 }
 

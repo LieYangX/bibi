@@ -3,5 +3,9 @@
  * @author xiangwei
  */
 
+import skillMarkdown from './SKILL.md?raw'
+
 export { createTransactionTool } from './tools/create-transaction.tool'
 export { deleteTransactionTool } from './tools/delete-transaction.tool'
+
+export { skillMarkdown }

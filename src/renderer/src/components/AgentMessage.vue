@@ -80,6 +80,9 @@
                 <button class="bb-msg__think-head" @click="showThinking = !showThinking">
                     <BrainCircuit :size="14" />
                     <span>深度思考</span>
+                    <span v-if="thinkingDurationText" class="bb-msg__think-duration">
+                        {{ thinkingDurationText }}
+                    </span>
                     <ChevronDown :size="13" :class="{ rotated: showThinking }" />
                 </button>
                 <div v-if="showThinking" class="bb-msg__think-body">{{ message.thinking }}</div>
@@ -92,14 +95,14 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, ref } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import { ChevronDown, BrainCircuit } from '@lucide/vue'
 import { useUserStore } from '../stores/user.store'
 import MarkdownContent from './MarkdownContent.vue'
 
 const ToolResultDetail = defineAsyncComponent(() => import('./ToolResultDetail.vue'))
 
-defineProps<{
+const props = defineProps<{
     message: {
         id: string
         role: string
@@ -108,6 +111,7 @@ defineProps<{
         toolArgs?: string
         isStreaming?: boolean
         thinking?: string
+        thinkingDurationMs?: number
         tools?: Array<{ toolName?: string; content: string }>
     }
 }>()
@@ -115,6 +119,32 @@ defineProps<{
 const userStore = useUserStore()
 const showTool = ref(false)
 const showThinking = ref(false)
+const thinkingDurationText = computed(() =>
+    formatThinkingDuration(props.message.thinkingDurationMs)
+)
+
+const SECOND_IN_MS = 1_000
+const SECONDS_PER_MINUTE = 60
+
+/**
+ * 格式化模型思考耗时
+ *
+ * @param durationMs 思考耗时，单位为毫秒
+ * @returns 紧凑的中文耗时文案
+ * @author xiangwei
+ */
+function formatThinkingDuration(durationMs?: number): string {
+    if (!durationMs || durationMs <= 0) return ''
+    const seconds = durationMs / SECOND_IN_MS
+    if (seconds < 1) return '用时 < 1 秒'
+    if (seconds < 10) return `用时 ${seconds.toFixed(1)} 秒`
+    if (seconds < SECONDS_PER_MINUTE) return `用时 ${Math.round(seconds)} 秒`
+
+    const roundedSeconds = Math.round(seconds)
+    const minutes = Math.floor(roundedSeconds / SECONDS_PER_MINUTE)
+    const remainingSeconds = roundedSeconds % SECONDS_PER_MINUTE
+    return `用时 ${minutes} 分 ${remainingSeconds} 秒`
+}
 </script>
 
 <style scoped>
@@ -220,6 +250,11 @@ const showThinking = ref(false)
 }
 .bb-msg__think-head:hover {
     background: var(--bb-bg-hover);
+}
+.bb-msg__think-duration {
+    color: var(--bb-text-tertiary);
+    font-weight: var(--bb-weight-normal);
+    font-variant-numeric: tabular-nums;
 }
 .bb-msg__think-head .rotated {
     transform: rotate(180deg);

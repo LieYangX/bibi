@@ -103,6 +103,35 @@
                             : '深度推理 · 分析支出趋势、检测异常消费、生成分析报告'
                     }}
                 </p>
+                <div class="agent-wechat-bridge">
+                    <button
+                        v-if="agentStore.wechatStatus?.phase === 'connected'"
+                        class="agent-wechat-button agent-wechat-button--connected"
+                        @click="openWechatConversation"
+                    >
+                        <span class="agent-wechat-status-dot" />
+                        微信已连接
+                    </button>
+                    <button
+                        v-else-if="isWechatConnecting"
+                        class="agent-wechat-button"
+                        @click="showWechatDialog = true"
+                    >
+                        <QrCode :size="14" /> 查看微信二维码
+                    </button>
+                    <button v-else class="agent-wechat-button" @click="connectWechat">
+                        <QrCode :size="14" /> 连接微信
+                    </button>
+                    <button
+                        v-if="agentStore.wechatStatus?.phase === 'connected'"
+                        class="agent-wechat-disconnect"
+                        title="断开微信"
+                        aria-label="断开微信"
+                        @click="disconnectWechat"
+                    >
+                        <Unplug :size="14" />
+                    </button>
+                </div>
                 <button
                     v-if="agentStore.conversations.length"
                     class="agent-hero-history"
@@ -131,9 +160,9 @@
             <!-- 消息时间线（有消息时显示） -->
             <AgentMessage v-for="msg in displayMessages" :key="msg.id" :message="msg" />
 
-            <!-- 处理中指示 -->
+            <!-- 等待首个响应指示 -->
             <div
-                v-if="agentStore.isProcessing && agentStore.messages.length"
+                v-if="agentStore.isAwaitingResponse && agentStore.messages.length"
                 class="agent-thinking"
             >
                 <span /><span /><span />
@@ -151,6 +180,34 @@
 
         <!-- ══════ 输入区 ══════ -->
         <footer class="agent-input-area">
+            <div v-if="agentStore.queuedMessages.length" class="agent-queue">
+                <div
+                    v-for="(queuedMessage, index) in agentStore.queuedMessages"
+                    :key="queuedMessage.id"
+                    class="agent-queue__item"
+                >
+                    <span class="agent-queue__index">队列 {{ index + 1 }}</span>
+                    <span class="agent-queue__content" :title="queuedMessage.content">
+                        {{ queuedMessage.content }}
+                    </span>
+                    <button
+                        class="agent-queue__guide"
+                        title="打断当前回答并发送此消息"
+                        :disabled="agentStore.isStopping"
+                        @click="guideQueuedMessage(queuedMessage.id)"
+                    >
+                        <CornerDownRight :size="13" /> 引导
+                    </button>
+                    <button
+                        class="agent-queue__delete"
+                        title="删除队列消息"
+                        :aria-label="`删除队列消息：${queuedMessage.content}`"
+                        @click="agentStore.removeQueuedMessage(queuedMessage.id)"
+                    >
+                        <Trash2 :size="14" />
+                    </button>
+                </div>
+            </div>
             <div class="agent-input-card">
                 <textarea
                     ref="inputRef"
@@ -158,7 +215,7 @@
                     class="agent-textarea"
                     placeholder="给笔笔发送消息…"
                     rows="1"
-                    :disabled="!agentStore.hasConfig || agentStore.isProcessing"
+                    :disabled="!agentStore.hasConfig"
                     @keydown.enter.exact.prevent="send"
                     @input="autoResize"
                 />
@@ -237,12 +294,22 @@
                     </div>
                     <div class="agent-input-foot__right">
                         <button
+                            v-if="agentStore.isProcessing"
+                            class="agent-input-stop"
+                            title="停止回答"
+                            :disabled="agentStore.isStopping"
+                            @click="stopResponse"
+                        >
+                            <Square
+                                :size="13"
+                                :fill="agentStore.isStopping ? 'none' : 'currentColor'"
+                            />
+                        </button>
+                        <button
+                            v-else
                             class="agent-input-send"
-                            :disabled="
-                                !inputMessage.trim() ||
-                                !agentStore.hasConfig ||
-                                agentStore.isProcessing
-                            "
+                            title="发送"
+                            :disabled="!inputMessage.trim() || !agentStore.hasConfig"
                             @click="send"
                         >
                             <ArrowUp :size="18" />
@@ -626,6 +693,43 @@
             </Transition>
         </Teleport>
 
+        <!-- 微信扫码连接 -->
+        <BbModal
+            :visible="showWechatDialog"
+            title="连接微信"
+            width="360px"
+            @update:visible="updateWechatDialogVisible"
+        >
+            <div class="wechat-connect">
+                <div v-if="wechatPhase === 'connecting'" class="wechat-connect__pending">
+                    <span class="wechat-connect__spinner" />
+                    <span>正在获取二维码…</span>
+                </div>
+                <template v-else-if="wechatPhase === 'awaiting_scan' || wechatPhase === 'scanned'">
+                    <div class="wechat-connect__qr-frame">
+                        <img
+                            v-if="agentStore.wechatStatus?.qrCodeDataUrl"
+                            class="wechat-connect__qr"
+                            :src="agentStore.wechatStatus.qrCodeDataUrl"
+                            alt="微信连接二维码"
+                        />
+                    </div>
+                    <strong class="wechat-connect__title">
+                        {{ wechatPhase === 'scanned' ? '已扫码，请在微信中确认' : '使用微信扫码' }}
+                    </strong>
+                </template>
+                <div v-else-if="wechatPhase === 'error'" class="wechat-connect__error">
+                    <span>{{ agentStore.wechatStatus?.error || '微信连接失败' }}</span>
+                    <button class="bb-btn bb-btn-primary bb-btn-sm" @click="connectWechat">
+                        重新连接
+                    </button>
+                </div>
+            </div>
+            <template v-if="isWechatConnecting" #footer>
+                <button class="bb-btn" @click="cancelWechatConnection">取消连接</button>
+            </template>
+        </BbModal>
+
         <!-- 创建自定义 Skill 弹窗 -->
         <BbModal
             :visible="showCreateSkill"
@@ -775,7 +879,11 @@ import {
     Mic,
     Pencil,
     RefreshCw,
-    Server
+    Server,
+    Square,
+    CornerDownRight,
+    QrCode,
+    Unplug
 } from '@lucide/vue'
 import { desktopApi } from '../api/desktop-api'
 import type { McpServerConfig, SkillDetail, SttProgressEvent } from '@shared/types'
@@ -798,6 +906,7 @@ const inspectingMcpNames = ref<string[]>([])
 const currentMode = ref<'fast' | 'expert'>('fast')
 /** 一键回到底部按钮显示状态 */
 const showScrollBtn = ref(false)
+const showWechatDialog = ref(false)
 let shouldStickToBottom = true
 let loadingOlderMessages = false
 
@@ -1150,6 +1259,10 @@ const totalToolCount = computed(() => {
     )
     return agentStore.localTools.length + mcpCount
 })
+const wechatPhase = computed(() => agentStore.wechatStatus?.phase || 'disconnected')
+const isWechatConnecting = computed(() =>
+    ['connecting', 'awaiting_scan', 'scanned'].includes(wechatPhase.value)
+)
 const sortedConvs = computed(() =>
     [...agentStore.conversations].sort(
         (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
@@ -1469,6 +1582,64 @@ async function onSelectConv(id: string): Promise<void> {
         await scrollToBottom()
     }
 }
+
+/**
+ * 发起微信扫码连接并打开二维码弹窗
+ *
+ * @author xiangwei
+ */
+async function connectWechat(): Promise<void> {
+    showWechatDialog.value = true
+    if (!(await agentStore.connectWechat())) {
+        showWechatDialog.value = false
+        Message.error('微信连接失败，请重试')
+    }
+}
+
+/**
+ * 取消正在进行的微信扫码连接
+ *
+ * @author xiangwei
+ */
+async function cancelWechatConnection(): Promise<void> {
+    await agentStore.disconnectWechat()
+    showWechatDialog.value = false
+}
+
+/**
+ * 断开已连接的微信渠道
+ *
+ * @author xiangwei
+ */
+async function disconnectWechat(): Promise<void> {
+    if (await agentStore.disconnectWechat()) {
+        Message.success('微信已断开')
+    } else {
+        Message.error('断开微信失败')
+    }
+}
+
+/**
+ * 进入微信专属会话
+ *
+ * @author xiangwei
+ */
+async function openWechatConversation(): Promise<void> {
+    const conversationId = agentStore.wechatStatus?.conversationId
+    if (!conversationId || conversationId === agentStore.currentConversationId) return
+    await agentStore.loadConversation(conversationId)
+}
+
+/**
+ * 更新微信二维码弹窗状态，关闭待扫码弹窗时同步取消连接
+ *
+ * @param visible 是否显示
+ * @author xiangwei
+ */
+function updateWechatDialogVisible(visible: boolean): void {
+    showWechatDialog.value = visible
+    if (!visible && isWechatConnecting.value) void agentStore.disconnectWechat()
+}
 async function onDeleteConv(id: string): Promise<void> {
     await agentStore.deleteConversation(id)
 }
@@ -1484,11 +1655,39 @@ async function switchMode(mode: string): Promise<void> {
 
 async function send(): Promise<void> {
     const msg = inputMessage.value.trim()
-    if (!msg || agentStore.isProcessing) return
+    if (!msg) return
     inputMessage.value = ''
     if (inputRef.value) inputRef.value.style.height = 'auto'
+    if (agentStore.isProcessing) {
+        agentStore.enqueueMessage(msg)
+        await nextTick()
+        inputRef.value?.focus()
+        return
+    }
     await agentStore.sendMessage(msg)
     await scrollToBottom()
+}
+
+/**
+ * 停止当前智能体回答
+ * @author xiangwei
+ */
+async function stopResponse(): Promise<void> {
+    if (!(await agentStore.stopResponse())) {
+        Message.error('停止回答失败，请重试')
+    }
+}
+
+/**
+ * 使用队列消息打断并引导当前回答
+ *
+ * @param id 队列消息 ID
+ * @author xiangwei
+ */
+async function guideQueuedMessage(id: string): Promise<void> {
+    if (!(await agentStore.guideQueuedMessage(id))) {
+        Message.error('引导消息发送失败，请重试')
+    }
 }
 function autoResize(e: Event): void {
     const ta = e.target as HTMLTextAreaElement
@@ -1547,6 +1746,11 @@ watch(
         if (shouldStickToBottom) await scrollToBottom()
     }
 )
+
+watch(wechatPhase, (phase) => {
+    if (phase === 'awaiting_scan' || phase === 'scanned') showWechatDialog.value = true
+    if (phase === 'connected') showWechatDialog.value = false
+})
 
 onMounted(async () => {
     viewMounted = true
@@ -1729,6 +1933,111 @@ onUnmounted(() => {
     color: var(--bb-text-tertiary);
     margin: 14px 0 0;
     line-height: 1.5;
+}
+.agent-wechat-bridge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 32px;
+    margin-top: 12px;
+}
+.agent-wechat-button {
+    display: inline-flex;
+    min-height: 30px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border: 1px solid var(--bb-border);
+    border-radius: 6px;
+    background: var(--bb-bg-card);
+    color: var(--bb-text-secondary);
+    font-family: var(--bb-font);
+    font-size: 12px;
+    font-weight: var(--bb-weight-medium);
+    cursor: pointer;
+    transition: all 0.15s var(--bb-ease);
+}
+.agent-wechat-button:hover {
+    border-color: var(--bb-accent);
+    color: var(--bb-accent-text);
+    background: var(--bb-accent-soft);
+}
+.agent-wechat-button--connected {
+    border-color: rgba(22, 163, 74, 0.24);
+    color: var(--bb-success);
+    background: var(--bb-success-light);
+}
+.agent-wechat-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--bb-success);
+}
+.agent-wechat-disconnect {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--bb-border);
+    border-radius: 6px;
+    background: var(--bb-bg-card);
+    color: var(--bb-text-tertiary);
+    cursor: pointer;
+}
+.agent-wechat-disconnect:hover {
+    border-color: var(--bb-danger);
+    color: var(--bb-danger);
+    background: var(--bb-danger-light);
+}
+.wechat-connect {
+    display: flex;
+    min-height: 248px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.wechat-connect__pending,
+.wechat-connect__error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    color: var(--bb-text-secondary);
+    font-size: 13px;
+    line-height: 1.6;
+}
+.wechat-connect__spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--bb-border);
+    border-top-color: var(--bb-accent);
+    border-radius: 50%;
+    animation: tool-spin 0.8s linear infinite;
+}
+.wechat-connect__qr-frame {
+    width: 232px;
+    height: 232px;
+    padding: 4px;
+    border: 1px solid var(--bb-border);
+    border-radius: 8px;
+    background: #fff;
+}
+.wechat-connect__qr {
+    display: block;
+    width: 224px;
+    height: 224px;
+}
+.wechat-connect__title {
+    margin-top: 14px;
+    color: var(--bb-text-primary);
+    font-size: 13px;
+    font-weight: var(--bb-weight-semibold);
+}
+.wechat-connect__error {
+    color: var(--bb-danger);
 }
 .agent-hero-history {
     display: inline-flex;
@@ -1939,6 +2248,98 @@ onUnmounted(() => {
     padding-top: 0;
 }
 
+@media (max-height: 600px) {
+    .agent-shell--empty {
+        justify-content: flex-start;
+    }
+    .agent-shell--empty .agent-messages--empty {
+        flex: 1 1 auto;
+        justify-content: flex-start;
+        overflow-y: auto;
+        padding-top: 14px;
+    }
+    .agent-shell--empty .agent-hero__subtitle {
+        display: none;
+    }
+    .agent-shell--empty .agent-input-area {
+        margin-top: 8px;
+    }
+}
+
+/* 待发送消息队列 */
+.agent-queue {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    border: 1px solid var(--bb-border-light);
+    border-radius: var(--bb-radius-sm);
+    background: var(--bb-bg-card);
+}
+.agent-queue__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto 28px;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 3px 7px 3px 10px;
+    border-top: 1px solid var(--bb-border-light);
+}
+.agent-queue__item:first-child {
+    border-top: 0;
+}
+.agent-queue__index {
+    color: var(--bb-accent-text);
+    font-size: 10px;
+    font-weight: var(--bb-weight-semibold);
+    white-space: nowrap;
+}
+.agent-queue__content {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--bb-text-secondary);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.agent-queue__guide,
+.agent-queue__delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: var(--bb-text-tertiary);
+    cursor: pointer;
+    font-family: var(--bb-font);
+}
+.agent-queue__guide {
+    gap: 4px;
+    height: 28px;
+    padding: 0 7px;
+    border-radius: var(--bb-radius-sm);
+    color: var(--bb-accent-text);
+    font-size: 11px;
+    font-weight: var(--bb-weight-medium);
+}
+.agent-queue__delete {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--bb-radius-sm);
+}
+.agent-queue__guide:hover {
+    background: var(--bb-accent-soft);
+}
+.agent-queue__delete:hover {
+    background: var(--bb-danger-light);
+    color: var(--bb-danger);
+}
+.agent-queue__guide:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
 /* 主输入卡片（DeepSeek 风格） */
 .agent-input-card {
     display: flex;
@@ -2130,6 +2531,28 @@ onUnmounted(() => {
     justify-content: center;
     transition: all 0.15s var(--bb-ease);
     flex-shrink: 0;
+}
+.agent-input-stop {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--bb-border);
+    border-radius: 10px;
+    background: var(--bb-bg-card);
+    color: var(--bb-danger);
+    cursor: pointer;
+    transition: all 0.15s var(--bb-ease);
+}
+.agent-input-stop:hover {
+    border-color: var(--bb-danger);
+    background: var(--bb-danger-light);
+}
+.agent-input-stop:disabled {
+    opacity: 0.45;
+    cursor: wait;
 }
 .agent-input-send:hover {
     background: var(--bb-accent-hover);

@@ -10,7 +10,8 @@
     "noImplicitAny": true,
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["src/shared/*"]
+      "@shared/*": ["src/shared/*"],
+      "@pinixai/weixin-bot": ["node_modules/@pinixai/weixin-bot/src/index.ts"]
     },
     "types": ["electron-vite/node"]
   }

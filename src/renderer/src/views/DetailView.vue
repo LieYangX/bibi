@@ -177,8 +177,12 @@
                                         >· {{ item.sub_category_name }}</span
                                     >
                                 </div>
-                                <div v-if="item.note || item.account_name" class="txn-info__meta">
-                                    {{ item.account_name
+                                <div
+                                    v-if="item.note || item.account_name || item.time"
+                                    class="txn-info__meta"
+                                >
+                                    <span v-if="item.time" class="txn-time">{{ item.time }}</span
+                                    >{{ item.account_name
                                     }}<span v-if="item.note"> · {{ item.note }}</span>
                                 </div>
                             </div>
@@ -897,6 +901,15 @@ async function handleDelete(id: string): Promise<void> {
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 320px;
+}
+.txn-time {
+    font-family: var(--bb-font-mono);
+    font-size: 11px;
+    color: var(--bb-accent);
+    background: var(--bb-accent-lighter);
+    padding: 1px 5px;
+    border-radius: 4px;
+    margin-right: 6px;
 }
 .txn-right {
     display: flex;

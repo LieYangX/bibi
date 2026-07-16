@@ -86,7 +86,10 @@
                                 @change="toggleItem(item, $event)"
                             />
                         </td>
-                        <td class="date-cell">{{ item.date }}</td>
+                        <td class="date-cell">
+                            <span>{{ item.date }}</span>
+                            <span v-if="item.time" class="date-time">{{ item.time }}</span>
+                        </td>
                         <td class="summary-cell">
                             <span class="summary-primary" :title="summaryPrimary(item)">
                                 {{ summaryPrimary(item) }}
@@ -609,6 +612,16 @@ function updateItemAccount(item: ImportDraftItem, value: string | number): void 
 .date-cell {
     color: var(--bb-text-secondary);
     font-size: 11px;
+}
+
+.date-cell span {
+    display: block;
+}
+
+.date-time {
+    margin-top: 2px;
+    color: var(--bb-text-tertiary);
+    font-size: 10px;
 }
 
 .summary-primary,

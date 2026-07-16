@@ -139,4 +139,20 @@ describe('智能体会话用户隔离', () => {
             { role: 'assistant', content: '回答 3' }
         ])
     })
+
+    it('持久化并读取历史消息的思考时间', async () => {
+        const owner = await createUser('思考时间用户')
+        const conversationId = await createConversation(owner.id)
+        await saveMessage(conversationId, owner.id, 'assistant', '分析完成', {
+            thinking: '分析历史数据',
+            thinking_duration_ms: 2_345
+        })
+
+        const conversation = await getConversation(conversationId, owner.id)
+        expect(conversation?.messages).toHaveLength(1)
+        expect(conversation?.messages[0]).toMatchObject({
+            thinking: '分析历史数据',
+            thinking_duration_ms: 2_345
+        })
+    })
 })

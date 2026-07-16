@@ -30,6 +30,13 @@ const dateSchema = z
             date.getUTCDate() === day
         )
     }, '日期不存在')
+const timeSchema = z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .refine((value) => {
+        const [hour, minute] = value.split(':').map(Number)
+        return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59
+    }, '时间格式必须为 HH:mm 且合法')
 const amountSchema = z.number().int().positive().max(Number.MAX_SAFE_INTEGER)
 const accountTypeSchema = z.enum(['bank', 'wechat', 'alipay', 'cash', 'credit', 'other'])
 const categoryTypeSchema = z.enum(['expense', 'income'])
@@ -127,6 +134,7 @@ const transactionFields = {
     sub_category_id: idSchema.nullish(),
     amount_cents: amountSchema,
     date: dateSchema,
+    time: timeSchema.nullish(),
     note: z.string().max(500).nullish()
 }
 
@@ -157,6 +165,7 @@ const updateTransactionSchema = z
         sub_category_id: transactionFields.sub_category_id.optional(),
         amount_cents: transactionFields.amount_cents.optional(),
         date: transactionFields.date.optional(),
+        time: transactionFields.time.optional(),
         note: transactionFields.note.optional()
     })
     .strict()
@@ -354,13 +363,17 @@ export const IPC_SCHEMAS = {
         ])
     },
     agent: {
+        connectWechat: z.tuple([]),
+        disconnectWechat: z.tuple([]),
+        getWechatStatus: z.tuple([]),
         chat: z.tuple([
             idSchema.nullable(),
             z
                 .string()
                 .min(1)
                 .max(MAX_AGENT_MESSAGE_LENGTH)
-                .refine((value) => value.trim().length > 0, '消息不能为空')
+                .refine((value) => value.trim().length > 0, '消息不能为空'),
+            z.boolean()
         ]),
         transcribeAudio: z.tuple([sttAudioSchema]),
         sttDownloadModel: z.tuple([sttModelIdSchema]),

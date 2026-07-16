@@ -94,6 +94,14 @@ export const IPC_CHANNELS = {
         renameConversation: 'agent:renameConversation',
         getToolCallCounts: 'agent:getToolCallCounts',
         setToolCallCounts: 'agent:setToolCallCounts',
+        /** 微信渠道扫码连接 */
+        connectWechat: 'agent:connectWechat',
+        /** 断开微信渠道 */
+        disconnectWechat: 'agent:disconnectWechat',
+        /** 获取微信渠道状态 */
+        getWechatStatus: 'agent:getWechatStatus',
+        /** 微信渠道状态推送（主进程→渲染进程） */
+        wechatStatus: 'agent:wechatStatus',
         /** 流式事件推送（主进程→渲染进程） */
         event: 'agent:event',
         /** 语音转文字 */

@@ -12,11 +12,11 @@ import { getSetting, setSetting } from '../services/setting.service'
 import { getAppDataPath } from '../utils/app-data-path'
 import { logger } from '../utils/logger'
 
-import dataQueryMarkdown from './skills/data-query/SKILL.md?raw'
-import calculatorMarkdown from './skills/calculator/SKILL.md?raw'
-import reportMarkdown from './skills/report/SKILL.md?raw'
-import analysisMarkdown from './skills/analysis/SKILL.md?raw'
-import transactionWriteMarkdown from './skills/transaction-write/SKILL.md?raw'
+import { skillMarkdown as dataQueryMarkdown } from './capabilities/data-query'
+import { skillMarkdown as calculatorMarkdown } from './capabilities/calculator'
+import { skillMarkdown as reportMarkdown } from './capabilities/report'
+import { skillMarkdown as analysisMarkdown } from './capabilities/analysis'
+import { skillMarkdown as transactionWriteMarkdown } from './capabilities/transaction-write'
 
 export interface SkillDefinition {
     meta: SkillMeta

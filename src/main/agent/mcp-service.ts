@@ -26,11 +26,19 @@ interface StoredMcpSettings {
     mcpServers: Record<string, StoredMcpServer>
 }
 
+/** MCP 工具运行时信息，用于系统提示词展示 */
+export interface McpToolRuntimeInfo {
+    name: string
+    description: string
+    serverName: string
+}
+
 /** MCP 运行时工具与连接句柄 */
 export interface McpRuntimeTools {
     tools: Record<string, Tool>
     clients: MCPClient[]
     displayNames: Record<string, string>
+    toolInfos: McpToolRuntimeInfo[]
 }
 
 const MCP_SETTINGS_KEY = 'agent_mcp_servers'
@@ -362,6 +370,7 @@ export async function loadMcpRuntimeTools(): Promise<McpRuntimeTools> {
     const tools: Record<string, Tool> = {}
     const clients: MCPClient[] = []
     const displayNames: Record<string, string> = {}
+    const toolInfos: McpToolRuntimeInfo[] = []
     for (const connection of connected) {
         if (!connection) continue
         clients.push(connection.client)
@@ -377,9 +386,14 @@ export async function loadMcpRuntimeTools(): Promise<McpRuntimeTools> {
             }
             tools[exposedName] = remoteTool as Tool
             displayNames[exposedName] = `${connection.server.name} · ${remoteName}`
+            toolInfos.push({
+                name: exposedName,
+                description: (remoteTool as Tool & { description?: string }).description ?? '',
+                serverName: connection.server.name
+            })
         }
     }
-    return { tools, clients, displayNames }
+    return { tools, clients, displayNames, toolInfos }
 }
 
 /**
