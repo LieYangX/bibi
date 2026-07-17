@@ -21,6 +21,27 @@
             </div>
         </div>
 
+        <!-- 通用设置 -->
+        <div class="settings-card">
+            <div class="settings-head">
+                <Power :size="18" />
+                <span>通用设置</span>
+            </div>
+            <div class="settings-row">
+                <div class="settings-info">
+                    <div class="settings-title">开机自启</div>
+                    <div class="settings-desc">
+                        开启后系统开机时自动启动笔笔，并自动恢复微信智能体连接
+                    </div>
+                </div>
+                <BbSwitch
+                    :model-value="autoLaunchEnabled"
+                    :disabled="autoLaunchLoading"
+                    @update:model-value="onAutoLaunchChange"
+                />
+            </div>
+        </div>
+
         <div class="settings-card">
             <div class="settings-head">
                 <Info :size="18" />
@@ -194,12 +215,15 @@ import { BbSwitch, BbModal, Message } from '../components/ui'
 import AboutSection from './sections/AboutSection.vue'
 import AgentSettings from './sections/AgentSettings.vue'
 import SttSettings from './sections/SttSettings.vue'
+import { desktopApi } from '../api/desktop-api'
 import { openReleaseNotesKey } from '../app/release-notes-presenter'
-import { Eye, Info, ChevronRight } from '@lucide/vue'
+import { Eye, Info, ChevronRight, Power } from '@lucide/vue'
 
 const settingStore = useSettingStore()
 const showFeatures = ref(false)
 const showAbout = ref(false)
+const autoLaunchEnabled = ref(false)
+const autoLaunchLoading = ref(false)
 const openReleaseNotes = inject(openReleaseNotesKey)
 
 /**
@@ -230,9 +254,37 @@ async function onMaskChange(enabled: boolean): Promise<void> {
     }
 }
 
+/**
+ * 切换开机自启状态
+ *
+ * @param enabled 是否开启开机自启
+ * @author xiangwei
+ */
+async function onAutoLaunchChange(enabled: boolean): Promise<void> {
+    autoLaunchLoading.value = true
+    try {
+        const result = await desktopApi.app.setAutoLaunch(enabled)
+        if (!result.ok) {
+            Message.error(result.error || '设置开机自启失败')
+            return
+        }
+        autoLaunchEnabled.value = result.data
+    } catch {
+        Message.error('设置开机自启失败')
+    } finally {
+        autoLaunchLoading.value = false
+    }
+}
+
 onMounted(async () => {
     if (!(await settingStore.loadAmountMask())) {
         Message.error(settingStore.error || '加载金额脱敏设置失败')
+    }
+
+    // 加载开机自启状态
+    const autoLaunchResult = await desktopApi.app.getAutoLaunch()
+    if (autoLaunchResult.ok) {
+        autoLaunchEnabled.value = autoLaunchResult.data
     }
 })
 </script>

@@ -62,14 +62,20 @@ export const IPC_CHANNELS = {
     app: {
         getVersions: 'app:getVersions',
         openLogDirectory: 'app:openLogDirectory',
-        reportRendererError: 'app:reportRendererError'
+        reportRendererError: 'app:reportRendererError',
+        quit: 'app:quit',
+        /** 设置开机自启 */
+        setAutoLaunch: 'app:setAutoLaunch',
+        /** 查询开机自启状态 */
+        getAutoLaunch: 'app:getAutoLaunch'
     },
     window: {
         minimize: 'window:minimize',
         maximize: 'window:maximize',
         close: 'window:close',
         isMaximized: 'window:isMaximized',
-        maximizeChange: 'window:maximizeChange'
+        maximizeChange: 'window:maximizeChange',
+        minimizeToTray: 'window:minimizeToTray'
     },
     agent: {
         chat: 'agent:chat',

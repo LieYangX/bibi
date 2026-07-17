@@ -112,6 +112,9 @@ export interface ElectronAPI {
         getVersions: () => Promise<IpcResult<AppVersions>>
         openLogDirectory: () => Promise<IpcResult>
         reportRendererError: (report: RendererErrorReport) => Promise<IpcResult>
+        quit: () => void
+        setAutoLaunch: (enabled: boolean) => Promise<IpcResult<boolean>>
+        getAutoLaunch: () => Promise<IpcResult<boolean>>
     }
     window: {
         minimize: () => void
@@ -119,6 +122,7 @@ export interface ElectronAPI {
         close: () => void
         isMaximized: () => Promise<IpcResult<boolean>>
         onMaximizeChange: (callback: (maximized: boolean) => void) => () => void
+        minimizeToTray: () => void
     }
     agent: AgentAPI
 }

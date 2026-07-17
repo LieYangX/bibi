@@ -121,7 +121,10 @@ const electronAPI: ElectronAPI = {
         getVersions: () => invokeWithLog(IPC_CHANNELS.app.getVersions),
         openLogDirectory: () => invokeWithLog(IPC_CHANNELS.app.openLogDirectory),
         reportRendererError: (report: RendererErrorReport) =>
-            invokeWithLog(IPC_CHANNELS.app.reportRendererError, report)
+            invokeWithLog(IPC_CHANNELS.app.reportRendererError, report),
+        quit: () => ipcRenderer.send(IPC_CHANNELS.app.quit),
+        setAutoLaunch: (enabled: boolean) => invokeWithLog(IPC_CHANNELS.app.setAutoLaunch, enabled),
+        getAutoLaunch: () => invokeWithLog(IPC_CHANNELS.app.getAutoLaunch)
     },
     window: {
         minimize: () => ipcRenderer.send(IPC_CHANNELS.window.minimize),
@@ -134,7 +137,8 @@ const electronAPI: ElectronAPI = {
             }
             ipcRenderer.on(IPC_CHANNELS.window.maximizeChange, listener)
             return () => ipcRenderer.removeListener(IPC_CHANNELS.window.maximizeChange, listener)
-        }
+        },
+        minimizeToTray: () => ipcRenderer.send(IPC_CHANNELS.window.minimizeToTray)
     },
     agent: {
         chat: (conversationId, message, deepThink) =>

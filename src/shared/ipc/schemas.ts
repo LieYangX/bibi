@@ -360,7 +360,9 @@ export const IPC_SCHEMAS = {
                     source: z.string().max(500).optional()
                 })
                 .strict()
-        ])
+        ]),
+        setAutoLaunch: z.tuple([z.boolean()]),
+        getAutoLaunch: z.tuple([])
     },
     agent: {
         connectWechat: z.tuple([]),

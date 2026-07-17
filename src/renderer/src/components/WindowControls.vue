@@ -69,6 +69,27 @@
                 />
             </svg>
         </button>
+
+        <BbModal
+            :visible="showCloseConfirm"
+            title="退出确认"
+            width="360px"
+            @update:visible="showCloseConfirm = $event"
+            @close="handleCancelClose"
+        >
+            <div class="close-confirm-body">
+                <p class="close-confirm-text">确定要退出笔笔吗？</p>
+                <label class="close-confirm-option">
+                    <input v-model="minimizeToTray" type="checkbox" />
+                    <span class="check-visual"></span>
+                    <span>最小化到系统托盘，不退出程序</span>
+                </label>
+            </div>
+            <template #footer>
+                <button class="bb-btn" @click="handleCancelClose">取消</button>
+                <button class="bb-btn bb-btn-primary" @click="handleConfirmClose">确定</button>
+            </template>
+        </BbModal>
     </div>
 </template>
 
@@ -76,12 +97,23 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { desktopApi } from '../api/desktop-api'
 import { observeMaximizeState } from './window-maximize-state'
+import { BbModal } from './ui'
 
 /**
  * 窗口最大化状态
  */
 const isMaximized = ref(false)
 let stopMaximizeListener: (() => void) | undefined
+
+/**
+ * 是否显示关闭确认弹窗
+ */
+const showCloseConfirm = ref(false)
+
+/**
+ * 是否最小化到系统托盘
+ */
+const minimizeToTray = ref(false)
 
 /**
  * 组件挂载后同步窗口最大化状态并监听变化
@@ -121,10 +153,31 @@ function handleMaximize(): void {
 }
 
 /**
- * 关闭窗口
+ * 关闭窗口前显示确认弹窗
  */
 function handleClose(): void {
-    desktopApi.window.close()
+    minimizeToTray.value = false
+    showCloseConfirm.value = true
+}
+
+/**
+ * 取消关闭
+ */
+function handleCancelClose(): void {
+    showCloseConfirm.value = false
+    minimizeToTray.value = false
+}
+
+/**
+ * 确认关闭或最小化到托盘
+ */
+function handleConfirmClose(): void {
+    showCloseConfirm.value = false
+    if (minimizeToTray.value) {
+        desktopApi.window.minimizeToTray()
+    } else {
+        desktopApi.window.close()
+    }
 }
 </script>
 
@@ -173,5 +226,64 @@ function handleClose(): void {
     width: 14px;
     height: 14px;
     flex-shrink: 0;
+}
+
+.close-confirm-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.close-confirm-text {
+    margin: 0;
+    font-size: 14px;
+    color: var(--bb-text-primary);
+    line-height: 1.6;
+}
+
+.close-confirm-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--bb-text-secondary);
+    user-select: none;
+}
+
+.close-confirm-option input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.close-confirm-option .check-visual {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--bb-border);
+    border-radius: 3px;
+    background: var(--bb-bg-card);
+    flex-shrink: 0;
+    transition: all var(--bb-duration-fast) var(--bb-ease);
+}
+
+.close-confirm-option input:checked + .check-visual {
+    background: var(--bb-accent);
+    border-color: var(--bb-accent);
+}
+
+.close-confirm-option input:checked + .check-visual::after {
+    content: '';
+    width: 5px;
+    height: 9px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    display: block;
 }
 </style>

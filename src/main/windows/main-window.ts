@@ -18,7 +18,7 @@ import { logger } from '../utils/logger'
  * @returns 主窗口
  * @author xiangwei
  */
-export async function createMainWindow(): Promise<BrowserWindow> {
+export async function createMainWindow(showOnReady = true): Promise<BrowserWindow> {
     const window = new BrowserWindow({
         width: 1200,
         height: 800,
@@ -58,7 +58,9 @@ export async function createMainWindow(): Promise<BrowserWindow> {
         }
     )
 
-    window.once('ready-to-show', () => window.show())
+    window.once('ready-to-show', () => {
+        if (showOnReady) window.show()
+    })
     window.on('maximize', () => {
         window.webContents.send(IPC_CHANNELS.window.maximizeChange, true)
     })

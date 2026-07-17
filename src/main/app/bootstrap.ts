@@ -10,6 +10,7 @@ import { DevToolsTelemetry } from '@ai-sdk/devtools'
 import { closeDatabase, initDatabase } from '../database'
 import { registerIpcHandlers } from '../ipc'
 import { createMainWindow } from '../windows/main-window'
+import { createTray, destroyTray } from '../windows/tray'
 import { getLogDirectoryInfo, logger } from '../utils/logger'
 import { resetModel } from '../services/stt.service'
 import { wechatChannelService } from '../agent/wechat-channel.service'
@@ -95,8 +96,8 @@ function trackMainWindow(window: BrowserWindow): void {
  *
  * @author xiangwei
  */
-async function openMainWindow(): Promise<void> {
-    const window = await createMainWindow()
+async function openMainWindow(showOnReady = true): Promise<void> {
+    const window = await createMainWindow(showOnReady)
     trackMainWindow(window)
 }
 
@@ -179,12 +180,19 @@ async function initializeApplication(): Promise<void> {
     await restoreLastWechatConnection()
     registerIpcHandlers()
 
+    const isAutoStart = process.argv.includes('--autostart')
     try {
-        await openMainWindow()
+        await openMainWindow(!isAutoStart)
     } catch (error: unknown) {
         reportStartupError('创建主窗口失败', '主窗口加载失败', error)
         app.quit()
         return
+    }
+
+    // 开机自启时最小化到系统托盘，不显示主窗口
+    if (isAutoStart && mainWindow) {
+        createTray(mainWindow)
+        logger.info('Bootstrap', '开机自启模式，应用已最小化到系统托盘')
     }
 
     app.on('activate', handleActivate)
@@ -207,6 +215,7 @@ export function bootstrapApplication(): void {
     app.on('second-instance', focusMainWindow)
     app.on('before-quit', () => {
         logger.info('Bootstrap', '应用即将退出')
+        destroyTray()
         wechatChannelService.stopAll()
         resetModel()
         closeDatabase()
