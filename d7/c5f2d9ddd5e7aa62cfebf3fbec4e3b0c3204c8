@@ -1,0 +1,67 @@
+src/shared/ipc/channels.ts
+  s_b87ff15ca247c0::t_f832beb2bb2acd 66-70
+  s_604926f18c45e3::t_73fe5bf9634b8a 65,77-78
+src/main/ipc/app.ipc.ts
+  s_604926f18c45e3::t_ba2ae1770f0a28 6,11
+  s_b87ff15ca247c0::t_36caf91b4710f4 42-72
+  s_604926f18c45e3::t_c95462df95d290 41,73-78
+src/preload/index.ts
+  s_604926f18c45e3::t_763c4bd1b6e5a7 124,140-141
+  s_b87ff15ca247c0::t_cd6a8a524ec655 126
+  s_b87ff15ca247c0::t_6ef0e670338f3c 125,127
+src/main/windows/main-window.ts
+  s_b87ff15ca247c0::t_b2b296800faeef 61-63
+  s_b87ff15ca247c0::t_cff867e6ed88a2 21
+src/main/app/bootstrap.ts
+  s_b87ff15ca247c0::t_e79b42371e8644 99-100
+  s_604926f18c45e3::t_657e2c40a55100 218
+  s_b87ff15ca247c0::t_50b5efc4b82929 13
+  s_b87ff15ca247c0::t_ddd014835fc5c4 183,185,192-195
+  s_b87ff15ca247c0::t_221439af0888f7 196-197
+src/main/ipc/window.ipc.ts
+  s_604926f18c45e3::t_5ba7b5f6f0e9c6 11
+  s_604926f18c45e3::t_4ed6db0f35b6f9 26-32
+src/renderer/src/components/WindowControls.vue
+  s_604926f18c45e3::t_8b122546ef954c 82
+  s_604926f18c45e3::t_49fb493c8722a4 245-246,248-249,251-253,266-267,270,273-274,276-279,281,283-286,288
+  s_604926f18c45e3::t_262bc03e30fdde 247,254-265,268-269,271-272,275,280,282,287
+  s_604926f18c45e3::t_704fbf7f7d87b5 72-81,85-92,100,108-117,156,159-180,230-244,250
+  s_604926f18c45e3::t_cc0e79d17a23e6 83-84
+src/shared/ipc/schemas.ts
+  s_b87ff15ca247c0::t_1fca0192af683b 363-365
+src/shared/types/electron-api.ts
+  s_604926f18c45e3::t_dca3e4eb08ca4f 115,125
+  s_b87ff15ca247c0::t_c7065b7438c2d8 116-117
+src/main/windows/tray.ts
+  s_604926f18c45e3::t_1dbf525bfbe3c7 1-30,32-100
+  s_604926f18c45e3::t_76b7c7196ada65 31
+src/renderer/src/views/SettingsView.vue
+  s_b87ff15ca247c0::t_42b1ab0291914f 24-44
+  s_b87ff15ca247c0::t_0e52421d2f3b69 225-226
+  s_b87ff15ca247c0::t_e6aa853d5c8139 218,220
+  s_b87ff15ca247c0::t_3d1cca403ebcba 257-278,283-288
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "d7c5f2d9ddd5e7aa62cfebf3fbec4e3b0c3204c8",
+  "prompts": {},
+  "sessions": {
+    "s_604926f18c45e3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_09503a276ffegTpdTQkILd991n",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_b87ff15ca247c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_09250e1a5ffetGJmd2b7D6jwec",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
