@@ -1,0 +1,42 @@
+tests/unit/release-notes.test.ts
+  s_a657362ac772d9::t_1cc293bb5f27df 84,90
+src/main/agent/context/system-prompt.ts
+  s_6295e7a3bbb0f4::t_d6c3cf799d3fcb 44
+  s_6295e7a3bbb0f4::t_b2f8ae24532125 34
+  s_6295e7a3bbb0f4::t_78214b97e75c86 47
+  s_6295e7a3bbb0f4::t_aa6b4dd0ae7565 58-60,62
+  s_6295e7a3bbb0f4::t_9a7c0aae2ac256 45
+  s_6295e7a3bbb0f4::t_7ee6ae541d9ecc 61
+  s_6295e7a3bbb0f4::t_715eec9a183526 33,36,38,41
+  s_6295e7a3bbb0f4::t_f8230179b59b40 12,15,17-21,23-26,28-31,37,39,42,46,48-49,51-56,63,66-68,71-72
+  s_6295e7a3bbb0f4::t_4912f1cc0ebc4a 43
+tests/unit/system-prompt.test.ts
+  s_6295e7a3bbb0f4::t_ba52f342f1d4e1 35-38
+  s_6295e7a3bbb0f4::t_1799edcfdc2eb4 50
+package.json
+  s_a657362ac772d9::t_6102f0d4de0fcc 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "029971d455644616f10f4512941d96f56302c862",
+  "prompts": {},
+  "sessions": {
+    "s_6295e7a3bbb0f4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_091dfdbd6ffefhPgMIyyFkIzHA",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_a657362ac772d9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_0911b8760ffeVqvlh1trA73hn0",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
