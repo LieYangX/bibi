@@ -149,25 +149,7 @@
                                 />
                                 <span class="check-visual"></span>
                             </label>
-                            <div class="txn-icon" :class="'txn-icon--' + item.type">
-                                <!-- eslint-disable vue/no-v-html -->
-                                <span
-                                    v-if="item.type === 'expense'"
-                                    style="display: inline-flex"
-                                    v-html="txnIcons.expense"
-                                />
-                                <span
-                                    v-else-if="item.type === 'income'"
-                                    style="display: inline-flex"
-                                    v-html="txnIcons.income"
-                                />
-                                <span
-                                    v-else
-                                    style="display: inline-flex"
-                                    v-html="txnIcons.transfer"
-                                />
-                                <!-- eslint-enable vue/no-v-html -->
-                            </div>
+                            <span class="txn-dot" :style="{ background: txnDotColor(item) }" />
                             <div class="txn-info">
                                 <div class="txn-info__top">
                                     <span class="txn-cat">{{
@@ -290,15 +272,6 @@ import { onRefresh } from '../composables/useRefreshBus'
 import TransactionModal from '../components/TransactionModal.vue'
 import type { TransactionType } from '@shared/types'
 import { Trash2, Search, X, Inbox, Eye, EyeOff, Info, ArrowUp } from '@lucide/vue'
-
-/** 明细列表图标 SVG */
-const txnIcons = {
-    expense:
-        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M13 12h7l-8 8l-8-8h7V4h2z"/></svg>',
-    income: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M13 12v8h-2v-8H4l8-8l8 8z"/></svg>',
-    transfer:
-        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M16 16v-4l5 5l-5 5v-4H4v-2zM8 2v3.999L20 6v2H8v4L3 7z"/></svg>'
-}
 
 const transactionStore = useTransactionStore()
 const accountStore = useAccountStore()
@@ -496,6 +469,15 @@ function scrollToTop(): void {
 
 function typeLabel(t: string): string {
     return { expense: '支出', income: '收入', transfer: '转账', adjustment: '调整' }[t] || t
+}
+
+/** 根据分类颜色或流水类型返回圆点色值 */
+function txnDotColor(item: TransactionInfo): string {
+    if (item.category_color) return item.category_color
+    if (item.type === 'expense') return 'var(--bb-danger)'
+    if (item.type === 'income') return 'var(--bb-success)'
+    if (item.type === 'transfer') return 'var(--bb-accent)'
+    return 'var(--bb-text-tertiary)'
 }
 
 /** 根据当前筛选账户判断流水的正负号 */
@@ -797,7 +779,7 @@ async function handleDelete(id: string): Promise<void> {
 .txn-item {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     padding: 14px 18px;
     transition: background var(--bb-duration-fast) var(--bb-ease);
     cursor: default;
@@ -851,26 +833,11 @@ async function handleDelete(id: string): Promise<void> {
 .txn-item:hover {
     background: var(--bb-bg-hover);
 }
-.txn-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
+.txn-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
     flex-shrink: 0;
-}
-.txn-icon--expense {
-    background: var(--bb-danger-light);
-    color: var(--bb-danger);
-}
-.txn-icon--income {
-    background: var(--bb-success-light);
-    color: var(--bb-success);
-}
-.txn-icon--transfer {
-    background: var(--bb-accent-light);
-    color: var(--bb-accent);
 }
 .txn-info {
     flex: 1;

@@ -1,0 +1,3979 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=1440" />
+        <title>笔笔 · AI 中心化 UI 重构图纸</title>
+        <style>
+            /* ========== 设计令牌 ========== */
+            :root {
+                --bb-accent: #d9a404;
+                --bb-accent-hover: #b8860b;
+                --bb-accent-light: rgba(217, 164, 4, 0.08);
+                --bb-accent-lighter: rgba(217, 164, 4, 0.12);
+                --bb-accent-text: #9b7000;
+                --bb-accent-soft: rgba(217, 164, 4, 0.06);
+                --bb-success: #16a34a;
+                --bb-success-light: rgba(22, 163, 74, 0.1);
+                --bb-danger: #ef4444;
+                --bb-danger-light: rgba(239, 68, 68, 0.1);
+                --bb-warning: #f59e0b;
+                --bb-warning-light: rgba(245, 158, 11, 0.1);
+                --bb-info: #6366f1;
+                --bb-text-primary: #0f172a;
+                --bb-text-secondary: #475569;
+                --bb-text-tertiary: #94a3b8;
+                --bb-text-disabled: #cbd5e1;
+                --bb-bg-page: #f1f5f9;
+                --bb-bg-card: #fff;
+                --bb-bg-sidebar: #fff;
+                --bb-bg-hover: #f8fafc;
+                --bb-bg-input: #f1f5f9;
+                --bb-border: #e2e8f0;
+                --bb-border-light: #f1f5f9;
+                --bb-shadow-sm: 0 2px 6px rgba(217, 164, 4, 0.06);
+                --bb-shadow-card: 0 2px 8px rgba(217, 164, 4, 0.05);
+                --bb-shadow-float: 0 8px 32px rgba(217, 164, 4, 0.12);
+                --bb-radius-sm: 6px;
+                --bb-radius-md: 10px;
+                --bb-radius-lg: 14px;
+                --bb-radius-xl: 18px;
+                --bb-font: 'MiSans', 'PingFang SC', 'Microsoft YaHei', -apple-system, sans-serif;
+                --bar-gradient: linear-gradient(180deg, #d9a404, #fef08a);
+                /* 画布中性色（非应用令牌） */
+                --canvas-bg: #dde3ec;
+                --canvas-text: #334155;
+                --canvas-muted: #64748b;
+                --canvas-line: #cbd5e1;
+                --canvas-card: #fff;
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: var(--bb-font);
+                background: var(--canvas-bg);
+                color: var(--canvas-text);
+                -webkit-font-smoothing: antialiased;
+                padding: 48px 0;
+                min-width: 1440px;
+                line-height: 1.5;
+            }
+
+            .board {
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 0 60px 40px;
+            }
+
+            /* ========== 通用 ========== */
+            .icon {
+                display: inline-block;
+                vertical-align: middle;
+                flex-shrink: 0;
+            }
+            .section {
+                margin-bottom: 72px;
+            }
+            .section-title {
+                font-size: 22px;
+                font-weight: 700;
+                color: #0f172a;
+                margin-bottom: 6px;
+                letter-spacing: -0.2px;
+            }
+            .section-desc {
+                font-size: 14px;
+                color: var(--canvas-muted);
+                margin-bottom: 28px;
+                max-width: 900px;
+                line-height: 1.7;
+            }
+            .section-tag {
+                display: inline-block;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 1.5px;
+                color: var(--bb-accent-text);
+                background: var(--bb-accent-light);
+                padding: 4px 10px;
+                border-radius: 6px;
+                margin-bottom: 12px;
+                vertical-align: middle;
+            }
+
+            /* ========== 封面 ========== */
+            .cover {
+                background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+                border-radius: 20px;
+                padding: 56px 56px 48px;
+                box-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+                border: 1px solid rgba(226, 232, 240, 0.6);
+            }
+            .cover-tag {
+                font-size: 12px;
+                letter-spacing: 2.5px;
+                color: var(--bb-accent-text);
+                font-weight: 700;
+                margin-bottom: 18px;
+            }
+            .cover-title {
+                font-size: 38px;
+                font-weight: 700;
+                color: var(--bb-text-primary);
+                margin-bottom: 14px;
+                letter-spacing: -0.8px;
+            }
+            .cover-subtitle {
+                font-size: 17px;
+                color: var(--bb-text-secondary);
+                margin-bottom: 18px;
+                line-height: 1.6;
+            }
+            .cover-meta {
+                font-size: 13px;
+                color: var(--bb-text-tertiary);
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                margin-bottom: 44px;
+            }
+            .cover-meta .dot {
+                width: 3px;
+                height: 3px;
+                border-radius: 50%;
+                background: var(--bb-text-tertiary);
+            }
+
+            .token-groups {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 24px;
+            }
+            .token-group {
+            }
+            .token-group-title {
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 1px;
+                color: var(--canvas-muted);
+                margin-bottom: 12px;
+                text-transform: uppercase;
+            }
+            .token-items {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            .token-color {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+            .token-swatch {
+                width: 54px;
+                height: 54px;
+                border-radius: 10px;
+                border: 1px solid rgba(15, 23, 42, 0.06);
+            }
+            .token-name {
+                font-size: 11px;
+                color: var(--bb-text-secondary);
+                font-weight: 600;
+            }
+            .token-hex {
+                font-size: 10px;
+                color: var(--bb-text-tertiary);
+                font-family: 'SF Mono', Consolas, monospace;
+            }
+            .token-chip {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 6px 10px;
+                border-radius: 8px;
+                background: #fff;
+                border: 1px solid var(--bb-border);
+                font-size: 11px;
+                color: var(--bb-text-secondary);
+            }
+            .token-chip .chip-val {
+                font-weight: 700;
+                color: var(--bb-text-primary);
+            }
+            .token-chip.shadow-sm {
+                box-shadow: 0 2px 6px rgba(217, 164, 4, 0.06);
+            }
+            .token-chip.shadow-card {
+                box-shadow: 0 2px 8px rgba(217, 164, 4, 0.05);
+            }
+            .token-chip.shadow-float {
+                box-shadow: 0 8px 32px rgba(217, 164, 4, 0.12);
+            }
+            .token-chip.radius-sm {
+                border-radius: 6px;
+            }
+            .token-chip.radius-md {
+                border-radius: 10px;
+            }
+            .token-chip.radius-lg {
+                border-radius: 14px;
+            }
+            .token-chip.radius-xl {
+                border-radius: 18px;
+            }
+
+            /* ========== 信息架构图 ========== */
+            .sitemap {
+                background: #fff;
+                border-radius: 16px;
+                padding: 48px 40px 40px;
+                box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+                border: 1px solid rgba(226, 232, 240, 0.6);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .sm-primary {
+                background: linear-gradient(135deg, #d9a404, #b8860b);
+                color: #fff;
+                padding: 18px 36px;
+                border-radius: 14px;
+                font-size: 18px;
+                font-weight: 700;
+                box-shadow: var(--bb-shadow-float);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                position: relative;
+            }
+            .sm-primary .sm-route {
+                font-size: 12px;
+                background: rgba(255, 255, 255, 0.25);
+                padding: 3px 8px;
+                border-radius: 5px;
+                font-weight: 600;
+            }
+            .sm-primary .sm-label {
+                background: rgba(255, 255, 255, 0.2);
+                padding: 3px 8px;
+                border-radius: 5px;
+                font-size: 11px;
+                font-weight: 600;
+            }
+            .sm-stem {
+                width: 2px;
+                height: 36px;
+                background: var(--canvas-line);
+            }
+            .sm-tree {
+                display: flex;
+                gap: 18px;
+                position: relative;
+                padding-top: 28px;
+            }
+            .sm-tree::before {
+                content: '';
+                position: absolute;
+                top: 14px;
+                left: 60px;
+                right: 60px;
+                height: 2px;
+                background: var(--canvas-line);
+            }
+            .sm-branch {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                position: relative;
+            }
+            .sm-branch::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                width: 2px;
+                height: 14px;
+                background: var(--canvas-line);
+            }
+            .sm-node {
+                width: 120px;
+                text-align: center;
+                background: #fff;
+                border: 1.5px solid var(--bb-border);
+                padding: 14px 8px;
+                border-radius: 10px;
+                font-size: 13px;
+                font-weight: 600;
+                color: var(--bb-text-primary);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+            }
+            .sm-node .sm-icon {
+                color: var(--bb-text-tertiary);
+                margin-bottom: 2px;
+            }
+            .sm-node .sm-sub {
+                font-size: 10px;
+                color: var(--bb-text-tertiary);
+                font-weight: 400;
+            }
+            .sm-annotation {
+                margin-top: 36px;
+                padding: 14px 24px;
+                background: var(--bb-accent-soft);
+                border: 1px solid var(--bb-accent-light);
+                border-radius: 10px;
+                font-size: 13px;
+                color: var(--bb-accent-text);
+                font-weight: 500;
+                max-width: 800px;
+                text-align: center;
+                line-height: 1.7;
+            }
+
+            /* ========== Artboard 基础 ========== */
+            .artboard-block {
+                margin-bottom: 56px;
+            }
+            .artboard-label {
+                display: flex;
+                align-items: baseline;
+                gap: 14px;
+                margin-bottom: 8px;
+            }
+            .artboard-id {
+                background: var(--bb-accent);
+                color: #fff;
+                font-size: 13px;
+                font-weight: 700;
+                padding: 5px 12px;
+                border-radius: 7px;
+                letter-spacing: 0.5px;
+            }
+            .artboard-title {
+                font-size: 19px;
+                font-weight: 600;
+                color: #0f172a;
+            }
+            .artboard-dim {
+                font-size: 12px;
+                color: var(--canvas-muted);
+                margin-left: auto;
+                font-variant-numeric: tabular-nums;
+                font-family: 'SF Mono', Consolas, monospace;
+            }
+            .artboard-note {
+                font-size: 13px;
+                color: var(--canvas-muted);
+                margin-bottom: 18px;
+                max-width: 960px;
+                line-height: 1.7;
+            }
+            .artboard-specs {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+                margin-top: 16px;
+                padding: 14px 18px;
+                background: #fff;
+                border-radius: 10px;
+                border: 1px solid rgba(226, 232, 240, 0.6);
+            }
+            .spec-chip {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 12px;
+            }
+            .spec-chip .sk {
+                color: var(--bb-text-tertiary);
+            }
+            .spec-chip .sv {
+                color: var(--bb-text-primary);
+                font-weight: 600;
+                font-variant-numeric: tabular-nums;
+            }
+            .spec-chip .sep {
+                color: var(--bb-border);
+            }
+
+            .artboard {
+                width: 1280px;
+                height: 800px;
+                background: var(--bb-bg-page);
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow:
+                    0 24px 64px rgba(15, 23, 42, 0.12),
+                    0 0 0 1px rgba(15, 23, 42, 0.04);
+                display: flex;
+                flex-direction: column;
+                position: relative;
+                font-family: var(--bb-font);
+                color: var(--bb-text-primary);
+            }
+
+            /* 窗口标题栏 */
+            .titlebar {
+                height: 44px;
+                background: rgba(255, 255, 255, 0.72);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 18px;
+                flex-shrink: 0;
+            }
+            .tb-left {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 13px;
+                color: var(--bb-text-secondary);
+                font-weight: 500;
+            }
+            .tb-left .tb-logo {
+                width: 18px;
+                height: 18px;
+                border-radius: 5px;
+                background: var(--bb-accent);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #fff;
+            }
+            .win-controls {
+                display: flex;
+                gap: 18px;
+                align-items: center;
+            }
+            .win-controls .icon {
+                color: var(--bb-text-tertiary);
+            }
+
+            /* 图标轨道 */
+            .artboard-body {
+                flex: 1;
+                display: flex;
+                overflow: hidden;
+            }
+            .icon-rail {
+                width: 68px;
+                background: var(--bb-bg-sidebar);
+                border-right: 1px solid var(--bb-border);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 14px 0;
+                flex-shrink: 0;
+                gap: 4px;
+            }
+            .rail-logo {
+                width: 32px;
+                height: 32px;
+                background: var(--bb-accent);
+                border-radius: var(--bb-radius-md);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #fff;
+                margin-bottom: 10px;
+            }
+            .rail-nav {
+                width: 44px;
+                height: 44px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--bb-text-tertiary);
+                position: relative;
+                cursor: pointer;
+            }
+            .rail-nav.active {
+                background: var(--bb-accent-light);
+                color: var(--bb-accent-text);
+            }
+            .rail-nav.active::before {
+                content: '';
+                position: absolute;
+                left: -12px;
+                top: 13px;
+                width: 3px;
+                height: 18px;
+                background: var(--bb-accent);
+                border-radius: 0 2px 2px 0;
+            }
+            .rail-nav.hover-demo {
+                background: var(--bb-bg-hover);
+            }
+            .rail-nav.pulse::after {
+                content: '';
+                position: absolute;
+                top: 9px;
+                right: 9px;
+                width: 7px;
+                height: 7px;
+                background: var(--bb-accent);
+                border-radius: 50%;
+                box-shadow: 0 0 0 2px #fff;
+            }
+            .rail-divider {
+                width: 32px;
+                height: 1px;
+                background: var(--bb-border);
+                margin: 6px 0;
+            }
+            .rail-spacer {
+                flex: 1;
+            }
+            .rail-avatar {
+                width: 34px;
+                height: 34px;
+                border-radius: 50%;
+                background: var(--bb-accent);
+                color: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 13px;
+                font-weight: 600;
+            }
+
+            /* 主内容区 */
+            .artboard-main {
+                flex: 1;
+                overflow: hidden;
+                position: relative;
+                display: flex;
+            }
+
+            /* ========== A1 · 空状态 ========== */
+            .a1-main {
+                flex: 1;
+                display: flex;
+                overflow: hidden;
+            }
+            .a1-content {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 32px 40px;
+            }
+            .a1-hero {
+                width: 100%;
+                max-width: 760px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 18px;
+            }
+            .hero-logo {
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #d9a404, #b8860b);
+                color: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow:
+                    0 8px 32px rgba(217, 164, 4, 0.28),
+                    0 0 0 8px rgba(217, 164, 4, 0.06);
+            }
+            .greeting {
+                font-size: 28px;
+                font-weight: 600;
+                color: var(--bb-text-primary);
+                text-align: center;
+                letter-spacing: -0.3px;
+            }
+            .greeting-sub {
+                font-size: 15px;
+                color: var(--bb-text-secondary);
+                text-align: center;
+                margin-top: -8px;
+            }
+
+            .mode-pills {
+                display: inline-flex;
+                background: var(--bb-bg-input);
+                border-radius: 12px;
+                padding: 4px;
+                gap: 4px;
+            }
+            .mode-pill {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 8px 20px;
+                border-radius: 8px;
+                font-size: 13px;
+                color: var(--bb-text-secondary);
+                font-weight: 500;
+            }
+            .mode-pill.active {
+                background: #fff;
+                color: var(--bb-accent-text);
+                font-weight: 600;
+                box-shadow: var(--bb-shadow-sm);
+            }
+
+            .input-card {
+                width: 100%;
+                background: #fff;
+                border-radius: var(--bb-radius-xl);
+                box-shadow: var(--bb-shadow-float);
+                padding: 7px 7px 7px 8px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-top: 4px;
+            }
+            .input-btn {
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                border: none;
+                background: transparent;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--bb-text-secondary);
+                cursor: pointer;
+                flex-shrink: 0;
+            }
+            .input-btn:hover {
+                background: var(--bb-bg-hover);
+            }
+            .input-placeholder {
+                flex: 1;
+                font-size: 14px;
+                color: var(--bb-text-tertiary);
+                padding: 10px 4px;
+            }
+            .input-actions {
+                display: flex;
+                gap: 4px;
+                align-items: center;
+            }
+            .input-send {
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                background: var(--bb-accent);
+                color: #fff;
+                border: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                flex-shrink: 0;
+            }
+
+            .quick-actions {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+                width: 100%;
+                margin-top: 6px;
+            }
+            .qa-card {
+                background: #fff;
+                border: 1px solid var(--bb-border);
+                border-radius: var(--bb-radius-lg);
+                padding: 14px 14px;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                transition:
+                    transform 0.2s,
+                    box-shadow 0.2s;
+            }
+            .qa-icon {
+                width: 34px;
+                height: 34px;
+                border-radius: 9px;
+                background: var(--bb-accent-soft);
+                color: var(--bb-accent);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .qa-title {
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--bb-text-primary);
+            }
+            .qa-desc {
+                font-size: 12px;
+                color: var(--bb-text-tertiary);
+                line-height: 1.4;
+            }
+
+            .status-chips {
+                display: flex;
+                gap: 12px;
+                margin-top: 4px;
+            }
+            .status-chip {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 12px;
+                color: var(--bb-text-secondary);
+                background: #fff;
+                border: 1px solid var(--bb-border);
+                padding: 5px 12px;
+                border-radius: 20px;
+            }
+            .status-chip .dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+            }
+
+            /* A1 右侧速览面板 */
+            .a1-panel {
+                width: 300px;
+                background: #fff;
+                border-left: 1px solid var(--bb-border);
+                padding: 20px 18px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 18px;
+                flex-shrink: 0;
+            }
+            .panel-title {
+                font-size: 15px;
+                font-weight: 700;
+                color: var(--bb-text-primary);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .panel-title .collapse-btn {
+                color: var(--bb-text-tertiary);
+                cursor: pointer;
+            }
+            .panel-section {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .panel-section-label {
+                font-size: 11px;
+                color: var(--bb-text-tertiary);
+                font-weight: 600;
+                letter-spacing: 0.5px;
+            }
+            .panel-amount-row {
+                display: flex;
+                align-items: baseline;
+                justify-content: space-between;
+            }
+            .panel-amount {
+                font-size: 22px;
+                font-weight: 700;
+                color: var(--bb-text-primary);
+                font-variant-numeric: tabular-nums;
+            }
+            .panel-amount.income {
+                color: var(--bb-success);
+            }
+            .panel-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 3px;
+                font-size: 11px;
+                font-weight: 600;
+                padding: 3px 8px;
+                border-radius: 12px;
+            }
+            .panel-chip.success {
+                color: var(--bb-success);
+                background: var(--bb-success-light);
+            }
+
+            .progress-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 7px;
+            }
+            .progress-label {
+                font-size: 12px;
+                color: var(--bb-text-secondary);
+                width: 32px;
+                flex-shrink: 0;
+            }
+            .progress-track {
+                flex: 1;
+                height: 6px;
+                background: var(--bb-bg-input);
+                border-radius: 3px;
+                overflow: hidden;
+            }
+            .progress-fill {
+                height: 100%;
+                border-radius: 3px;
+            }
+            .progress-pct {
+                font-size: 11px;
+                color: var(--bb-text-tertiary);
+                width: 30px;
+                text-align: right;
+                font-variant-numeric: tabular-nums;
+            }
+
+            .tx-mini-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 7px 0;
+                border-bottom: 1px solid var(--bb-border-light);
+            }
+            .tx-mini-row:last-child {
+                border-bottom: none;
+            }
+            .tx-mini-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                flex-shrink: 0;
+            }
+            .tx-mini-info {
+                flex: 1;
+                min-width: 0;
+            }
+            .tx-mini-name {
+                font-size: 12px;
+                color: var(--bb-text-primary);
+                font-weight: 500;
+            }
+            .tx-mini-amount {
+                font-size: 13px;
+                font-weight: 600;
+                font-variant-numeric: tabular-nums;
+            }
+            .tx-mini-amount.expense {
+                color: var(--bb-danger);
+            }
+            .tx-mini-amount.income {
+                color: var(--bb-success);
+            }
+
+            .alert-strip {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 10px 12px;
+                background: var(--bb-warning-light);
+                border: 1px solid rgba(245, 158, 11, 0.2);
+                border-radius: 8px;
+                font-size: 12px;
+                color: #92400e;
+                font-weight: 500;
+            }
+            .alert-strip .alert-arrow {
+                margin-left: auto;
+                color: #92400e;
+            }
+
+            /* ========== A2 · 对话进行中 ========== */
+            .a2-main {
+                flex: 1;
+                flex-direction: column;
+                overflow: hidden;
+            }
+            .a2-header {
+                height: 48px;
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 24px;
+                border-bottom: 1px solid var(--bb-border-light);
+                background: rgba(255, 255, 255, 0.6);
+            }
+            .a2-header-left {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .a2-conv-title {
+                font-size: 15px;
+                font-weight: 600;
+                color: var(--bb-text-primary);
+            }
+            .a2-header-right {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .a2-hbtn {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-size: 12px;
+                color: var(--bb-text-secondary);
+                background: transparent;
+                border: 1px solid transparent;
+                cursor: pointer;
+            }
+            .a2-hbtn:hover {
+                background: var(--bb-bg-hover);
+            }
+            .a2-hbtn .count {
+                font-weight: 700;
+                color: var(--bb-text-primary);
+            }
+            .a2-new-btn {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                padding: 6px 14px;
+                border-radius: 8px;
+                background: var(--bb-accent);
+                color: #fff;
+                font-size: 12px;
+                font-weight: 600;
+                border: none;
+                cursor: pointer;
+            }
+            .a2-toggle-btn {
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--bb-text-secondary);
+                background: transparent;
+                border: none;
+                cursor: pointer;
+            }
+            .a2-toggle-btn:hover {
+                background: var(--bb-bg-hover);
+            }
+
+            .a2-thread-wrap {
+                flex: 1;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                position: relative;
+            }
+            .a2-thread {
+                flex: 1;
+                overflow-y: auto;
+                padding: 20px 24px;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+                align-items: stretch;
+            }
+            .a2-thread-inner {
+                max-width: 760px;
+                width: 100%;
+                margin: 0 auto;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+            }
+
+            .msg {
+                max-width: 85%;
+                padding: 11px 16px;
+                border-radius: 14px;
+                font-size: 14px;
+                line-height: 1.65;
+            }
+            .msg-user {
+                align-self: flex-end;
+                background: var(--bb-accent);
+                color: #fff;
+                border-bottom-right-radius: 4px;
+                box-shadow: 0 2px 8px rgba(217, 164, 4, 0.15);
+            }
+            .msg-ai {
+                align-self: flex-start;
+                background: #fff;
+                color: var(--bb-text-primary);
+                box-shadow: var(--bb-shadow-card);
+                border-bottom-left-radius: 4px;
+                border: 1px solid var(--bb-border-light);
+            }
+
+            .tool-card {
+                align-self: flex-start;
+                background: #fff;
+                border: 1px solid var(--bb-border);
+                border-radius: 10px;
+                padding: 9px 14px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 13px;
+                color: var(--bb-text-secondary);
+                box-shadow: var(--bb-shadow-sm);
+                max-width: 85%;
+            }
+            .tool-card .tool-icon {
+                width: 26px;
+                height: 26px;
+                background: var(--bb-accent-light);
+                color: var(--bb-accent-text);
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+            .tool-card .tool-name {
+                font-weight: 600;
+                color: var(--bb-text-primary);
+            }
+            .tool-card .tool-result {
+                color: var(--bb-text-secondary);
+            }
+            .tool-card .tool-chevron {
+                color: var(--bb-text-tertiary);
+                margin-left: auto;
+            }
+
+            .mini-ranking {
+                margin-top: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .ranking-row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .ranking-label {
+                font-size: 12px;
+                color: var(--bb-text-secondary);
+                width: 36px;
+                flex-shrink: 0;
+            }
+            .ranking-track {
+                flex: 1;
+                height: 18px;
+                background: var(--bb-bg-input);
+                border-radius: 4px;
+                overflow: hidden;
+            }
+            .ranking-fill {
+                height: 100%;
+                background: var(--bar-gradient);
+                border-radius: 4px;
+            }
+            .ranking-amount {
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--bb-text-primary);
+                width: 60px;
+                text-align: right;
+                font-variant-numeric: tabular-nums;
+            }
+
+            .thinking-indicator {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 6px 4px;
+                color: var(--bb-text-tertiary);
+                font-size: 13px;
+                align-self: flex-start;
+            }
+            .thinking-dots {
+                display: flex;
+                gap: 4px;
+            }
+            .thinking-dots span {
+                width: 6px;
+                height: 6px;
+                background: var(--bb-accent);
+                border-radius: 50%;
+                animation: dot-pulse 1.4s infinite ease-in-out;
+            }
+            .thinking-dots span:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+            .thinking-dots span:nth-child(3) {
+                animation-delay: 0.4s;
+            }
+            @keyframes dot-pulse {
+                0%,
+                80%,
+                100% {
+                    opacity: 0.3;
+                    transform: scale(0.8);
+                }
+                40% {
+                    opacity: 1;
+                    transform: scale(1.1);
+                }
+            }
+
+            .a2-input-area {
+                flex-shrink: 0;
+                padding: 12px 24px 8px;
+                background: rgba(255, 255, 255, 0.6);
+                border-top: 1px solid var(--bb-border-light);
+            }
+            .a2-input-inner {
+                max-width: 760px;
+                margin: 0 auto;
+            }
+            .a2-hint {
+                font-size: 11px;
+                color: var(--bb-text-tertiary);
+                text-align: center;
+                margin-top: 6px;
+            }
+
+            .panel-expand-fab {
+                position: absolute;
+                right: 16px;
+                top: 60px;
+                width: 36px;
+                height: 36px;
+                border-radius: 10px;
+                background: #fff;
+                border: 1px solid var(--bb-border);
+                box-shadow: var(--bb-shadow-sm);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--bb-text-secondary);
+                cursor: pointer;
+            }
+            .panel-expand-fab:hover {
+                background: var(--bb-bg-hover);
+            }
+
+            /* ========== A3 · 功能页接管 ========== */
+            .a3-main {
+                flex: 1;
+                overflow: hidden;
+                flex-direction: column;
+            }
+            .a3-content {
+                flex: 1;
+                overflow-y: auto;
+                padding: 24px 32px 28px;
+            }
+            .page-header {
+                display: flex;
+                align-items: flex-end;
+                justify-content: space-between;
+                margin-bottom: 18px;
+            }
+            .page-title {
+                font-size: 24px;
+                font-weight: 700;
+                color: var(--bb-text-primary);
+                letter-spacing: -0.3px;
+            }
+            .page-subtitle {
+                font-size: 13px;
+                color: var(--bb-text-tertiary);
+                margin-top: 4px;
+            }
+
+            .filter-bar {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+            .filter-pills {
+                display: inline-flex;
+                background: var(--bb-bg-input);
+                border-radius: 10px;
+                padding: 3px;
+                gap: 2px;
+            }
+            .filter-pill {
+                padding: 6px 16px;
+                border-radius: 7px;
+                font-size: 13px;
+                color: var(--bb-text-secondary);
+                cursor: pointer;
+            }
+            .filter-pill.active {
+                background: #fff;
+                color: var(--bb-text-primary);
+                font-weight: 600;
+                box-shadow: var(--bb-shadow-sm);
+            }
+            .filter-chip {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 7px 14px;
+                border-radius: 8px;
+                background: #fff;
+                border: 1px solid var(--bb-border);
+                font-size: 13px;
+                color: var(--bb-text-secondary);
+                cursor: pointer;
+            }
+            .filter-chip .icon {
+                color: var(--bb-text-tertiary);
+            }
+            .filter-search {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 7px 14px;
+                border-radius: 8px;
+                background: #fff;
+                border: 1px solid var(--bb-border);
+                font-size: 13px;
+                color: var(--bb-text-tertiary);
+                margin-left: auto;
+                min-width: 200px;
+            }
+
+            .tx-list {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+            .tx-group {
+            }
+            .tx-group-header {
+                font-size: 13px;
+                font-weight: 600;
+                color: var(--bb-text-secondary);
+                margin-bottom: 8px;
+                padding: 0 4px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .tx-group-header .tx-group-tag {
+                font-size: 11px;
+                color: var(--bb-text-tertiary);
+                font-weight: 400;
+            }
+            .tx-rows {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+            .tx-row {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                padding: 12px 16px;
+                background: #fff;
+                border: 1px solid var(--bb-border-light);
+                border-radius: 10px;
+            }
+            .tx-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                flex-shrink: 0;
+            }
+            .tx-info {
+                flex: 1;
+                min-width: 0;
+            }
+            .tx-name {
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--bb-text-primary);
+            }
+            .tx-note {
+                font-size: 12px;
+                color: var(--bb-text-tertiary);
+                margin-top: 2px;
+            }
+            .tx-account {
+                display: inline-flex;
+                align-items: center;
+                padding: 3px 10px;
+                border-radius: 6px;
+                background: var(--bb-bg-input);
+                font-size: 11px;
+                color: var(--bb-text-secondary);
+                flex-shrink: 0;
+            }
+            .tx-amount {
+                font-size: 15px;
+                font-weight: 700;
+                font-variant-numeric: tabular-nums;
+                flex-shrink: 0;
+                min-width: 90px;
+                text-align: right;
+            }
+            .tx-amount.expense {
+                color: var(--bb-danger);
+            }
+            .tx-amount.income {
+                color: var(--bb-success);
+            }
+
+            .fab-stack {
+                position: absolute;
+                bottom: 28px;
+                right: 28px;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 12px;
+                z-index: 10;
+            }
+            .fab {
+                width: 52px;
+                height: 52px;
+                border-radius: 50%;
+                background: var(--bb-accent);
+                color: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: var(--bb-shadow-float);
+                border: none;
+                cursor: pointer;
+            }
+            .back-to-bot {
+                display: flex;
+                align-items: center;
+                gap: 7px;
+                padding: 11px 20px;
+                border-radius: 26px;
+                background: var(--bb-accent);
+                color: #fff;
+                font-size: 13px;
+                font-weight: 600;
+                box-shadow: var(--bb-shadow-float);
+                border: none;
+                cursor: pointer;
+            }
+
+            /* ========== B1 · 双栏常驻 ========== */
+            .b1-chat {
+                width: 400px;
+                background: #fff;
+                border-right: 1px solid var(--bb-border);
+                display: flex;
+                flex-direction: column;
+                flex-shrink: 0;
+            }
+            .b1-chat-header {
+                height: 48px;
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 0 18px;
+                border-bottom: 1px solid var(--bb-border-light);
+            }
+            .b1-chat-header .header-icon {
+                width: 28px;
+                height: 28px;
+                border-radius: 8px;
+                background: var(--bb-accent-light);
+                color: var(--bb-accent);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .b1-chat-header .header-title {
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--bb-text-primary);
+            }
+            .b1-chat-header .header-sub {
+                font-size: 11px;
+                color: var(--bb-text-tertiary);
+            }
+            .b1-messages {
+                flex: 1;
+                overflow-y: auto;
+                padding: 16px 18px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+            .b1-messages .msg {
+                max-width: 90%;
+                font-size: 13px;
+                padding: 10px 14px;
+                line-height: 1.55;
+            }
+            .b1-input-area {
+                flex-shrink: 0;
+                padding: 10px 14px 14px;
+                border-top: 1px solid var(--bb-border-light);
+            }
+            .b1-input {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: var(--bb-bg-input);
+                border-radius: 12px;
+                padding: 4px 4px 4px 14px;
+            }
+            .b1-input .b1-placeholder {
+                flex: 1;
+                font-size: 13px;
+                color: var(--bb-text-tertiary);
+                padding: 8px 0;
+            }
+
+            .b1-dashboard {
+                flex: 1;
+                overflow-y: auto;
+                padding: 24px 28px;
+                background: var(--bb-bg-page);
+            }
+            .b1-dash-title {
+                font-size: 18px;
+                font-weight: 700;
+                color: var(--bb-text-primary);
+                margin-bottom: 16px;
+            }
+            .stat-cards {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 14px;
+                margin-bottom: 18px;
+            }
+            .stat-card {
+                background: #fff;
+                border: 1px solid var(--bb-border);
+                border-radius: 12px;
+                padding: 16px 18px;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+            .stat-label {
+                font-size: 12px;
+                color: var(--bb-text-tertiary);
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .stat-amount {
+                font-size: 22px;
+                font-weight: 700;
+                color: var(--bb-text-primary);
+                font-variant-numeric: tabular-nums;
+            }
+            .stat-amount.expense {
+                color: var(--bb-text-primary);
+            }
+            .stat-amount.income {
+                color: var(--bb-success);
+            }
+            .stat-trend {
+                font-size: 11px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 3px;
+            }
+            .stat-trend.down {
+                color: var(--bb-success);
+            }
+
+            .dash-card {
+                background: #fff;
+                border: 1px solid var(--bb-border);
+                border-radius: 12px;
+                padding: 18px 20px;
+                margin-bottom: 14px;
+            }
+            .dash-card-title {
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--bb-text-primary);
+                margin-bottom: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .dash-card-title .more {
+                font-size: 12px;
+                color: var(--bb-text-tertiary);
+                font-weight: 400;
+            }
+
+            .chart-bars {
+                display: flex;
+                align-items: flex-end;
+                gap: 14px;
+                height: 140px;
+                padding: 0 4px;
+            }
+            .chart-bar-item {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 6px;
+            }
+            .chart-bar {
+                width: 100%;
+                max-width: 32px;
+                background: var(--bar-gradient);
+                border-radius: 4px 4px 0 0;
+            }
+            .chart-bar-label {
+                font-size: 11px;
+                color: var(--bb-text-tertiary);
+            }
+
+            .ranking-list {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .ranking-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .ranking-item .r-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                flex-shrink: 0;
+            }
+            .ranking-item .r-name {
+                font-size: 13px;
+                color: var(--bb-text-secondary);
+                width: 50px;
+                flex-shrink: 0;
+            }
+            .ranking-item .r-track {
+                flex: 1;
+                height: 8px;
+                background: var(--bb-bg-input);
+                border-radius: 4px;
+                overflow: hidden;
+            }
+            .ranking-item .r-fill {
+                height: 100%;
+                border-radius: 4px;
+            }
+            .ranking-item .r-amount {
+                font-size: 13px;
+                font-weight: 600;
+                color: var(--bb-text-primary);
+                width: 70px;
+                text-align: right;
+                font-variant-numeric: tabular-nums;
+            }
+
+            /* ========== 对比表 ========== */
+            .cmp-table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0;
+                background: #fff;
+                border-radius: 14px;
+                overflow: hidden;
+                box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+            }
+            .cmp-table th {
+                background: #f8fafc;
+                padding: 16px 24px;
+                text-align: left;
+                font-size: 14px;
+                font-weight: 700;
+                color: var(--bb-text-primary);
+                border-bottom: 1px solid var(--bb-border);
+            }
+            .cmp-table th.recommend {
+                color: var(--bb-accent-text);
+            }
+            .cmp-table td {
+                padding: 16px 24px;
+                font-size: 14px;
+                color: var(--bb-text-secondary);
+                border-bottom: 1px solid var(--bb-border-light);
+                line-height: 1.6;
+            }
+            .cmp-table tr:last-child td {
+                border-bottom: none;
+            }
+            .cmp-table .dim-col {
+                font-weight: 700;
+                color: var(--bb-text-primary);
+                width: 160px;
+            }
+            .cmp-table .recommend-col {
+                background: var(--bb-accent-soft);
+            }
+            .cmp-recommend-banner {
+                margin-top: 20px;
+                padding: 16px 24px;
+                background: var(--bb-accent-soft);
+                border: 1px solid var(--bb-accent-light);
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 14px;
+                color: var(--bb-accent-text);
+                font-weight: 500;
+            }
+            .cmp-recommend-banner .banner-icon {
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                background: var(--bb-accent);
+                color: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+
+            /* ========== 交互规格 ========== */
+            .specs-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 14px;
+            }
+            .spec-card {
+                background: #fff;
+                border: 1px solid rgba(226, 232, 240, 0.6);
+                border-radius: 12px;
+                padding: 18px 22px;
+                display: flex;
+                gap: 16px;
+                align-items: flex-start;
+            }
+            .spec-card .spec-num {
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                background: var(--bb-accent-light);
+                color: var(--bb-accent-text);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 13px;
+                font-weight: 700;
+                flex-shrink: 0;
+            }
+            .spec-card .spec-body {
+                flex: 1;
+            }
+            .spec-card .spec-head {
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--bb-text-primary);
+                margin-bottom: 4px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .spec-card .spec-val {
+                font-family: 'SF Mono', Consolas, monospace;
+                font-size: 12px;
+                color: var(--bb-accent-text);
+                background: var(--bb-accent-soft);
+                padding: 2px 8px;
+                border-radius: 5px;
+            }
+            .spec-card .spec-desc {
+                font-size: 13px;
+                color: var(--bb-text-secondary);
+                line-height: 1.6;
+            }
+
+            /* ========== 迁移要点 ========== */
+            .mig-table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0;
+                background: #fff;
+                border-radius: 14px;
+                overflow: hidden;
+                box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+                margin-bottom: 20px;
+            }
+            .mig-table th {
+                background: #f8fafc;
+                padding: 14px 22px;
+                text-align: left;
+                font-size: 13px;
+                font-weight: 700;
+                color: var(--bb-text-primary);
+                border-bottom: 1px solid var(--bb-border);
+            }
+            .mig-table td {
+                padding: 14px 22px;
+                font-size: 13px;
+                color: var(--bb-text-secondary);
+                border-bottom: 1px solid var(--bb-border-light);
+            }
+            .mig-table tr:last-child td {
+                border-bottom: none;
+            }
+            .mig-table .route {
+                font-family: 'SF Mono', Consolas, monospace;
+                font-weight: 600;
+                color: var(--bb-text-primary);
+            }
+            .mig-table .route-new {
+                color: var(--bb-accent-text);
+            }
+            .mig-table .changed {
+                background: var(--bb-accent-soft);
+            }
+            .mig-table .arrow {
+                color: var(--bb-text-tertiary);
+                text-align: center;
+                width: 40px;
+            }
+            .mig-notes {
+                background: #fff;
+                border: 1px solid rgba(226, 232, 240, 0.6);
+                border-radius: 12px;
+                padding: 20px 24px;
+            }
+            .mig-notes-title {
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--bb-text-primary);
+                margin-bottom: 12px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .mig-notes-title .nt-icon {
+                color: var(--bb-accent);
+            }
+            .mig-notes ul {
+                list-style: none;
+                padding: 0;
+            }
+            .mig-notes li {
+                font-size: 13px;
+                color: var(--bb-text-secondary);
+                padding: 6px 0 6px 20px;
+                position: relative;
+                line-height: 1.6;
+            }
+            .mig-notes li::before {
+                content: '';
+                position: absolute;
+                left: 4px;
+                top: 14px;
+                width: 5px;
+                height: 5px;
+                border-radius: 50%;
+                background: var(--bb-accent);
+            }
+            .mig-notes code {
+                font-family: 'SF Mono', Consolas, monospace;
+                font-size: 12px;
+                background: var(--bb-bg-input);
+                padding: 2px 6px;
+                border-radius: 4px;
+                color: var(--bb-accent-text);
+                font-weight: 600;
+            }
+
+            /* ========== 页脚 ========== */
+            .board-footer {
+                margin-top: 64px;
+                padding-top: 28px;
+                border-top: 1px solid var(--canvas-line);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 12px;
+                color: var(--canvas-muted);
+            }
+            .board-footer .footer-brand {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: 600;
+                color: var(--canvas-text);
+            }
+
+            /* 滚动条隐藏 */
+            .a2-thread::-webkit-scrollbar,
+            .a1-panel::-webkit-scrollbar,
+            .a3-content::-webkit-scrollbar,
+            .b1-messages::-webkit-scrollbar,
+            .b1-dashboard::-webkit-scrollbar {
+                width: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- ========== SVG 图标精灵 ========== -->
+        <svg style="display: none" xmlns="http://www.w3.org/2000/svg">
+            <symbol
+                id="i-bot"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M12 8V4H8" />
+                <rect width="16" height="12" x="4" y="8" rx="2" />
+                <path d="M2 14h2m16 0h2m-7-1v2m-6-2v2" />
+            </symbol>
+            <symbol
+                id="i-sparkles"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594zM20 2v4m2-2h-4"
+                />
+                <circle cx="4" cy="20" r="2" />
+            </symbol>
+            <symbol
+                id="i-send"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904zM6 12h16"
+                />
+            </symbol>
+            <symbol
+                id="i-mic"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M12 19v3m7-12v2a7 7 0 0 1-14 0v-2" />
+                <rect width="6" height="13" x="9" y="2" rx="3" />
+            </symbol>
+            <symbol
+                id="i-plus"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M5 12h14m-7-7v14" />
+            </symbol>
+            <symbol
+                id="i-bar-chart-3"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M3 3v18h18m-3-4V9m-5 8V5M8 17v-3" />
+            </symbol>
+            <symbol
+                id="i-list"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M3 5h.01M3 12h.01M3 19h.01M8 5h13M8 12h13M8 19h13" />
+            </symbol>
+            <symbol
+                id="i-shield"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+                />
+            </symbol>
+            <symbol
+                id="i-tag"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"
+                />
+                <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" />
+            </symbol>
+            <symbol
+                id="i-wallet"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"
+                />
+                <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
+            </symbol>
+            <symbol
+                id="i-file-down"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"
+                />
+                <path d="M14 2v5a1 1 0 0 0 1 1h5m-8 10v-6m-3 3l3 3l3-3" />
+            </symbol>
+            <symbol
+                id="i-settings"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0a2.34 2.34 0 0 0 3.319 1.915a2.34 2.34 0 0 1 2.33 4.033a2.34 2.34 0 0 0 0 3.831a2.34 2.34 0 0 1-2.33 4.033a2.34 2.34 0 0 0-3.319 1.915a2.34 2.34 0 0 1-4.659 0a2.34 2.34 0 0 0-3.32-1.915a2.34 2.34 0 0 1-2.33-4.033a2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
+                />
+                <circle cx="12" cy="12" r="3" />
+            </symbol>
+            <symbol
+                id="i-pencil"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497zM15 5l4 4"
+                />
+            </symbol>
+            <symbol
+                id="i-x"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M18 6L6 18M6 6l12 12" />
+            </symbol>
+            <symbol
+                id="i-minus"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M5 12h14" />
+            </symbol>
+            <symbol
+                id="i-square"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <rect width="18" height="18" x="3" y="3" rx="2" />
+            </symbol>
+            <symbol
+                id="i-panel-right"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <rect width="18" height="18" x="3" y="3" rx="2" />
+                <path d="M15 3v18" />
+            </symbol>
+            <symbol
+                id="i-message-square"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"
+                />
+            </symbol>
+            <symbol
+                id="i-zap"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"
+                />
+            </symbol>
+            <symbol
+                id="i-puzzle"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M15.39 4.39a1 1 0 0 0 1.68-.474a2.5 2.5 0 1 1 3.014 3.015a1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474a2.5 2.5 0 1 0-3.014 3.015a1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 1-1.68.474a2.5 2.5 0 1 1-3.014-3.015a1 1 0 0 0 .474 1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474a2.5 2.5 0 1 1-3.014-3.015a1 1 0 0 0 .474 1.68l-1.683-1.682a2.414 2.414 0 0 1 3.414 0z"
+                />
+            </symbol>
+            <symbol
+                id="i-chevron-right"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="m9 18l6-6l-6-6" />
+            </symbol>
+            <symbol
+                id="i-brain"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M12 18V5m3 8a4.17 4.17 0 0 1-3-4a4.17 4.17 0 0 1-3 4m8.598-6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"
+                />
+                <path d="M17.997 5.125a4 4 0 0 1 2.526 5.77" />
+                <path d="M18 18a4 4 0 0 0 2-7.464" />
+                <path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517" />
+                <path d="M6 18a4 4 0 0 1-2-7.464" />
+                <path d="M6.003 5.125a4 4 0 0 0-2.526 5.77" />
+            </symbol>
+            <symbol
+                id="i-receipt-text"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M13 16H8m6-8H8m8 4H8M4 3a1 1 0 0 1 1-1a1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 0 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1a1.3 1.3 0 0 1-1 1a1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934-.6a1.3 1.3 0 0 1-1.4 0l-.933.6a1.3 1.3 0 0 0-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1-1 1z"
+                />
+            </symbol>
+            <symbol
+                id="i-eye"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M2.062 12.348a1 1 0 0 1 0-.696a10.75 10.75 0 0 1 19.876 0a1 1 0 0 1 0 .696a10.75 10.75 0 0 1-19.876 0"
+                />
+                <circle cx="12" cy="12" r="3" />
+            </symbol>
+            <symbol
+                id="i-trending-down"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M16 17h6v-6" />
+                <path d="m22 17l-8.5-8.5l-5 5L2 7" />
+            </symbol>
+            <symbol
+                id="i-trending-up"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M16 7h6v6" />
+                <path d="m22 7l-8.5 8.5l-5-5L2 17" />
+            </symbol>
+            <symbol
+                id="i-search"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="m21 21l-4.34-4.34" />
+                <circle cx="11" cy="11" r="8" />
+            </symbol>
+            <symbol
+                id="i-log-out"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="m16 17l5-5l-5-5m5 5H9m0 9H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            </symbol>
+            <symbol
+                id="i-message-circle"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092a10 10 0 1 0-4.777-4.719"
+                />
+            </symbol>
+            <symbol
+                id="i-lightbulb"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M15 14c.2-1 .7-1.7 1.5-2.5c1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5c.7.7 1.3 1.5 1.5 2.5m0 4h6m-5 4h4"
+                />
+            </symbol>
+            <symbol
+                id="i-arrow-right"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M5 12h14m-7-7l7 7l-7 7" />
+            </symbol>
+            <symbol
+                id="i-check"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M20 6L9 17l-5-5" />
+            </symbol>
+            <symbol
+                id="i-history"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path d="M3 12a9 9 0 1 0 9-9a9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5m4-1v5l4 2" />
+            </symbol>
+            <symbol
+                id="i-circle-dollar-sign"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <circle cx="12" cy="12" r="10" />
+                <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8m4 2V6" />
+            </symbol>
+            <symbol
+                id="i-piggy-bank"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            >
+                <path
+                    d="M11 17h3v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a3.16 3.16 0 0 0 2-2h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1a5 5 0 0 0-2-4V3a4 4 0 0 0-3.2 1.6l-.3.4H11a6 6 0 0 0-6 6v1a5 5 0 0 0 2 4v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1zm5-7h.01M2 8v1a2 2 0 0 0 2 2h1"
+                />
+            </symbol>
+        </svg>
+
+        <div class="board">
+            <!-- ========== 1. 封面区 ========== -->
+            <section class="section">
+                <div class="cover">
+                    <div class="cover-tag">UI REDESIGN PROPOSAL</div>
+                    <h1 class="cover-title">笔笔 · AI 中心化 UI 重构图纸</h1>
+                    <p class="cover-subtitle">小笔智能体为主体，记账功能退居二线，视觉风格不变</p>
+                    <div class="cover-meta">
+                        <span>2026-07-18</span>
+                        <span class="dot"></span>
+                        <span>桌面端 Electron + Vue 3</span>
+                        <span class="dot"></span>
+                        <span>设计交付物 · 仅供评审</span>
+                    </div>
+
+                    <div class="token-groups">
+                        <div class="token-group">
+                            <div class="token-group-title">主色</div>
+                            <div class="token-items">
+                                <div class="token-color">
+                                    <div class="token-swatch" style="background: #d9a404"></div>
+                                    <div class="token-name">accent</div>
+                                    <div class="token-hex">#d9a404</div>
+                                </div>
+                                <div class="token-color">
+                                    <div class="token-swatch" style="background: #9b7000"></div>
+                                    <div class="token-name">text</div>
+                                    <div class="token-hex">#9b7000</div>
+                                </div>
+                                <div class="token-color">
+                                    <div
+                                        class="token-swatch"
+                                        style="background: rgba(217, 164, 4, 0.08)"
+                                    ></div>
+                                    <div class="token-name">light</div>
+                                    <div class="token-hex">.08</div>
+                                </div>
+                                <div class="token-color">
+                                    <div
+                                        class="token-swatch"
+                                        style="background: rgba(217, 164, 4, 0.12)"
+                                    ></div>
+                                    <div class="token-name">lighter</div>
+                                    <div class="token-hex">.12</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="token-group">
+                            <div class="token-group-title">背景 / 文本</div>
+                            <div class="token-items">
+                                <div class="token-color">
+                                    <div class="token-swatch" style="background: #f1f5f9"></div>
+                                    <div class="token-name">page</div>
+                                    <div class="token-hex">#f1f5f9</div>
+                                </div>
+                                <div class="token-color">
+                                    <div
+                                        class="token-swatch"
+                                        style="background: #fff; border: 1px solid #e2e8f0"
+                                    ></div>
+                                    <div class="token-name">card</div>
+                                    <div class="token-hex">#fff</div>
+                                </div>
+                                <div class="token-color">
+                                    <div class="token-swatch" style="background: #0f172a"></div>
+                                    <div class="token-name">primary</div>
+                                    <div class="token-hex">#0f172a</div>
+                                </div>
+                                <div class="token-color">
+                                    <div class="token-swatch" style="background: #475569"></div>
+                                    <div class="token-name">secondary</div>
+                                    <div class="token-hex">#475569</div>
+                                </div>
+                                <div class="token-color">
+                                    <div class="token-swatch" style="background: #94a3b8"></div>
+                                    <div class="token-name">tertiary</div>
+                                    <div class="token-hex">#94a3b8</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="token-group">
+                            <div class="token-group-title">语义色</div>
+                            <div class="token-items">
+                                <div class="token-color">
+                                    <div class="token-swatch" style="background: #16a34a"></div>
+                                    <div class="token-name">success</div>
+                                    <div class="token-hex">#16a34a</div>
+                                </div>
+                                <div class="token-color">
+                                    <div class="token-swatch" style="background: #ef4444"></div>
+                                    <div class="token-name">danger</div>
+                                    <div class="token-hex">#ef4444</div>
+                                </div>
+                                <div class="token-color">
+                                    <div class="token-swatch" style="background: #f59e0b"></div>
+                                    <div class="token-name">warning</div>
+                                    <div class="token-hex">#f59e0b</div>
+                                </div>
+                                <div class="token-color">
+                                    <div class="token-swatch" style="background: #e2e8f0"></div>
+                                    <div class="token-name">border</div>
+                                    <div class="token-hex">#e2e8f0</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="token-group">
+                            <div class="token-group-title">圆角 / 阴影</div>
+                            <div class="token-items">
+                                <div class="token-chip radius-sm">
+                                    <span class="chip-val">6px</span> sm
+                                </div>
+                                <div class="token-chip radius-md">
+                                    <span class="chip-val">10px</span> md
+                                </div>
+                                <div class="token-chip radius-lg">
+                                    <span class="chip-val">14px</span> lg
+                                </div>
+                                <div class="token-chip radius-xl">
+                                    <span class="chip-val">18px</span> xl
+                                </div>
+                                <div class="token-chip shadow-sm">shadow-sm</div>
+                                <div class="token-chip shadow-card">shadow-card</div>
+                                <div class="token-chip shadow-float">shadow-float</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== 2. 信息架构图 ========== -->
+            <section class="section">
+                <h2 class="section-title">信息架构图</h2>
+                <p class="section-desc">
+                    小笔主页作为默认路由，功能页通过左侧 68px 图标轨道进入，全屏接管主内容区。
+                </p>
+                <div class="sitemap">
+                    <div class="sm-primary">
+                        <svg class="icon" width="22" height="22"><use href="#i-bot" /></svg>
+                        小笔主页
+                        <span class="sm-route">/</span>
+                        <span class="sm-label">默认路由</span>
+                    </div>
+                    <div class="sm-stem"></div>
+                    <div class="sm-tree">
+                        <div class="sm-branch">
+                            <div class="sm-node">
+                                <svg class="icon sm-icon" width="18" height="18">
+                                    <use href="#i-bar-chart-3" />
+                                </svg>
+                                概览
+                                <span class="sm-sub">/overview</span>
+                            </div>
+                        </div>
+                        <div class="sm-branch">
+                            <div class="sm-node">
+                                <svg class="icon sm-icon" width="18" height="18">
+                                    <use href="#i-list" />
+                                </svg>
+                                流水
+                                <span class="sm-sub">/transactions</span>
+                            </div>
+                        </div>
+                        <div class="sm-branch">
+                            <div class="sm-node">
+                                <svg class="icon sm-icon" width="18" height="18">
+                                    <use href="#i-shield" />
+                                </svg>
+                                账户
+                                <span class="sm-sub">/accounts</span>
+                            </div>
+                        </div>
+                        <div class="sm-branch">
+                            <div class="sm-node">
+                                <svg class="icon sm-icon" width="18" height="18">
+                                    <use href="#i-tag" />
+                                </svg>
+                                分类
+                                <span class="sm-sub">/categories</span>
+                            </div>
+                        </div>
+                        <div class="sm-branch">
+                            <div class="sm-node">
+                                <svg class="icon sm-icon" width="18" height="18">
+                                    <use href="#i-wallet" />
+                                </svg>
+                                预算
+                                <span class="sm-sub">/budget</span>
+                            </div>
+                        </div>
+                        <div class="sm-branch">
+                            <div class="sm-node">
+                                <svg class="icon sm-icon" width="18" height="18">
+                                    <use href="#i-file-down" />
+                                </svg>
+                                导入
+                                <span class="sm-sub">/import</span>
+                            </div>
+                        </div>
+                        <div class="sm-branch">
+                            <div class="sm-node">
+                                <svg class="icon sm-icon" width="18" height="18">
+                                    <use href="#i-settings" />
+                                </svg>
+                                设置
+                                <span class="sm-sub">/settings</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sm-annotation">
+                        AI 对话为主界面，功能页通过左侧图标轨道进入，全屏接管主内容区
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== 3. 方案 A ========== -->
+            <section class="section">
+                <span class="section-tag">推荐方案</span>
+                <h2 class="section-title">方案 A · AI 主场 + 图标轨道</h2>
+                <p class="section-desc">
+                    小笔对话独占主舞台，功能页通过 68px 图标轨道切换并全屏接管主内容区。AI
+                    主导感最强，功能页空间充足，实现路径清晰。
+                </p>
+
+                <!-- A1 -->
+                <div class="artboard-block">
+                    <div class="artboard-label">
+                        <span class="artboard-id">A1</span>
+                        <span class="artboard-title">小笔主页 · 空状态</span>
+                        <span class="artboard-dim">1280 × 800</span>
+                    </div>
+                    <p class="artboard-note">
+                        默认路由 / 的首屏：居中英雄区引导用户与 小笔
+                        对话，右侧速览面板展示今日关键数据。输入框居中，对话开始后自动停靠底部。
+                    </p>
+                    <div class="artboard">
+                        <!-- 标题栏 -->
+                        <div class="titlebar">
+                            <div class="tb-left">
+                                <div class="tb-logo">
+                                    <svg class="icon" width="12" height="12">
+                                        <use href="#i-bot" />
+                                    </svg>
+                                </div>
+                                <span>笔笔</span>
+                            </div>
+                            <div class="win-controls">
+                                <svg class="icon" width="14" height="14">
+                                    <use href="#i-minus" />
+                                </svg>
+                                <svg class="icon" width="12" height="12">
+                                    <use href="#i-square" />
+                                </svg>
+                                <svg class="icon" width="14" height="14"><use href="#i-x" /></svg>
+                            </div>
+                        </div>
+                        <div class="artboard-body">
+                            <!-- 图标轨道 -->
+                            <div class="icon-rail">
+                                <div class="rail-logo">
+                                    <svg class="icon" width="18" height="18">
+                                        <use href="#i-bot" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav active">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-bot" />
+                                    </svg>
+                                </div>
+                                <div class="rail-divider"></div>
+                                <div class="rail-nav hover-demo">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-bar-chart-3" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-list" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-shield" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-tag" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-wallet" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-file-down" />
+                                    </svg>
+                                </div>
+                                <div class="rail-spacer"></div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-settings" />
+                                    </svg>
+                                </div>
+                                <div class="rail-avatar">向</div>
+                            </div>
+                            <!-- 主内容 + 右侧面板 -->
+                            <div class="a1-main">
+                                <div class="a1-content">
+                                    <div class="a1-hero">
+                                        <div class="hero-logo">
+                                            <svg class="icon" width="30" height="30">
+                                                <use href="#i-bot" />
+                                            </svg>
+                                        </div>
+                                        <div class="greeting">下午好，向伟</div>
+                                        <div class="greeting-sub">
+                                            我是小笔，你的记账搭子 -- 说话就能记账、查账、出报表
+                                        </div>
+                                        <div class="mode-pills">
+                                            <div class="mode-pill active">
+                                                <svg class="icon" width="15" height="15">
+                                                    <use href="#i-zap" />
+                                                </svg>
+                                                快速
+                                            </div>
+                                            <div class="mode-pill">
+                                                <svg class="icon" width="15" height="15">
+                                                    <use href="#i-brain" />
+                                                </svg>
+                                                专家
+                                            </div>
+                                        </div>
+                                        <div class="input-card">
+                                            <button class="input-btn">
+                                                <svg class="icon" width="20" height="20">
+                                                    <use href="#i-plus" />
+                                                </svg>
+                                            </button>
+                                            <div class="input-placeholder">
+                                                给小笔发消息，比如：午饭 38 元，刷的招行卡…
+                                            </div>
+                                            <div class="input-actions">
+                                                <button class="input-btn">
+                                                    <svg class="icon" width="19" height="19">
+                                                        <use href="#i-mic" />
+                                                    </svg>
+                                                </button>
+                                                <button class="input-send">
+                                                    <svg class="icon" width="18" height="18">
+                                                        <use href="#i-send" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="quick-actions">
+                                            <div class="qa-card">
+                                                <div class="qa-icon">
+                                                    <svg class="icon" width="18" height="18">
+                                                        <use href="#i-pencil" />
+                                                    </svg>
+                                                </div>
+                                                <div class="qa-title">记一笔</div>
+                                                <div class="qa-desc">语音或文字随手记</div>
+                                            </div>
+                                            <div class="qa-card">
+                                                <div class="qa-icon">
+                                                    <svg class="icon" width="18" height="18">
+                                                        <use href="#i-bar-chart-3" />
+                                                    </svg>
+                                                </div>
+                                                <div class="qa-title">查账单</div>
+                                                <div class="qa-desc">这个月花了多少</div>
+                                            </div>
+                                            <div class="qa-card">
+                                                <div class="qa-icon">
+                                                    <svg class="icon" width="18" height="18">
+                                                        <use href="#i-receipt-text" />
+                                                    </svg>
+                                                </div>
+                                                <div class="qa-title">出报表</div>
+                                                <div class="qa-desc">生成月度消费报告</div>
+                                            </div>
+                                            <div class="qa-card">
+                                                <div class="qa-icon">
+                                                    <svg class="icon" width="18" height="18">
+                                                        <use href="#i-piggy-bank" />
+                                                    </svg>
+                                                </div>
+                                                <div class="qa-title">看预算</div>
+                                                <div class="qa-desc">预算还剩多少</div>
+                                            </div>
+                                        </div>
+                                        <div class="status-chips">
+                                            <div class="status-chip">
+                                                <svg class="icon" width="13" height="13">
+                                                    <use href="#i-message-circle" />
+                                                </svg>
+                                                <span
+                                                    class="dot"
+                                                    style="background: #16a34a"
+                                                ></span>
+                                                微信已连接
+                                            </div>
+                                            <div class="status-chip">
+                                                <svg class="icon" width="13" height="13">
+                                                    <use href="#i-history" />
+                                                </svg>
+                                                历史对话 23
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 右侧速览面板 -->
+                                <div class="a1-panel">
+                                    <div class="panel-title">
+                                        今日速览
+                                        <span class="collapse-btn"
+                                            ><svg class="icon" width="16" height="16">
+                                                <use href="#i-panel-right" /></svg
+                                        ></span>
+                                    </div>
+                                    <div class="panel-section">
+                                        <div class="panel-section-label">本月支出</div>
+                                        <div class="panel-amount-row">
+                                            <span class="panel-amount">¥4,832.50</span>
+                                            <span class="panel-chip success">
+                                                <svg class="icon" width="11" height="11">
+                                                    <use href="#i-trending-down" />
+                                                </svg>
+                                                环比 ↓8%
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="panel-section">
+                                        <div class="panel-section-label">本月收入</div>
+                                        <div class="panel-amount-row">
+                                            <span class="panel-amount income">¥12,000.00</span>
+                                        </div>
+                                    </div>
+                                    <div class="panel-section">
+                                        <div class="panel-section-label">预算执行</div>
+                                        <div class="progress-row">
+                                            <span class="progress-label">餐饮</span>
+                                            <div class="progress-track">
+                                                <div
+                                                    class="progress-fill"
+                                                    style="width: 64%; background: #d9a404"
+                                                ></div>
+                                            </div>
+                                            <span class="progress-pct">64%</span>
+                                        </div>
+                                        <div class="progress-row">
+                                            <span class="progress-label">购物</span>
+                                            <div class="progress-track">
+                                                <div
+                                                    class="progress-fill"
+                                                    style="width: 88%; background: #ef4444"
+                                                ></div>
+                                            </div>
+                                            <span class="progress-pct">88%</span>
+                                        </div>
+                                        <div class="progress-row">
+                                            <span class="progress-label">交通</span>
+                                            <div class="progress-track">
+                                                <div
+                                                    class="progress-fill"
+                                                    style="width: 35%; background: #16a34a"
+                                                ></div>
+                                            </div>
+                                            <span class="progress-pct">35%</span>
+                                        </div>
+                                    </div>
+                                    <div class="panel-section">
+                                        <div class="panel-section-label">最近流水</div>
+                                        <div class="tx-mini-row">
+                                            <div
+                                                class="tx-mini-dot"
+                                                style="background: #d9a404"
+                                            ></div>
+                                            <div class="tx-mini-info">
+                                                <div class="tx-mini-name">餐饮 · 午餐</div>
+                                            </div>
+                                            <div class="tx-mini-amount expense">-¥46.00</div>
+                                        </div>
+                                        <div class="tx-mini-row">
+                                            <div
+                                                class="tx-mini-dot"
+                                                style="background: #06b6d4"
+                                            ></div>
+                                            <div class="tx-mini-info">
+                                                <div class="tx-mini-name">交通 · 地铁</div>
+                                            </div>
+                                            <div class="tx-mini-amount expense">-¥6.00</div>
+                                        </div>
+                                        <div class="tx-mini-row">
+                                            <div
+                                                class="tx-mini-dot"
+                                                style="background: #16a34a"
+                                            ></div>
+                                            <div class="tx-mini-info">
+                                                <div class="tx-mini-name">工资</div>
+                                            </div>
+                                            <div class="tx-mini-amount income">+¥12,000.00</div>
+                                        </div>
+                                    </div>
+                                    <div class="alert-strip">
+                                        <svg class="icon" width="15" height="15">
+                                            <use href="#i-file-down" />
+                                        </svg>
+                                        <span>微信导入草稿 12 条待确认</span>
+                                        <svg class="icon alert-arrow" width="14" height="14">
+                                            <use href="#i-arrow-right" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="artboard-specs">
+                        <div class="spec-chip">
+                            <span class="sk">图标轨道</span><span class="sv">68px</span>
+                        </div>
+                        <div class="spec-chip"><span class="sep">|</span></div>
+                        <div class="spec-chip">
+                            <span class="sk">速览面板</span><span class="sv">300px 可收起</span>
+                        </div>
+                        <div class="spec-chip"><span class="sep">|</span></div>
+                        <div class="spec-chip">
+                            <span class="sk">对话列</span
+                            ><span class="sv">max-width 760px 居中</span>
+                        </div>
+                        <div class="spec-chip"><span class="sep">|</span></div>
+                        <div class="spec-chip">
+                            <span class="sk">输入框</span
+                            ><span class="sv">居中 → 对话后停靠底部</span>
+                        </div>
+                        <div class="spec-chip"><span class="sep">|</span></div>
+                        <div class="spec-chip">
+                            <span class="sk">悬停示意</span><span class="sv">概览项（浅灰底）</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- A2 -->
+                <div class="artboard-block">
+                    <div class="artboard-label">
+                        <span class="artboard-id">A2</span>
+                        <span class="artboard-title">小笔主页 · 对话进行中</span>
+                        <span class="artboard-dim">1280 × 800</span>
+                    </div>
+                    <p class="artboard-note">
+                        对话开始后输入框停靠底部，消息流居中展示。工具调用以可折叠卡片呈现，AI
+                        回复支持内嵌结构化数据（如分类排行）。右侧速览面板可折叠以扩展对话空间。
+                    </p>
+                    <div class="artboard">
+                        <div class="titlebar">
+                            <div class="tb-left">
+                                <div class="tb-logo">
+                                    <svg class="icon" width="12" height="12">
+                                        <use href="#i-bot" />
+                                    </svg>
+                                </div>
+                                <span>笔笔</span>
+                            </div>
+                            <div class="win-controls">
+                                <svg class="icon" width="14" height="14">
+                                    <use href="#i-minus" />
+                                </svg>
+                                <svg class="icon" width="12" height="12">
+                                    <use href="#i-square" />
+                                </svg>
+                                <svg class="icon" width="14" height="14"><use href="#i-x" /></svg>
+                            </div>
+                        </div>
+                        <div class="artboard-body">
+                            <div class="icon-rail">
+                                <div class="rail-logo">
+                                    <svg class="icon" width="18" height="18">
+                                        <use href="#i-bot" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav active">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-bot" />
+                                    </svg>
+                                </div>
+                                <div class="rail-divider"></div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-bar-chart-3" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav hover-demo">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-list" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-shield" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-tag" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-wallet" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-file-down" />
+                                    </svg>
+                                </div>
+                                <div class="rail-spacer"></div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-settings" />
+                                    </svg>
+                                </div>
+                                <div class="rail-avatar">向</div>
+                            </div>
+                            <div class="a2-main">
+                                <div class="a2-header">
+                                    <div class="a2-header-left">
+                                        <span class="a2-conv-title">7 月餐饮盘点</span>
+                                    </div>
+                                    <div class="a2-header-right">
+                                        <div class="a2-hbtn">
+                                            <svg class="icon" width="14" height="14">
+                                                <use href="#i-puzzle" />
+                                            </svg>
+                                            Skills <span class="count">5</span>
+                                        </div>
+                                        <div class="a2-hbtn">
+                                            <svg class="icon" width="14" height="14">
+                                                <use href="#i-zap" />
+                                            </svg>
+                                            工具/MCP <span class="count">8</span>
+                                        </div>
+                                        <div class="a2-hbtn">
+                                            <svg class="icon" width="14" height="14">
+                                                <use href="#i-message-square" />
+                                            </svg>
+                                            对话 <span class="count">23</span>
+                                        </div>
+                                        <button class="a2-new-btn">
+                                            <svg class="icon" width="13" height="13">
+                                                <use href="#i-plus" />
+                                            </svg>
+                                            新对话
+                                        </button>
+                                        <button class="a2-toggle-btn">
+                                            <svg class="icon" width="18" height="18">
+                                                <use href="#i-panel-right" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="a2-thread-wrap">
+                                    <div class="a2-thread">
+                                        <div class="a2-thread-inner">
+                                            <div class="msg msg-user">
+                                                中午和同事吃了顿湘菜，AA 下来 46 块，招行信用卡刷的
+                                            </div>
+                                            <div class="tool-card">
+                                                <div class="tool-icon">
+                                                    <svg class="icon" width="14" height="14">
+                                                        <use href="#i-check" />
+                                                    </svg>
+                                                </div>
+                                                <span class="tool-name">transaction-write</span>
+                                                <span class="tool-result">· 已写入 1 笔流水</span>
+                                                <svg
+                                                    class="icon tool-chevron"
+                                                    width="14"
+                                                    height="14"
+                                                >
+                                                    <use href="#i-chevron-right" />
+                                                </svg>
+                                            </div>
+                                            <div class="msg msg-ai">
+                                                已记好：餐饮 · 午餐 ¥46.00，账户
+                                                招商银行信用卡。本月餐饮累计 ¥1,286，占餐饮预算
+                                                64%，节奏正常。
+                                            </div>
+                                            <div class="msg msg-user">这个月哪类花得最多？</div>
+                                            <div class="tool-card">
+                                                <div class="tool-icon">
+                                                    <svg class="icon" width="14" height="14">
+                                                        <use href="#i-search" />
+                                                    </svg>
+                                                </div>
+                                                <span class="tool-name">data-query</span>
+                                                <span class="tool-result"
+                                                    >· 查询本月分类支出汇总</span
+                                                >
+                                                <svg
+                                                    class="icon tool-chevron"
+                                                    width="14"
+                                                    height="14"
+                                                >
+                                                    <use href="#i-chevron-right" />
+                                                </svg>
+                                            </div>
+                                            <div class="msg msg-ai">
+                                                本月分类支出前三名如下：
+                                                <div class="mini-ranking">
+                                                    <div class="ranking-row">
+                                                        <span class="ranking-label">餐饮</span>
+                                                        <div class="ranking-track">
+                                                            <div
+                                                                class="ranking-fill"
+                                                                style="width: 100%"
+                                                            ></div>
+                                                        </div>
+                                                        <span class="ranking-amount">¥1,286</span>
+                                                    </div>
+                                                    <div class="ranking-row">
+                                                        <span class="ranking-label">购物</span>
+                                                        <div class="ranking-track">
+                                                            <div
+                                                                class="ranking-fill"
+                                                                style="width: 76%"
+                                                            ></div>
+                                                        </div>
+                                                        <span class="ranking-amount">¥980</span>
+                                                    </div>
+                                                    <div class="ranking-row">
+                                                        <span class="ranking-label">交通</span>
+                                                        <div class="ranking-track">
+                                                            <div
+                                                                class="ranking-fill"
+                                                                style="width: 32%"
+                                                            ></div>
+                                                        </div>
+                                                        <span class="ranking-amount">¥412</span>
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    style="
+                                                        margin-top: 10px;
+                                                        font-size: 13px;
+                                                        color: var(--bb-text-secondary);
+                                                    "
+                                                >
+                                                    餐饮居首，比上月同期少了
+                                                    8%，主要来自工作日午餐。
+                                                </div>
+                                            </div>
+                                            <div class="thinking-indicator">
+                                                <div class="thinking-dots">
+                                                    <span></span><span></span><span></span>
+                                                </div>
+                                                小笔正在思考…
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="a2-input-area">
+                                        <div class="a2-input-inner">
+                                            <div class="input-card">
+                                                <button class="input-btn">
+                                                    <svg class="icon" width="20" height="20">
+                                                        <use href="#i-plus" />
+                                                    </svg>
+                                                </button>
+                                                <div class="input-placeholder">继续问小笔…</div>
+                                                <div class="input-actions">
+                                                    <button class="input-btn">
+                                                        <svg class="icon" width="19" height="19">
+                                                            <use href="#i-mic" />
+                                                        </svg>
+                                                    </button>
+                                                    <button class="input-send">
+                                                        <svg class="icon" width="18" height="18">
+                                                            <use href="#i-send" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="a2-hint">
+                                                小笔可以记账、查账、出报表 · Shift+Enter 换行
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="panel-expand-fab" title="展开速览">
+                                        <svg class="icon" width="18" height="18">
+                                            <use href="#i-panel-right" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="artboard-specs">
+                        <div class="spec-chip">
+                            <span class="sk">顶栏</span><span class="sv">48px 对话头</span>
+                        </div>
+                        <div class="spec-chip"><span class="sep">|</span></div>
+                        <div class="spec-chip">
+                            <span class="sk">消息流</span
+                            ><span class="sv">max-width 760px 居中</span>
+                        </div>
+                        <div class="spec-chip"><span class="sep">|</span></div>
+                        <div class="spec-chip">
+                            <span class="sk">用户气泡</span
+                            ><span class="sv">accent 底白字 右对齐</span>
+                        </div>
+                        <div class="spec-chip"><span class="sep">|</span></div>
+                        <div class="spec-chip">
+                            <span class="sk">AI 气泡</span
+                            ><span class="sv">白卡 shadow-card 左对齐</span>
+                        </div>
+                        <div class="spec-chip"><span class="sep">|</span></div>
+                        <div class="spec-chip">
+                            <span class="sk">速览面板</span
+                            ><span class="sv">已折叠 · 浮动展开按钮</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- A3 -->
+                <div class="artboard-block">
+                    <div class="artboard-label">
+                        <span class="artboard-id">A3</span>
+                        <span class="artboard-title">功能页接管 · 流水页</span>
+                        <span class="artboard-dim">1280 × 800</span>
+                    </div>
+                    <p class="artboard-note">
+                        点击轨道「流水」后，功能页全屏接管主内容区。小笔对话状态在后台保留 --
+                        若正在生成回复，轨道 Bot 图标显示脉冲金点。右下角浮动「回到小笔」按钮与记账
+                        FAB 快速返回对话。
+                    </p>
+                    <div class="artboard">
+                        <div class="titlebar">
+                            <div class="tb-left">
+                                <div class="tb-logo">
+                                    <svg class="icon" width="12" height="12">
+                                        <use href="#i-bot" />
+                                    </svg>
+                                </div>
+                                <span>笔笔</span>
+                            </div>
+                            <div class="win-controls">
+                                <svg class="icon" width="14" height="14">
+                                    <use href="#i-minus" />
+                                </svg>
+                                <svg class="icon" width="12" height="12">
+                                    <use href="#i-square" />
+                                </svg>
+                                <svg class="icon" width="14" height="14"><use href="#i-x" /></svg>
+                            </div>
+                        </div>
+                        <div class="artboard-body">
+                            <div class="icon-rail">
+                                <div class="rail-logo">
+                                    <svg class="icon" width="18" height="18">
+                                        <use href="#i-bot" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav pulse">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-bot" />
+                                    </svg>
+                                </div>
+                                <div class="rail-divider"></div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-bar-chart-3" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav active">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-list" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav hover-demo">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-shield" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-tag" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-wallet" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-file-down" />
+                                    </svg>
+                                </div>
+                                <div class="rail-spacer"></div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-settings" />
+                                    </svg>
+                                </div>
+                                <div class="rail-avatar">向</div>
+                            </div>
+                            <div class="a3-main">
+                                <div class="a3-content">
+                                    <div class="page-header">
+                                        <div>
+                                            <div class="page-title">流水</div>
+                                            <div class="page-subtitle">7 月共 42 笔记录</div>
+                                        </div>
+                                    </div>
+                                    <div class="filter-bar">
+                                        <div class="filter-pills">
+                                            <div class="filter-pill active">全部</div>
+                                            <div class="filter-pill">支出</div>
+                                            <div class="filter-pill">收入</div>
+                                        </div>
+                                        <div class="filter-chip">
+                                            全部账户
+                                            <svg class="icon" width="13" height="13">
+                                                <use href="#i-chevron-right" />
+                                            </svg>
+                                        </div>
+                                        <div class="filter-chip">
+                                            7 月
+                                            <svg class="icon" width="13" height="13">
+                                                <use href="#i-chevron-right" />
+                                            </svg>
+                                        </div>
+                                        <div class="filter-search">
+                                            <svg class="icon" width="14" height="14">
+                                                <use href="#i-search" />
+                                            </svg>
+                                            <span>搜索流水…</span>
+                                        </div>
+                                    </div>
+                                    <div class="tx-list">
+                                        <div class="tx-group">
+                                            <div class="tx-group-header">
+                                                7 月 18 日
+                                                <span class="tx-group-tag">今天</span>
+                                            </div>
+                                            <div class="tx-rows">
+                                                <div class="tx-row">
+                                                    <div
+                                                        class="tx-dot"
+                                                        style="background: #d9a404"
+                                                    ></div>
+                                                    <div class="tx-info">
+                                                        <div class="tx-name">餐饮 · 午餐</div>
+                                                        <div class="tx-note">和同事 AA 湘菜</div>
+                                                    </div>
+                                                    <div class="tx-account">招商银行信用卡</div>
+                                                    <div class="tx-amount expense">-¥46.00</div>
+                                                </div>
+                                                <div class="tx-row">
+                                                    <div
+                                                        class="tx-dot"
+                                                        style="background: #06b6d4"
+                                                    ></div>
+                                                    <div class="tx-info">
+                                                        <div class="tx-name">交通 · 地铁</div>
+                                                        <div class="tx-note">通勤</div>
+                                                    </div>
+                                                    <div class="tx-account">微信支付</div>
+                                                    <div class="tx-amount expense">-¥6.00</div>
+                                                </div>
+                                                <div class="tx-row">
+                                                    <div
+                                                        class="tx-dot"
+                                                        style="background: #ef4444"
+                                                    ></div>
+                                                    <div class="tx-info">
+                                                        <div class="tx-name">购物 · 日用品</div>
+                                                        <div class="tx-note">超市采购</div>
+                                                    </div>
+                                                    <div class="tx-account">招商银行储蓄卡</div>
+                                                    <div class="tx-amount expense">-¥128.50</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="tx-group">
+                                            <div class="tx-group-header">
+                                                7 月 17 日
+                                                <span class="tx-group-tag">昨天</span>
+                                            </div>
+                                            <div class="tx-rows">
+                                                <div class="tx-row">
+                                                    <div
+                                                        class="tx-dot"
+                                                        style="background: #16a34a"
+                                                    ></div>
+                                                    <div class="tx-info">
+                                                        <div class="tx-name">工资</div>
+                                                        <div class="tx-note">月度工资</div>
+                                                    </div>
+                                                    <div class="tx-account">招商银行储蓄卡</div>
+                                                    <div class="tx-amount income">+¥12,000.00</div>
+                                                </div>
+                                                <div class="tx-row">
+                                                    <div
+                                                        class="tx-dot"
+                                                        style="background: #d9a404"
+                                                    ></div>
+                                                    <div class="tx-info">
+                                                        <div class="tx-name">餐饮 · 晚餐</div>
+                                                        <div class="tx-note">外卖</div>
+                                                    </div>
+                                                    <div class="tx-account">微信支付</div>
+                                                    <div class="tx-amount expense">-¥38.00</div>
+                                                </div>
+                                                <div class="tx-row">
+                                                    <div
+                                                        class="tx-dot"
+                                                        style="background: #8b5cf6"
+                                                    ></div>
+                                                    <div class="tx-info">
+                                                        <div class="tx-name">娱乐 · 电影</div>
+                                                        <div class="tx-note">周末观影</div>
+                                                    </div>
+                                                    <div class="tx-account">招商银行信用卡</div>
+                                                    <div class="tx-amount expense">-¥85.00</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="fab-stack">
+                                    <button class="fab">
+                                        <svg class="icon" width="24" height="24">
+                                            <use href="#i-pencil" />
+                                        </svg>
+                                    </button>
+                                    <button class="back-to-bot">
+                                        <svg class="icon" width="16" height="16">
+                                            <use href="#i-bot" />
+                                        </svg>
+                                        回到小笔
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="artboard-specs">
+                        <div class="spec-chip">
+                            <span class="sk">激活项</span
+                            ><span class="sv">流水（accent-light 底 + 左侧 3px 金条）</span>
+                        </div>
+                        <div class="spec-chip"><span class="sep">|</span></div>
+                        <div class="spec-chip">
+                            <span class="sk">Bot 图标</span
+                            ><span class="sv">脉冲金点（后台生成中）</span>
+                        </div>
+                        <div class="spec-chip"><span class="sep">|</span></div>
+                        <div class="spec-chip">
+                            <span class="sk">FAB</span><span class="sv">52px 记账按钮</span>
+                        </div>
+                        <div class="spec-chip"><span class="sep">|</span></div>
+                        <div class="spec-chip">
+                            <span class="sk">回到小笔</span
+                            ><span class="sv">pill 按钮 · Esc 快捷键</span>
+                        </div>
+                        <div class="spec-chip"><span class="sep">|</span></div>
+                        <div class="spec-chip">
+                            <span class="sk">页面切换</span
+                            ><span class="sv">0.2s ease-page-enter</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== 4. 方案 B ========== -->
+            <section class="section">
+                <span class="section-tag" style="color: var(--canvas-muted); background: #e2e8f0"
+                    >备选方案</span
+                >
+                <h2 class="section-title">方案 B · 双栏常驻</h2>
+                <p class="section-desc">
+                    对话列 400px
+                    常驻左侧，右侧为工作台。对话与数据同屏，但数据页空间受限，表格类页面（流水 /
+                    导入）体验局促。
+                </p>
+
+                <div class="artboard-block">
+                    <div class="artboard-label">
+                        <span class="artboard-id" style="background: #64748b">B1</span>
+                        <span class="artboard-title">左对话 + 右工作台</span>
+                        <span class="artboard-dim">1280 × 800</span>
+                    </div>
+                    <p class="artboard-note">
+                        对话与数据同屏可见，适合需要频繁对照数据分析的场景。但右侧工作台仅 812px
+                        宽，流水表格与导入草稿等密集页面空间紧张。
+                    </p>
+                    <div class="artboard">
+                        <div class="titlebar">
+                            <div class="tb-left">
+                                <div class="tb-logo">
+                                    <svg class="icon" width="12" height="12">
+                                        <use href="#i-bot" />
+                                    </svg>
+                                </div>
+                                <span>笔笔</span>
+                            </div>
+                            <div class="win-controls">
+                                <svg class="icon" width="14" height="14">
+                                    <use href="#i-minus" />
+                                </svg>
+                                <svg class="icon" width="12" height="12">
+                                    <use href="#i-square" />
+                                </svg>
+                                <svg class="icon" width="14" height="14"><use href="#i-x" /></svg>
+                            </div>
+                        </div>
+                        <div class="artboard-body">
+                            <div class="icon-rail">
+                                <div class="rail-logo">
+                                    <svg class="icon" width="18" height="18">
+                                        <use href="#i-bot" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav active">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-bot" />
+                                    </svg>
+                                </div>
+                                <div class="rail-divider"></div>
+                                <div class="rail-nav hover-demo">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-bar-chart-3" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-list" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-shield" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-tag" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-wallet" />
+                                    </svg>
+                                </div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-file-down" />
+                                    </svg>
+                                </div>
+                                <div class="rail-spacer"></div>
+                                <div class="rail-nav">
+                                    <svg class="icon" width="20" height="20">
+                                        <use href="#i-settings" />
+                                    </svg>
+                                </div>
+                                <div class="rail-avatar">向</div>
+                            </div>
+                            <!-- 对话列 -->
+                            <div class="b1-chat">
+                                <div class="b1-chat-header">
+                                    <div class="header-icon">
+                                        <svg class="icon" width="16" height="16">
+                                            <use href="#i-bot" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="header-title">小笔</div>
+                                        <div class="header-sub">快速模式 · 在线</div>
+                                    </div>
+                                </div>
+                                <div class="b1-messages">
+                                    <div class="msg msg-user">这个月哪类花得最多？</div>
+                                    <div class="msg msg-ai">
+                                        餐饮居首 ¥1,286，比上月少 8%。主要来自工作日午餐支出。
+                                    </div>
+                                    <div class="msg msg-user">记一笔：午饭 38 元，微信</div>
+                                    <div class="tool-card" style="max-width: 90%">
+                                        <div class="tool-icon">
+                                            <svg class="icon" width="13" height="13">
+                                                <use href="#i-check" />
+                                            </svg>
+                                        </div>
+                                        <span class="tool-name">transaction-write</span>
+                                        <span class="tool-result" style="font-size: 12px"
+                                            >· ¥38.00</span
+                                        >
+                                    </div>
+                                    <div class="msg msg-ai">
+                                        已记好，餐饮 · 午餐 ¥38.00。本月餐饮累计 ¥1,324。
+                                    </div>
+                                </div>
+                                <div class="b1-input-area">
+                                    <div class="b1-input">
+                                        <div class="b1-placeholder">给小笔发消息…</div>
+                                        <button
+                                            class="input-send"
+                                            style="width: 32px; height: 32px"
+                                        >
+                                            <svg class="icon" width="15" height="15">
+                                                <use href="#i-send" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 右侧工作台 -->
+                            <div class="b1-dashboard">
+                                <div class="b1-dash-title">概览 · 7 月</div>
+                                <div class="stat-cards">
+                                    <div class="stat-card">
+                                        <div class="stat-label">
+                                            <svg
+                                                class="icon"
+                                                width="13"
+                                                height="13"
+                                                style="color: var(--bb-danger)"
+                                            >
+                                                <use href="#i-trending-down" />
+                                            </svg>
+                                            本月支出
+                                        </div>
+                                        <div class="stat-amount expense">¥4,832.50</div>
+                                        <div class="stat-trend down">
+                                            <svg class="icon" width="11" height="11">
+                                                <use href="#i-trending-down" />
+                                            </svg>
+                                            环比 ↓8%
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-label">
+                                            <svg
+                                                class="icon"
+                                                width="13"
+                                                height="13"
+                                                style="color: var(--bb-success)"
+                                            >
+                                                <use href="#i-trending-up" />
+                                            </svg>
+                                            本月收入
+                                        </div>
+                                        <div class="stat-amount income">¥12,000.00</div>
+                                        <div
+                                            class="stat-trend"
+                                            style="color: var(--bb-text-tertiary)"
+                                        >
+                                            月度工资
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-label">
+                                            <svg
+                                                class="icon"
+                                                width="13"
+                                                height="13"
+                                                style="color: var(--bb-accent)"
+                                            >
+                                                <use href="#i-circle-dollar-sign" />
+                                            </svg>
+                                            结余
+                                        </div>
+                                        <div class="stat-amount">¥7,167.50</div>
+                                        <div
+                                            class="stat-trend"
+                                            style="color: var(--bb-text-tertiary)"
+                                        >
+                                            本月可用
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="dash-card">
+                                    <div class="dash-card-title">
+                                        本月支出趋势
+                                        <span class="more">近 7 周</span>
+                                    </div>
+                                    <div class="chart-bars">
+                                        <div class="chart-bar-item">
+                                            <div class="chart-bar" style="height: 45%"></div>
+                                            <div class="chart-bar-label">W1</div>
+                                        </div>
+                                        <div class="chart-bar-item">
+                                            <div class="chart-bar" style="height: 68%"></div>
+                                            <div class="chart-bar-label">W2</div>
+                                        </div>
+                                        <div class="chart-bar-item">
+                                            <div class="chart-bar" style="height: 52%"></div>
+                                            <div class="chart-bar-label">W3</div>
+                                        </div>
+                                        <div class="chart-bar-item">
+                                            <div class="chart-bar" style="height: 85%"></div>
+                                            <div class="chart-bar-label">W4</div>
+                                        </div>
+                                        <div class="chart-bar-item">
+                                            <div class="chart-bar" style="height: 58%"></div>
+                                            <div class="chart-bar-label">W5</div>
+                                        </div>
+                                        <div class="chart-bar-item">
+                                            <div class="chart-bar" style="height: 72%"></div>
+                                            <div class="chart-bar-label">W6</div>
+                                        </div>
+                                        <div class="chart-bar-item">
+                                            <div class="chart-bar" style="height: 48%"></div>
+                                            <div class="chart-bar-label">W7</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="dash-card">
+                                    <div class="dash-card-title">
+                                        分类排行
+                                        <span class="more">本月</span>
+                                    </div>
+                                    <div class="ranking-list">
+                                        <div class="ranking-item">
+                                            <div class="r-dot" style="background: #d9a404"></div>
+                                            <span class="r-name">餐饮</span>
+                                            <div class="r-track">
+                                                <div
+                                                    class="r-fill"
+                                                    style="
+                                                        width: 100%;
+                                                        background: var(--bar-gradient);
+                                                    "
+                                                ></div>
+                                            </div>
+                                            <span class="r-amount">¥1,286</span>
+                                        </div>
+                                        <div class="ranking-item">
+                                            <div class="r-dot" style="background: #ef4444"></div>
+                                            <span class="r-name">购物</span>
+                                            <div class="r-track">
+                                                <div
+                                                    class="r-fill"
+                                                    style="width: 76%; background: #ef4444"
+                                                ></div>
+                                            </div>
+                                            <span class="r-amount">¥980</span>
+                                        </div>
+                                        <div class="ranking-item">
+                                            <div class="r-dot" style="background: #06b6d4"></div>
+                                            <span class="r-name">交通</span>
+                                            <div class="r-track">
+                                                <div
+                                                    class="r-fill"
+                                                    style="width: 32%; background: #06b6d4"
+                                                ></div>
+                                            </div>
+                                            <span class="r-amount">¥412</span>
+                                        </div>
+                                        <div class="ranking-item">
+                                            <div class="r-dot" style="background: #8b5cf6"></div>
+                                            <span class="r-name">娱乐</span>
+                                            <div class="r-track">
+                                                <div
+                                                    class="r-fill"
+                                                    style="width: 22%; background: #8b5cf6"
+                                                ></div>
+                                            </div>
+                                            <span class="r-amount">¥285</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="artboard-specs">
+                        <div class="spec-chip">
+                            <span class="sk">对话列</span><span class="sv">400px 常驻</span>
+                        </div>
+                        <div class="spec-chip"><span class="sep">|</span></div>
+                        <div class="spec-chip">
+                            <span class="sk">工作台</span><span class="sv">812px · 空间受限</span>
+                        </div>
+                        <div class="spec-chip"><span class="sep">|</span></div>
+                        <div class="spec-chip">
+                            <span class="sk">同屏</span><span class="sv">对话 + 数据可对照</span>
+                        </div>
+                        <div class="spec-chip"><span class="sep">|</span></div>
+                        <div class="spec-chip">
+                            <span class="sk">局限</span><span class="sv">流水/导入表格局促</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== 5. 方案对比表 ========== -->
+            <section class="section">
+                <h2 class="section-title">方案对比</h2>
+                <p class="section-desc">
+                    从 AI 主导感、数据页空间、实现成本、适用场景四个维度对比两个方案。
+                </p>
+                <table class="cmp-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 160px">维度</th>
+                            <th class="recommend">方案 A · AI 主场 + 图标轨道</th>
+                            <th>方案 B · 双栏常驻</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="dim-col">AI 主导感</td>
+                            <td class="recommend-col">
+                                <strong>强</strong> · 对话独占主舞台，空状态英雄区强化智能体入口认知
+                            </td>
+                            <td>中 · 对话与数据并排，AI 存在感被工作台分散</td>
+                        </tr>
+                        <tr>
+                            <td class="dim-col">数据页空间</td>
+                            <td class="recommend-col">
+                                <strong>大</strong> · 功能页全屏接管 1212px
+                                主内容区，表格/导入体验不降级
+                            </td>
+                            <td>小 · 工作台仅 812px，流水表格与导入草稿空间局促</td>
+                        </tr>
+                        <tr>
+                            <td class="dim-col">实现成本</td>
+                            <td class="recommend-col">
+                                <strong>中</strong> · 重构路由 + 拆分 AgentChatView
+                                为可复用组件，轨道组件新增
+                            </td>
+                            <td>高 · 需自适应双栏布局 + 小屏适配 + 对话列与工作台联动状态管理</td>
+                        </tr>
+                        <tr>
+                            <td class="dim-col">适用场景</td>
+                            <td class="recommend-col">
+                                <strong>日常记账为主</strong> · AI
+                                交互频繁，功能页按需进入后全屏操作
+                            </td>
+                            <td>
+                                数据分析为主 ·
+                                需同屏对照对话与数据，但与笔笔「说话就能记账」定位偏离
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="cmp-recommend-banner">
+                    <div class="banner-icon">
+                        <svg class="icon" width="18" height="18"><use href="#i-check" /></svg>
+                    </div>
+                    <span
+                        >推荐方案 A：AI
+                        主导感更强，符合产品向智能体进化的方向；功能页全屏接管保证数据页体验不降级，实现路径清晰可控。</span
+                    >
+                </div>
+            </section>
+
+            <!-- ========== 6. 交互规格说明 ========== -->
+            <section class="section">
+                <h2 class="section-title">交互规格说明</h2>
+                <p class="section-desc">
+                    关键尺寸、过渡动效与快捷键定义。所有过渡使用暖金色系阴影与圆角令牌，不引入新动效曲线。
+                </p>
+                <div class="specs-grid">
+                    <div class="spec-card">
+                        <div class="spec-num">01</div>
+                        <div class="spec-body">
+                            <div class="spec-head">图标轨道 <span class="spec-val">68px</span></div>
+                            <div class="spec-desc">
+                                固定宽度不可折叠。导航项 44×44px、圆角 10px。激活态：accent-light 底
+                                + accent-text 图标 + 左侧 3px×18px 金条。悬停态：bg-hover 浅灰底。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="spec-card">
+                        <div class="spec-num">02</div>
+                        <div class="spec-body">
+                            <div class="spec-head">
+                                顶栏 <span class="spec-val">44px 毛玻璃</span>
+                            </div>
+                            <div class="spec-desc">
+                                背景 rgba(255,255,255,0.72) + backdrop-filter:blur(12px)，底边 1px
+                                rgba(226,232,240,0.8)。窗口控制按钮（minus/square/x）置于右侧，颜色
+                                #94a3b8。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="spec-card">
+                        <div class="spec-num">03</div>
+                        <div class="spec-body">
+                            <div class="spec-head">
+                                速览面板 <span class="spec-val">300px · 0.3s</span>
+                            </div>
+                            <div class="spec-desc">
+                                默认展开，可通过顶栏 toggle 按钮收起为 0px。过渡 0.3s
+                                ease。收起后主内容区扩展，对话列保持 760px
+                                居中。浮动展开按钮出现在右上角。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="spec-card">
+                        <div class="spec-num">04</div>
+                        <div class="spec-body">
+                            <div class="spec-head">
+                                对话列 <span class="spec-val">max-width 760px</span>
+                            </div>
+                            <div class="spec-desc">
+                                主内容区内水平居中。用户气泡 accent 底白字右对齐；AI 气泡白卡
+                                shadow-card 左对齐。工具调用卡片可折叠，展开后显示完整结果。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="spec-card">
+                        <div class="spec-num">05</div>
+                        <div class="spec-body">
+                            <div class="spec-head">
+                                输入框位置 <span class="spec-val">居中 → 底部 · 0.3s</span>
+                            </div>
+                            <div class="spec-desc">
+                                空状态时输入框居中展示（英雄区核心）。首次发送消息后，输入框以 0.3s
+                                ease 过渡停靠至主内容区底部，上方为消息流。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="spec-card">
+                        <div class="spec-num">06</div>
+                        <div class="spec-body">
+                            <div class="spec-head">
+                                页面切换 <span class="spec-val">0.2s ease-page-enter</span>
+                            </div>
+                            <div class="spec-desc">
+                                功能页通过图标轨道切换时，主内容区以 0.2s
+                                淡入过渡。小笔对话状态在后台保留，Bot
+                                图标显示脉冲金点提示正在生成回复。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="spec-card">
+                        <div class="spec-num">07</div>
+                        <div class="spec-body">
+                            <div class="spec-head">
+                                快捷键 <span class="spec-val">Ctrl+K / Esc</span>
+                            </div>
+                            <div class="spec-desc">
+                                Ctrl+K 全局聚焦对话输入框（无论当前在哪个页面）。Esc
+                                从功能页返回小笔主页。Shift+Enter 输入框内换行，Enter 发送。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="spec-card">
+                        <div class="spec-num">08</div>
+                        <div class="spec-body">
+                            <div class="spec-head">
+                                FAB 记账按钮 <span class="spec-val">52px · 仅功能页</span>
+                            </div>
+                            <div class="spec-desc">
+                                圆形 52px accent 底 + pencil 图标 +
+                                shadow-float。仅在功能页（非小笔主页）显示，位于右下角。下方叠加「回到小笔」pill
+                                按钮快速返回对话。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== 7. 迁移要点 ========== -->
+            <section class="section">
+                <h2 class="section-title">迁移要点</h2>
+                <p class="section-desc">
+                    路由变化与组件拆分说明。现有页面逻辑不变，仅路由路径与默认入口调整。
+                </p>
+                <table class="mig-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 180px">现路由</th>
+                            <th style="width: 40px"></th>
+                            <th style="width: 180px">新路由</th>
+                            <th style="width: 140px">页面</th>
+                            <th>说明</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="changed">
+                            <td class="route">/</td>
+                            <td class="arrow">
+                                <svg class="icon" width="14" height="14">
+                                    <use href="#i-arrow-right" />
+                                </svg>
+                            </td>
+                            <td class="route route-new">/overview</td>
+                            <td>概览</td>
+                            <td>现 Dashboard 迁移至此，作为数据概览二级页</td>
+                        </tr>
+                        <tr class="changed">
+                            <td class="route">/agent</td>
+                            <td class="arrow">
+                                <svg class="icon" width="14" height="14">
+                                    <use href="#i-arrow-right" />
+                                </svg>
+                            </td>
+                            <td class="route route-new">/</td>
+                            <td>小笔主页</td>
+                            <td>对话升级为默认入口，空状态英雄区引导交互</td>
+                        </tr>
+                        <tr>
+                            <td class="route">/transactions</td>
+                            <td class="arrow">=</td>
+                            <td class="route">/transactions</td>
+                            <td>流水</td>
+                            <td>不变 · 通过图标轨道进入，全屏接管主内容区</td>
+                        </tr>
+                        <tr>
+                            <td class="route">/accounts</td>
+                            <td class="arrow">=</td>
+                            <td class="route">/accounts</td>
+                            <td>账户</td>
+                            <td>不变</td>
+                        </tr>
+                        <tr>
+                            <td class="route">/categories</td>
+                            <td class="arrow">=</td>
+                            <td class="route">/categories</td>
+                            <td>分类</td>
+                            <td>不变</td>
+                        </tr>
+                        <tr>
+                            <td class="route">/budget</td>
+                            <td class="arrow">=</td>
+                            <td class="route">/budget</td>
+                            <td>预算</td>
+                            <td>不变</td>
+                        </tr>
+                        <tr>
+                            <td class="route">/import</td>
+                            <td class="arrow">=</td>
+                            <td class="route">/import</td>
+                            <td>导入</td>
+                            <td>不变</td>
+                        </tr>
+                        <tr>
+                            <td class="route">/settings</td>
+                            <td class="arrow">=</td>
+                            <td class="route">/settings</td>
+                            <td>设置</td>
+                            <td>不变</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="mig-notes">
+                    <div class="mig-notes-title">
+                        <svg class="icon nt-icon" width="16" height="16">
+                            <use href="#i-puzzle" />
+                        </svg>
+                        组件拆分 · AgentChatView
+                    </div>
+                    <ul>
+                        <li>
+                            将 <code>AgentChatView</code> 拆分为 4 个可复用组件，便于方案 B
+                            双栏布局及未来嵌入其他页面复用。
+                        </li>
+                        <li>
+                            <code>ChatThread</code> · 消息列表渲染，支持用户气泡、AI
+                            气泡、工具卡片、思考指示器四种消息类型。
+                        </li>
+                        <li>
+                            <code>ChatInput</code> ·
+                            输入栏，支持文字/语音输入、模式切换、快捷键（Ctrl+K 聚焦 / Shift+Enter
+                            换行）。
+                        </li>
+                        <li>
+                            <code>ToolCard</code> ·
+                            工具调用可折叠卡片，展示工具名、结果摘要、展开详情。
+                        </li>
+                        <li>
+                            <code>ContextPanel</code> ·
+                            右侧速览面板，展示本月收支、预算执行、最近流水、导入提醒，可收起为 0px。
+                        </li>
+                        <li>
+                            侧边栏从 <code>220px 文字导航</code> 改为
+                            <code>68px 图标轨道</code>，导航项精简为图标 +
+                            tooltip，释放主内容区宽度。
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <footer class="board-footer">
+                <div class="footer-brand">
+                    <svg class="icon" width="16" height="16" style="color: var(--bb-accent)">
+                        <use href="#i-bot" />
+                    </svg>
+                    笔笔 · AI 中心化 UI 重构图纸
+                </div>
+                <div>2026-07-18 · 设计图纸仅供参考，最终实现以开发为准</div>
+            </footer>
+        </div>
+    </body>
+</html>

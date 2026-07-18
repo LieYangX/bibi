@@ -111,18 +111,25 @@ const updateAccountSchema = z
     })
     .strict()
 
+const colorSchema = z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, '颜色格式必须为 #RRGGBB')
+    .optional()
+
 const createCategorySchema = z
     .object({
         name: nameSchema,
         type: categoryTypeSchema,
-        icon: z.string().trim().min(1).max(50).optional()
+        icon: z.string().trim().min(1).max(50).optional(),
+        color: colorSchema
     })
     .strict()
 
 const updateCategorySchema = z
     .object({
         name: nameSchema.optional(),
-        icon: z.string().trim().min(1).max(50).optional()
+        icon: z.string().trim().min(1).max(50).optional(),
+        color: colorSchema
     })
     .strict()
 
@@ -341,11 +348,16 @@ export const IPC_SCHEMAS = {
     setting: {
         get: z.union([
             z.tuple([z.literal('amount_mask'), z.union([z.boolean(), z.undefined()])]),
+            z.tuple([
+                z.literal('agent_context_panel_visible'),
+                z.union([z.boolean(), z.undefined()])
+            ]),
             z.tuple([z.literal('stt_enabled'), z.union([z.boolean(), z.undefined()])]),
             z.tuple([z.literal('stt_model'), z.union([sttModelIdSchema, z.undefined()])])
         ]),
         set: z.union([
             z.tuple([z.literal('amount_mask'), z.boolean()]),
+            z.tuple([z.literal('agent_context_panel_visible'), z.boolean()]),
             z.tuple([z.literal('stt_enabled'), z.boolean()]),
             z.tuple([z.literal('stt_model'), sttModelIdSchema])
         ])

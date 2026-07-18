@@ -16,6 +16,7 @@ import { resetModel } from '../services/stt.service'
 import { wechatChannelService } from '../agent/wechat-channel.service'
 import { getCurrentUserId } from '../services/session.service'
 import { userExists } from '../services/user.service'
+import { backfillCategoryColors } from '../database/seed'
 
 const APP_ID = 'com.personal.bibi'
 const STARTUP_ERROR_TITLE = '笔笔启动失败'
@@ -171,6 +172,8 @@ async function initializeApplication(): Promise<void> {
 
     try {
         await initDatabase()
+        // 为新版本升级回填缺少颜色的分类
+        backfillCategoryColors()
     } catch (error: unknown) {
         reportStartupError('数据库初始化失败', '数据库初始化失败', error)
         app.quit()

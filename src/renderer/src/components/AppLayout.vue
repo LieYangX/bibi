@@ -1,48 +1,53 @@
 <template>
     <div class="shell">
-        <!-- 左侧导航栏 -->
-        <aside class="sidebar">
-            <router-link to="/" class="brand">
-                <img class="brand-icon" src="../assets/app-icon.png" alt="笔笔" />
-                <span class="brand-text">笔笔</span>
+        <!-- 左侧图标轨道 -->
+        <aside class="rail">
+            <router-link to="/" class="rail-logo" title="笔笔" aria-label="笔笔">
+                <img src="../assets/app-icon.png" alt="笔笔" />
             </router-link>
 
-            <nav class="nav">
+            <nav class="rail-nav-group">
                 <router-link
-                    v-for="item in navItems"
+                    v-for="item in railItems"
                     :key="item.path"
-                    v-slot="{ navigate, isExactActive }"
+                    v-slot="{ navigate, isActive }"
                     :to="item.path"
+                    :title="item.label"
                     custom
                 >
                     <a
-                        class="nav-item"
-                        :class="{ 'router-link-active': isExactActive }"
+                        class="rail-nav"
+                        :class="{ 'router-link-active': isActive }"
+                        :title="item.label"
+                        :aria-label="item.label"
                         @click="navigate"
                     >
-                        <component :is="item.icon" :size="18" class="nav-item__icon" />
-                        <span class="nav-item__label">{{ item.label }}</span>
+                        <component :is="item.icon" :size="20" />
                     </a>
                 </router-link>
             </nav>
 
-            <router-link to="/login?switch=1" class="user">
-                <div
-                    class="bb-avatar"
-                    :style="{
-                        width: '34px',
-                        height: '34px',
-                        fontSize: '14px',
-                        backgroundColor: userStore.userColor
-                    }"
+            <div class="rail-spacer" />
+
+            <router-link v-slot="{ navigate, isActive }" to="/settings" title="设置" custom>
+                <a
+                    class="rail-nav"
+                    :class="{ 'router-link-active': isActive }"
+                    title="设置"
+                    aria-label="设置"
+                    @click="navigate"
                 >
-                    {{ userStore.userInitial }}
-                </div>
-                <div class="user-info">
-                    <span class="user-name">{{ userStore.currentUser?.name }}</span>
-                    <span class="user-role">切换用户</span>
-                </div>
-                <LogOut :size="16" class="user-arrow" />
+                    <SettingsIcon :size="20" />
+                </a>
+            </router-link>
+
+            <router-link
+                to="/login?switch=1"
+                class="rail-avatar"
+                title="切换用户"
+                aria-label="切换用户"
+            >
+                {{ userStore.userInitial }}
             </router-link>
         </aside>
 
@@ -52,11 +57,7 @@
                 <div class="topbar__drag" style="-webkit-app-region: drag" />
                 <WindowControls />
             </header>
-            <div
-                ref="contentRef"
-                class="content"
-                :class="{ 'content--agent': route.path === '/agent' }"
-            >
+            <div ref="contentRef" class="content" :class="{ 'content--agent': isAgentHome }">
                 <router-view v-slot="{ Component: ViewComponent, route: currentRoute }">
                     <transition name="page" mode="out-in">
                         <component :is="ViewComponent" :key="currentRoute.path" />
@@ -65,28 +66,29 @@
             </div>
         </div>
 
-        <!-- 浮动记账按钮（智能体页面隐藏） -->
-        <button v-if="showFab" class="fab" title="记一笔" @click="showTxnModal = true">
-            <Pencil :size="22" />
-        </button>
+        <!-- 浮动操作栈：回到小笔 + 记账 FAB（小笔主页隐藏） -->
+        <div v-if="!isAgentHome" class="fab-stack">
+            <button class="fab" title="记一笔" @click="showTxnModal = true">
+                <Pencil :size="22" />
+            </button>
+            <button class="back-to-bot" title="回到小笔" @click="goHome">回到小笔</button>
+        </div>
 
         <!-- 记账弹窗 -->
         <TransactionModal v-model:visible="showTxnModal" @saved="onTransactionSaved" />
-
-        <!-- 用户切换弹窗已移除，点击用户区域直接跳转登录页 -->
     </div>
 </template>
 
 <script setup lang="ts">
 /**
  * 应用整体布局壳
- * 负责侧栏导航、顶部窗口控制、记账弹窗与用户切换
+ * 负责图标轨道导航、顶部窗口控制、记账弹窗与回到小笔浮动按钮
  * 注意：此组件挂载时一定有已登录用户（见 router.beforeEach）
  * @author xiangwei
  */
 
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user.store'
 import { useAgentStore } from '../stores/agent.store'
 import WindowControls from './WindowControls.vue'
@@ -100,41 +102,34 @@ import {
     Wallet,
     FileDown,
     Settings as SettingsIcon,
-    Bot,
-    LogOut,
     Pencil
 } from '@lucide/vue'
 import type { Component } from 'vue'
 
 const route = useRoute()
+const router = useRouter()
 const userStore = useUserStore()
 const agentStore = useAgentStore()
 const showTxnModal = ref(false)
 const contentRef = ref<HTMLElement | null>(null)
 
-/** 智能体页面隐藏浮动记账按钮 */
-const showFab = computed(() => route.path !== '/agent')
+/** 小笔主页路由，隐藏 FAB 并接管主内容区滚动 */
+const isAgentHome = computed(() => route.path === '/')
 
-/** 侧栏导航项，对应用路由 */
-const baseNavItems: Array<{ path: string; label: string; icon: Component }> = [
-    { path: '/', label: '首页', icon: BarChart3 },
+/** 图标轨道导航项（小笔主页使用应用 Logo，单独渲染） */
+const railItems: Array<{ path: string; label: string; icon: Component }> = [
+    { path: '/overview', label: '概览', icon: BarChart3 },
     { path: '/detail', label: '流水', icon: List },
     { path: '/accounts', label: '账户', icon: Shield },
     { path: '/categories', label: '分类', icon: Tag },
     { path: '/budget', label: '预算', icon: Wallet },
-    { path: '/import', label: '导入', icon: FileDown },
-    { path: '/settings', label: '设置', icon: SettingsIcon }
+    { path: '/import', label: '导入', icon: FileDown }
 ]
 
-/** 智能体启用时才显示导航项，位于「设置」上方 */
-const navItems = computed(() => {
-    const items = [...baseNavItems]
-    if (agentStore.config.enabled) {
-        const idx = items.findIndex((i) => i.path === '/settings')
-        items.splice(idx, 0, { path: '/agent', label: '小笔', icon: Bot })
-    }
-    return items
-})
+/** 返回小笔主页 */
+function goHome(): void {
+    void router.push('/')
+}
 
 /** 记账成功后通知相关页面刷新数据 */
 function onTransactionSaved(): void {
@@ -143,12 +138,12 @@ function onTransactionSaved(): void {
     emitRefresh('budget')
 }
 
-/** 加载智能体配置，控制导航显隐 */
+/** 加载智能体配置 */
 onMounted(() => {
     void agentStore.loadConfig()
 })
 
-/** 切换用户时重新加载智能体配置（导航栏显隐） */
+/** 切换用户时重新加载智能体配置 */
 watch(
     () => userStore.currentUserId,
     () => {
@@ -175,151 +170,112 @@ watch(
     background: var(--bb-bg-page);
 }
 
-.sidebar {
-    width: 220px;
+/* ===== 图标轨道 ===== */
+.rail {
+    width: 68px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    padding: 14px 0;
+    gap: 4px;
     background: var(--bb-bg-sidebar);
     border-right: 1px solid var(--bb-border);
     z-index: 10;
 }
 
-.brand {
+.rail-logo {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 20px 18px;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--bb-radius-md);
+    background: var(--bb-accent);
+    color: #fff;
+    margin-bottom: 10px;
     text-decoration: none;
-    cursor: pointer;
-    transition: transform var(--bb-duration-fast) var(--bb-ease);
-}
-.brand:hover {
-    transform: translateX(2px);
-}
-.brand-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    flex-shrink: 0;
     box-shadow: 0 4px 12px rgba(217, 164, 4, 0.28);
     transition:
-        box-shadow var(--bb-duration-fast) var(--bb-ease),
-        transform var(--bb-duration-fast) var(--bb-ease);
+        transform var(--bb-duration-fast) var(--bb-ease),
+        box-shadow var(--bb-duration-fast) var(--bb-ease);
 }
-.brand:hover .brand-icon {
+.rail-logo:hover {
+    transform: scale(1.05);
     box-shadow: 0 6px 16px rgba(217, 164, 4, 0.35);
-    transform: rotate(-4deg) scale(1.05);
 }
-.brand-text {
-    font-size: 18px;
-    font-weight: var(--bb-weight-bold);
-    color: var(--bb-text-primary);
-    letter-spacing: -0.01em;
+.rail-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--bb-radius-md);
 }
 
-.nav {
-    flex: 1;
-    padding: 4px 10px;
+.rail-nav-group {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    overflow-y: auto;
-}
-.nav-item {
-    display: flex;
     align-items: center;
-    gap: 10px;
-    height: 40px;
-    padding: 0 12px;
-    border-radius: var(--bb-radius-md);
-    font-size: 14px;
-    font-weight: var(--bb-weight-medium);
-    color: var(--bb-text-secondary);
-    text-decoration: none;
-    transition: all var(--bb-duration-fast) var(--bb-ease);
-    position: relative;
-    overflow: hidden;
-}
-.nav-item::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    width: 3px;
-    height: 0;
-    background: var(--bb-accent);
-    border-radius: 0 2px 2px 0;
-    transform: translateY(-50%);
-    transition: height var(--bb-duration-fast) var(--bb-ease);
-}
-.nav-item:hover {
-    background: var(--bb-bg-hover);
-    color: var(--bb-text-primary);
-    transform: translateX(2px);
-}
-.nav-item.router-link-active {
-    background: var(--bb-accent-light);
-    color: var(--bb-accent-text);
-    font-weight: var(--bb-weight-semibold);
-    box-shadow: 0 1px 3px rgba(217, 164, 4, 0.08);
-}
-.nav-item.router-link-active::before {
-    height: 18px;
-}
-.nav-item__icon {
-    font-size: 18px;
-    flex-shrink: 0;
-    transition: transform var(--bb-duration-fast) var(--bb-ease);
-}
-.nav-item:hover .nav-item__icon {
-    transform: scale(1.1);
-}
-.nav-item__label {
-    flex: 1;
-    min-width: 0;
+    gap: 4px;
 }
 
-.user {
+.rail-nav {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    border-top: 1px solid var(--bb-border);
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--bb-radius-md);
+    color: var(--bb-text-tertiary);
+    position: relative;
     cursor: pointer;
     text-decoration: none;
-    color: inherit;
-    transition: background var(--bb-duration-fast) var(--bb-ease);
+    transition:
+        background var(--bb-duration-fast) var(--bb-ease),
+        color var(--bb-duration-fast) var(--bb-ease);
 }
-.user:hover {
+.rail-nav:hover {
     background: var(--bb-bg-hover);
+    color: var(--bb-text-secondary);
 }
-.user-info {
-    flex: 1;
-    min-width: 0;
+.rail-nav.router-link-active {
+    background: var(--bb-accent-light);
+    color: var(--bb-accent-text);
 }
-.user-name {
-    font-size: 13px;
-    font-weight: var(--bb-weight-semibold);
-    color: var(--bb-text-primary);
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.user-role {
-    font-size: 11px;
-    color: var(--bb-text-tertiary);
-}
-.user-arrow {
-    font-size: 12px;
-    color: var(--bb-text-tertiary);
-    transition: transform var(--bb-duration-fast) var(--bb-ease);
-}
-.user-arrow--open {
-    transform: rotate(180deg);
+.rail-nav.router-link-active::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 13px;
+    width: 3px;
+    height: 18px;
+    background: var(--bb-accent);
+    border-radius: 0 2px 2px 0;
 }
 
+.rail-spacer {
+    flex: 1;
+}
+
+.rail-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--bb-accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: var(--bb-weight-semibold);
+    text-decoration: none;
+    margin-top: 4px;
+    transition: transform var(--bb-duration-fast) var(--bb-ease);
+}
+.rail-avatar:hover {
+    transform: scale(1.05);
+}
+
+/* ===== 主内容区 ===== */
 .main {
     flex: 1;
     display: flex;
@@ -348,6 +304,7 @@ watch(
 }
 .content--agent {
     overflow: hidden;
+    padding: 0;
 }
 .content::-webkit-scrollbar {
     width: 4px;
@@ -357,11 +314,18 @@ watch(
     border-radius: 2px;
 }
 
-/* FAB */
-.fab {
+/* ===== 浮动操作栈 ===== */
+.fab-stack {
     position: fixed;
-    bottom: 32px;
-    right: 32px;
+    bottom: 28px;
+    right: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    z-index: 100;
+}
+.fab {
     width: 52px;
     height: 52px;
     border: none;
@@ -372,7 +336,6 @@ watch(
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 100;
     transition: all 0.2s ease;
     box-shadow: 0 4px 16px rgba(217, 164, 4, 0.38);
 }
@@ -383,8 +346,32 @@ watch(
 .fab:active {
     transform: scale(0.95);
 }
+.back-to-bot {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 20px;
+    border: none;
+    border-radius: 26px;
+    background: var(--bb-accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: var(--bb-weight-semibold);
+    font-family: var(--bb-font);
+    cursor: pointer;
+    box-shadow: var(--bb-shadow-float);
+    transition:
+        transform var(--bb-duration-fast) var(--bb-ease),
+        box-shadow var(--bb-duration-fast) var(--bb-ease);
+}
+.back-to-bot:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 36px rgba(217, 164, 4, 0.2);
+}
+.back-to-bot:active {
+    transform: translateY(0) scale(0.97);
+}
 
-/* 用户切换弹窗 */
 /* 动效 */
 .fade-enter-active {
     transition: opacity var(--bb-duration) var(--bb-ease);

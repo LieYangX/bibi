@@ -11,6 +11,7 @@ export interface Category {
     name: string
     type: CategoryType
     icon: string
+    color: string
     is_system: number
     sort_order: number
     sub_categories?: SubCategory[]
@@ -29,6 +30,7 @@ export interface CreateCategoryDTO {
     name: string
     type: CategoryType
     icon?: string
+    color?: string
 }
 
 export interface CreateSubCategoryDTO {
@@ -39,4 +41,5 @@ export interface CreateSubCategoryDTO {
 export interface UpdateCategoryDTO {
     name?: string
     icon?: string
+    color?: string
 }

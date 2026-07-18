@@ -6,6 +6,7 @@
 import { useAccountStore } from '../../stores/account.store'
 import { useBudgetStore } from '../../stores/budget.store'
 import { useCategoryStore } from '../../stores/category.store'
+import { useImportStore } from '../../stores/import.store'
 import { useStatisticsStore } from '../../stores/statistics.store'
 import { useTransactionStore } from '../../stores/transaction.store'
 import { useAgentStore } from '../../stores/agent.store'
@@ -21,6 +22,7 @@ export function resetUserData(): void {
     useAccountStore().reset()
     useBudgetStore().reset()
     useCategoryStore().reset()
+    useImportStore().reset()
     useStatisticsStore().reset()
     useTransactionStore().reset()
     useAgentStore().reset()

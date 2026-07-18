@@ -12,6 +12,28 @@
         <!-- 添加一级分类 -->
         <div class="cat-create">
             <div class="cat-create__row">
+                <div class="cat-color-picker-wrap">
+                    <button
+                        class="cat-color-dot"
+                        :style="{ background: newCatColor }"
+                        title="选择颜色"
+                        @click.stop="toggleCreateColorPicker"
+                    />
+                    <div
+                        v-if="showColorPickerFor === 'create'"
+                        class="cat-color-palette"
+                        @click.stop
+                    >
+                        <button
+                            v-for="c in CATEGORY_COLORS"
+                            :key="c"
+                            class="cat-palette-swatch"
+                            :class="{ active: c === newCatColor }"
+                            :style="{ background: c }"
+                            @click="selectCreateColor(c)"
+                        />
+                    </div>
+                </div>
                 <input
                     v-model="newCatName"
                     class="bb-input"
@@ -34,6 +56,10 @@
                 <!-- 一级分类头部 -->
                 <div class="cat-group__head">
                     <div class="cat-group__info">
+                        <span
+                            class="cat-group__dot"
+                            :style="{ background: cat.color || 'var(--bb-text-tertiary)' }"
+                        />
                         <span class="cat-group__name">{{ cat.name }}</span>
                         <span v-if="cat.sub_categories.length" class="cat-group__count"
                             >{{ cat.sub_categories.length }}个二级</span
@@ -61,6 +87,28 @@
 
                 <!-- 编辑一级分类名称 -->
                 <div v-if="editingCatId === cat.id" class="cat-edit-row">
+                    <div class="cat-color-picker-wrap">
+                        <button
+                            class="cat-color-dot"
+                            :style="{ background: editCatColor }"
+                            title="选择颜色"
+                            @click.stop="toggleEditColorPicker"
+                        />
+                        <div
+                            v-if="showColorPickerFor === 'edit'"
+                            class="cat-color-palette"
+                            @click.stop
+                        >
+                            <button
+                                v-for="c in CATEGORY_COLORS"
+                                :key="c"
+                                class="cat-palette-swatch"
+                                :class="{ active: c === editCatColor }"
+                                :style="{ background: c }"
+                                @click="selectEditColor(c)"
+                            />
+                        </div>
+                    </div>
                     <input
                         ref="catEditInputRef"
                         v-model="editCatName"
@@ -181,27 +229,71 @@
  * @author xiangwei
  */
 
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useCategoryStore } from '../../stores/category.store'
 import { BbModal, Message } from '../../components/ui'
 import { Trash2, Pencil, X, RotateCcw } from '@lucide/vue'
 import type { CategoryInfo, SubCategoryInfo } from '../../stores/category.store'
+
+/** 分类调色板 */
+const CATEGORY_COLORS = [
+    '#EF4444',
+    '#F97316',
+    '#EAB308',
+    '#22C55E',
+    '#14B8A6',
+    '#06B6D4',
+    '#3B82F6',
+    '#6366F1',
+    '#8B5CF6',
+    '#D946EF',
+    '#EC4899',
+    '#F43F5E',
+    '#059669',
+    '#0284C7',
+    '#7C3AED'
+]
 
 const props = defineProps<{ categoryType: 'expense' | 'income' }>()
 const categoryStore = useCategoryStore()
 
 // ---- 表单状态 ----
 const newCatName = ref('')
+const newCatColor = ref(CATEGORY_COLORS[0])
 const newSubName = ref('')
 const addingSubCatId = ref('')
 const editingCatId = ref('')
 const editCatName = ref('')
+const editCatColor = ref(CATEGORY_COLORS[0])
 const editingSubId = ref('')
 const editSubName = ref('')
+const showColorPickerFor = ref<'create' | 'edit' | null>(null)
 
 // 模板 ref：每个分类的二级分类输入框独立存储，避免 v-for 中单一 ref 被覆盖
 const subInputRefs = ref<Map<string, HTMLInputElement>>(new Map())
 const catEditInputRef = ref<HTMLInputElement | null>(null)
+
+function toggleCreateColorPicker(): void {
+    showColorPickerFor.value = showColorPickerFor.value === 'create' ? null : 'create'
+}
+function selectCreateColor(color: string): void {
+    newCatColor.value = color
+    showColorPickerFor.value = null
+}
+function toggleEditColorPicker(): void {
+    showColorPickerFor.value = showColorPickerFor.value === 'edit' ? null : 'edit'
+}
+function selectEditColor(color: string): void {
+    editCatColor.value = color
+    showColorPickerFor.value = null
+}
+
+/** 点击任意位置关闭颜色选择器 */
+function onDocumentClick(): void {
+    showColorPickerFor.value = null
+}
+onMounted(() => document.addEventListener('click', onDocumentClick))
+onUnmounted(() => document.removeEventListener('click', onDocumentClick))
 
 /**
  * 收集当前分类的二级分类输入框 DOM 引用
@@ -238,10 +330,15 @@ const currentCategories = computed(() =>
 async function handleCreateCat(): Promise<void> {
     const name = newCatName.value.trim()
     if (!name) return
-    const ok = await categoryStore.createCategory({ name, type: props.categoryType })
+    const ok = await categoryStore.createCategory({
+        name,
+        type: props.categoryType,
+        color: newCatColor.value
+    })
     if (ok) {
         Message.success('已添加')
         newCatName.value = ''
+        newCatColor.value = CATEGORY_COLORS[0]
     } else {
         Message.error('添加失败')
     }
@@ -251,13 +348,18 @@ function startEditCat(cat: CategoryInfo): void {
     editingSubId.value = ''
     editingCatId.value = cat.id
     editCatName.value = cat.name
+    editCatColor.value = cat.color || CATEGORY_COLORS[0]
+    showColorPickerFor.value = null
     nextTick(() => catEditInputRef.value?.focus())
 }
 
 async function saveEditCat(id: string): Promise<void> {
     const name = editCatName.value.trim()
     if (!name) return
-    const ok = await categoryStore.updateCategory(id, { name })
+    const ok = await categoryStore.updateCategory(id, {
+        name,
+        color: editCatColor.value
+    })
     if (ok) Message.success('已更新')
     else Message.error('更新失败')
     cancelEdit()
@@ -310,6 +412,7 @@ function cancelEdit(): void {
     editSubName.value = ''
     addingSubCatId.value = ''
     newSubName.value = ''
+    showColorPickerFor.value = null
 }
 
 // ========== 删除 ==========
@@ -409,6 +512,12 @@ async function handleResetDefaults(): Promise<void> {
     align-items: center;
     gap: 8px;
 }
+.cat-group__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
 .cat-group__name {
     font-size: 15px;
     font-weight: var(--bb-weight-semibold);
@@ -457,6 +566,57 @@ async function handleResetDefaults(): Promise<void> {
 }
 .cat-edit-row .bb-input {
     flex: 1;
+}
+
+/* 颜色选择器 */
+.cat-color-picker-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+.cat-color-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--bb-border);
+    cursor: pointer;
+    transition: border-color var(--bb-duration-fast) var(--bb-ease);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.cat-color-dot:hover {
+    border-color: var(--bb-accent);
+}
+.cat-color-palette {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    padding: 8px;
+    background: var(--bb-bg-card);
+    border: 1px solid var(--bb-border);
+    border-radius: 10px;
+    box-shadow: var(--bb-shadow-float);
+    width: 170px;
+}
+.cat-palette-swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: transform var(--bb-duration-fast) var(--bb-ease);
+}
+.cat-palette-swatch:hover {
+    transform: scale(1.18);
+}
+.cat-palette-swatch.active {
+    border-color: var(--bb-text-primary);
+    box-shadow: 0 0 0 1px var(--bb-bg-card);
 }
 
 .cat-subs {
@@ -542,6 +702,7 @@ async function handleResetDefaults(): Promise<void> {
     display: flex;
     gap: 10px;
     width: 100%;
+    align-items: center;
 }
 .cat-create .bb-input {
     flex: 1;

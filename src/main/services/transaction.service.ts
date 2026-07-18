@@ -458,7 +458,8 @@ export async function listTransactions(
             account_name: accounts.name,
             target_account_name: targetAccounts.name,
             category_name: categories.name,
-            sub_category_name: subCategories.name
+            sub_category_name: subCategories.name,
+            category_color: categories.color
         })
         .from(transactions)
         .leftJoin(accounts, eq(transactions.account_id, accounts.id))
@@ -520,7 +521,8 @@ export async function getTransactionById(id: string, userId: string): Promise<Tr
             account_name: accounts.name,
             target_account_name: targetAccounts.name,
             category_name: categories.name,
-            sub_category_name: subCategories.name
+            sub_category_name: subCategories.name,
+            category_color: categories.color
         })
         .from(transactions)
         .leftJoin(accounts, eq(transactions.account_id, accounts.id))

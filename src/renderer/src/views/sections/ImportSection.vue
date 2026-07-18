@@ -171,7 +171,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type {
     ImportDraftOperation,
     ImportDraftSnapshot,
@@ -193,6 +193,7 @@ import { Message } from '../../components/ui'
 import { desktopApi } from '../../api/desktop-api'
 import { useAccountStore } from '../../stores/account.store'
 import { useCategoryStore, type CategoryInfo } from '../../stores/category.store'
+import { useImportStore } from '../../stores/import.store'
 import { emitRefresh } from '../../composables/useRefreshBus'
 import { formatYuan } from '../../utils/format'
 import ConfirmBar from './import/ConfirmBar.vue'
@@ -229,6 +230,7 @@ const sourceOptions: SourceOption[] = [
 
 const accountStore = useAccountStore()
 const categoryStore = useCategoryStore()
+const importStore = useImportStore()
 const source = ref<ImportSource>('alipay')
 const draft = ref<ImportDraftSnapshot | null>(null)
 const importResult = ref<ImportResult | null>(null)
@@ -239,6 +241,11 @@ const confirming = ref(false)
 const discarding = ref(false)
 const pendingUpdates = ref(0)
 let updateTail: Promise<void> = Promise.resolve()
+
+// 将本地草稿快照同步到共享 store，供 ContextPanel 展示待确认条数
+watch(draft, (value) => {
+    importStore.setDraft(value)
+})
 
 const sourceLabel = computed(
     () => sourceOptions.find((item) => item.value === source.value)?.label ?? '账单'
@@ -270,6 +277,8 @@ onBeforeUnmount(() => {
     const draftId = draft.value?.draft_id
     if (!draftId || confirming.value) return
     draft.value = null
+    // 显式清空共享 store，避免 watcher 在卸载后未刷新
+    importStore.clearDraft()
     void updateTail.then(async () => {
         try {
             await desktopApi.import.discardDraft({ draft_id: draftId })

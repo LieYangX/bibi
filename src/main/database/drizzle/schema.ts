@@ -117,6 +117,7 @@ export const categories = sqliteTable(
         name: text('name').notNull(),
         type: text('type').notNull(),
         icon: text('icon').notNull().default('IconBook'),
+        color: text('color').notNull().default(''),
         is_system: integer('is_system').notNull().default(0),
         sort_order: integer('sort_order').notNull().default(0),
         created_at: text('created_at')

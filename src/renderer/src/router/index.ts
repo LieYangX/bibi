@@ -1,6 +1,7 @@
 /**
  * 路由配置
  * 登录页为独立顶层路由；主应用（含侧栏）为父级路由，子路由按业务领域划分
+ * 小笔主页为默认路由 /，功能页通过图标轨道进入
  * 全部懒加载，减小首屏体积
  * @author xiangwei
  */
@@ -18,7 +19,12 @@ const routes: RouteRecordRaw[] = [
         path: '/',
         component: () => import('../components/AppLayout.vue'),
         children: [
-            { path: '', name: 'Dashboard', component: () => import('../views/DashboardView.vue') },
+            { path: '', name: 'Home', component: () => import('../views/AgentChatView.vue') },
+            {
+                path: 'overview',
+                name: 'Overview',
+                component: () => import('../views/DashboardView.vue')
+            },
             { path: 'detail', name: 'Detail', component: () => import('../views/DetailView.vue') },
             {
                 path: 'accounts',
@@ -32,11 +38,7 @@ const routes: RouteRecordRaw[] = [
             },
             { path: 'budget', name: 'Budget', component: () => import('../views/BudgetView.vue') },
             { path: 'import', name: 'Import', component: () => import('../views/ImportView.vue') },
-            {
-                path: 'agent',
-                name: 'Agent',
-                component: () => import('../views/AgentChatView.vue')
-            },
+            { path: 'agent', redirect: '/' },
             {
                 path: 'settings',
                 name: 'Settings',

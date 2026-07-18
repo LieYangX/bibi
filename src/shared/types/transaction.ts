@@ -27,6 +27,7 @@ export interface Transaction {
     target_account_name?: string | null
     category_name?: string | null
     sub_category_name?: string | null
+    category_color?: string | null
 }
 
 export interface CreateTransactionDTO {

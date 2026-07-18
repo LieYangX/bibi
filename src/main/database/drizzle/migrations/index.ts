@@ -52,6 +52,9 @@ const LEGACY_MIGRATION_COLUMNS: Record<string, Record<string, string[]>> = {
     },
     '0006_simple_ma_gnuci': {
         agent_conversations: ['source']
+    },
+    '0007_add_category_color': {
+        categories: ['id', 'user_id', 'name', 'type', 'color']
     }
 }
 

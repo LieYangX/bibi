@@ -1,329 +1,375 @@
 <template>
-    <div class="agent-shell" :class="{ 'agent-shell--empty': !agentStore.messages.length }">
-        <!-- 有消息时：简约顶栏 -->
-        <header v-if="agentStore.messages.length" class="agent-bar">
-            <div class="agent-bar__left">
-                <button
-                    class="agent-bar__tab"
-                    :class="{ active: activePanel === 'skills' }"
-                    @click="togglePanel('skills')"
-                >
-                    <Puzzle :size="14" /> Skills
-                    <span v-if="enabledSkillCount" class="agent-bar__badge">{{
-                        enabledSkillCount
-                    }}</span>
-                </button>
-                <button
-                    class="agent-bar__tab"
-                    :class="{ active: activePanel === 'tools' }"
-                    @click="togglePanel('tools')"
-                >
-                    <Zap :size="14" /> 工具 / MCP
-                    <span v-if="totalToolCount" class="agent-bar__badge">{{ totalToolCount }}</span>
-                </button>
-                <button
-                    class="agent-bar__tab"
-                    :class="{ active: activePanel === 'convs' }"
-                    @click="togglePanel('convs')"
-                >
-                    <MessageCircle :size="14" /> 对话
-                    <span v-if="agentStore.conversations.length" class="agent-bar__badge">{{
-                        agentStore.conversations.length
-                    }}</span>
-                </button>
-            </div>
-            <div class="agent-bar__right">
-                <button
-                    class="agent-bar__new"
-                    title="新对话"
-                    :disabled="agentStore.isProcessing"
-                    @click="onNewConv"
-                >
-                    <Plus :size="16" />
-                </button>
-            </div>
-        </header>
-
-        <!-- ══════ 消息区 ══════ -->
-        <main
-            ref="messagesRef"
-            class="agent-messages"
-            :class="{
-                'agent-messages--empty': !agentStore.messages.length || !agentStore.hasConfig
-            }"
-        >
-            <div v-if="agentStore.loading && !agentStore.messages.length" class="agent-hero">
-                <div class="agent-page-loader"><span /><span /><span /></div>
-                <p class="agent-hero__desc">正在准备小笔…</p>
-            </div>
-
-            <div v-else-if="agentStore.error && !agentStore.messages.length" class="agent-hero">
-                <p class="agent-hero__desc">{{ agentStore.error }}</p>
-                <button class="bb-btn bb-btn-sm" @click="agentStore.initialize()">重新加载</button>
-            </div>
-
-            <!-- 未配置 -->
-            <div
-                v-else-if="!agentStore.hasConfig && !agentStore.messages.length"
-                class="agent-hero"
-            >
-                <img class="agent-hero__logo" src="../assets/app-icon.png" alt="" />
-                <h1 class="agent-hero__title">小笔</h1>
-                <p class="agent-hero__desc">请先在设置中配置 DeepSeek API Key 并启用小笔功能</p>
-            </div>
-
-            <!-- 空对话 —— DeepSeek 风格欢迎页 -->
-            <div v-else-if="!agentStore.messages.length" class="agent-hero">
-                <img class="agent-hero__logo" src="../assets/app-icon.png" alt="" />
-                <h1 class="agent-hero__title">
-                    使用{{ currentMode === 'fast' ? '快速' : '专家' }}模式开始对话
-                </h1>
-
-                <!-- 模式切换（→ 快速模式 flash，→ 专家模式 pro） -->
-                <div class="agent-mode-switch">
+    <div class="agent-home" :class="{ 'agent-home--empty': !hasMessages }">
+        <div class="agent-chat-col">
+            <!-- 有消息时：简约顶栏 -->
+            <header v-if="hasMessages" class="agent-bar">
+                <div class="agent-bar__left">
                     <button
-                        class="agent-mode-btn"
-                        :class="{ active: currentMode === 'fast' }"
-                        @click="switchMode('fast')"
+                        class="agent-bar__tab"
+                        :class="{ active: activePanel === 'skills' }"
+                        @click="togglePanel('skills')"
                     >
-                        <Zap :size="14" /> 快速模式
+                        <Puzzle :size="14" /> Skills
+                        <span v-if="enabledSkillCount" class="agent-bar__badge">{{
+                            enabledSkillCount
+                        }}</span>
                     </button>
                     <button
-                        class="agent-mode-btn"
-                        :class="{ active: currentMode === 'expert' }"
-                        @click="switchMode('expert')"
+                        class="agent-bar__tab"
+                        :class="{ active: activePanel === 'tools' }"
+                        @click="togglePanel('tools')"
                     >
-                        <Gem :size="14" /> 专家模式
+                        <Zap :size="14" /> 工具 / MCP
+                        <span v-if="totalToolCount" class="agent-bar__badge">{{
+                            totalToolCount
+                        }}</span>
+                    </button>
+                    <button
+                        class="agent-bar__tab"
+                        :class="{ active: activePanel === 'convs' }"
+                        @click="togglePanel('convs')"
+                    >
+                        <MessageCircle :size="14" /> 对话
+                        <span v-if="agentStore.conversations.length" class="agent-bar__badge">{{
+                            agentStore.conversations.length
+                        }}</span>
                     </button>
                 </div>
-                <p class="agent-hero__subtitle">
-                    {{
-                        currentMode === 'fast'
-                            ? '快速响应 · 查询本月支出、各账户余额、预算执行情况'
-                            : '深度推理 · 分析支出趋势、检测异常消费、生成分析报告'
-                    }}
-                </p>
-                <div class="agent-wechat-bridge">
+                <div class="agent-bar__right">
                     <button
-                        v-if="agentStore.wechatStatus?.phase === 'connected'"
-                        class="agent-wechat-button agent-wechat-button--connected"
-                        @click="openWechatConversation"
+                        class="agent-bar__toggle"
+                        :class="{ 'agent-bar__toggle--off': showContextPanel === false }"
+                        title="速览面板"
+                        @click="toggleContextPanel"
                     >
-                        <span class="agent-wechat-status-dot" />
-                        微信已连接
+                        <PanelRight :size="16" />
                     </button>
                     <button
-                        v-else-if="isWechatConnecting"
-                        class="agent-wechat-button"
-                        @click="showWechatDialog = true"
-                    >
-                        <QrCode :size="14" /> 查看微信二维码
-                    </button>
-                    <button v-else class="agent-wechat-button" @click="connectWechat">
-                        <QrCode :size="14" /> 连接微信
-                    </button>
-                    <button
-                        v-if="agentStore.wechatStatus?.phase === 'connected'"
-                        class="agent-wechat-disconnect"
-                        title="断开微信"
-                        aria-label="断开微信"
-                        @click="disconnectWechat"
-                    >
-                        <Unplug :size="14" />
-                    </button>
-                </div>
-                <button
-                    v-if="agentStore.conversations.length"
-                    class="agent-hero-history"
-                    @click="togglePanel('convs')"
-                >
-                    <MessageCircle :size="14" /> 查看历史对话（{{
-                        agentStore.conversations.length
-                    }}）
-                </button>
-            </div>
-
-            <div
-                v-if="agentStore.currentConversationId && agentStore.isLoadingMessages"
-                class="agent-history-status"
-            >
-                正在加载更早消息…
-            </div>
-            <button
-                v-else-if="agentStore.messageError && agentStore.currentConversationId"
-                class="agent-history-status agent-history-status--error"
-                @click="loadOlderAndPreserve"
-            >
-                {{ agentStore.messageError }}，点击重试
-            </button>
-
-            <!-- 消息时间线（有消息时显示） -->
-            <AgentMessage v-for="msg in displayMessages" :key="msg.id" :message="msg" />
-
-            <!-- 等待首个响应指示 -->
-            <div
-                v-if="agentStore.isAwaitingResponse && agentStore.messages.length"
-                class="agent-thinking"
-            >
-                <span /><span /><span />
-            </div>
-
-            <!-- 一键回到底部 -->
-            <button
-                class="agent-scroll-btn"
-                :class="{ 'agent-scroll-btn--hidden': !showScrollBtn }"
-                @click="scrollToBottom"
-            >
-                <ChevronDown :size="18" />
-            </button>
-        </main>
-
-        <!-- ══════ 输入区 ══════ -->
-        <footer class="agent-input-area">
-            <div v-if="agentStore.queuedMessages.length" class="agent-queue">
-                <div
-                    v-for="(queuedMessage, index) in agentStore.queuedMessages"
-                    :key="queuedMessage.id"
-                    class="agent-queue__item"
-                >
-                    <span class="agent-queue__index">队列 {{ index + 1 }}</span>
-                    <span class="agent-queue__content" :title="queuedMessage.content">
-                        {{ queuedMessage.content }}
-                    </span>
-                    <button
-                        class="agent-queue__guide"
-                        title="打断当前回答并发送此消息"
-                        :disabled="agentStore.isStopping"
-                        @click="guideQueuedMessage(queuedMessage.id)"
-                    >
-                        <CornerDownRight :size="13" /> 引导
-                    </button>
-                    <button
-                        class="agent-queue__delete"
-                        title="删除队列消息"
-                        :aria-label="`删除队列消息：${queuedMessage.content}`"
-                        @click="agentStore.removeQueuedMessage(queuedMessage.id)"
-                    >
-                        <Trash2 :size="14" />
-                    </button>
-                </div>
-            </div>
-            <div class="agent-input-card">
-                <textarea
-                    ref="inputRef"
-                    v-model="inputMessage"
-                    class="agent-textarea"
-                    placeholder="给笔笔发送消息…"
-                    rows="1"
-                    :disabled="!agentStore.hasConfig"
-                    @keydown.enter.exact.prevent="send"
-                    @input="autoResize"
-                />
-
-                <!-- 快捷提问（嵌入输入卡片内部） -->
-                <div
-                    v-if="!agentStore.messages.length && agentStore.hasConfig"
-                    class="agent-input-quickies"
-                >
-                    <button
-                        v-for="q in quickQuestions"
-                        :key="q"
-                        class="agent-qpill"
+                        class="agent-bar__new"
+                        title="新对话"
                         :disabled="agentStore.isProcessing"
-                        @click="askQuickQuestion(q)"
+                        @click="onNewConv"
                     >
-                        {{ q }}
+                        <Plus :size="16" />
+                    </button>
+                </div>
+            </header>
+
+            <!-- ══════ 消息区 ══════ -->
+            <main
+                ref="messagesRef"
+                class="agent-scroll-area"
+                :class="{
+                    'agent-scroll-area--empty': !hasMessages
+                }"
+            >
+                <div v-if="agentStore.loading && !hasMessages" class="agent-hero">
+                    <div class="agent-page-loader"><span /><span /><span /></div>
+                    <p class="agent-hero__desc">正在准备小笔…</p>
+                </div>
+
+                <div v-else-if="agentStore.error && !hasMessages" class="agent-hero">
+                    <p class="agent-hero__desc">{{ agentStore.error }}</p>
+                    <button class="bb-btn bb-btn-sm" @click="agentStore.initialize()">
+                        重新加载
                     </button>
                 </div>
 
-                <!-- 底部功能区 -->
-                <div class="agent-input-foot">
-                    <div class="agent-input-foot__left">
+                <!-- 未配置 -->
+                <div v-else-if="!agentStore.hasConfig && !hasMessages" class="agent-hero">
+                    <div class="empty-hero__logo">
+                        <img src="../assets/app-icon.png" alt="小笔" />
+                    </div>
+                    <h1 class="empty-hero__greeting">小笔</h1>
+                    <p class="agent-hero__desc">请先在设置中配置 DeepSeek API Key 并启用小笔功能</p>
+                </div>
+
+                <!-- 空对话 -- 居中英雄区 -->
+                <div v-else-if="!hasMessages" class="agent-empty-hero">
+                    <div class="empty-hero__logo">
+                        <img src="../assets/app-icon.png" alt="小笔" />
+                    </div>
+                    <h1 class="empty-hero__greeting">{{ greeting }}，{{ userName }}</h1>
+                    <p class="empty-hero__subtitle">
+                        我是小笔，你的记账搭子 -- 说话就能记账、查账、出报表
+                    </p>
+
+                    <!-- 模式切换 -->
+                    <div class="agent-mode-switch">
                         <button
-                            class="agent-foot-btn"
-                            :class="{ 'agent-foot-btn--active': agentStore.deepThink }"
-                            :disabled="agentStore.isWechatConversation"
-                            :title="
-                                agentStore.isWechatConversation
-                                    ? '微信会话默认开启深度思考'
-                                    : '深度思考'
-                            "
-                            @click="agentStore.deepThink = !agentStore.deepThink"
+                            class="agent-mode-btn"
+                            :class="{ active: currentMode === 'fast' }"
+                            @click="switchMode('fast')"
                         >
-                            <BrainCircuit :size="15" /> 深度思考
+                            <Zap :size="14" /> 快速
                         </button>
                         <button
-                            v-if="sttEnabled"
-                            class="agent-foot-btn agent-mic-btn"
-                            :class="{
-                                'agent-mic-btn--recording': isRecording,
-                                'agent-mic-btn--loading': isModelStarting || isTranscribing
-                            }"
-                            :title="
-                                isRecording
-                                    ? '点击停止录音'
-                                    : isModelStarting
-                                      ? '语音模型启动中'
-                                      : isTranscribing
-                                        ? '识别中…'
-                                        : '点击开始录音'
-                            "
-                            :disabled="isModelStarting || isTranscribing || agentStore.isProcessing"
-                            @click="toggleRecording"
+                            class="agent-mode-btn"
+                            :class="{ active: currentMode === 'expert' }"
+                            @click="switchMode('expert')"
                         >
-                            <Mic :size="15" />
-                            <span class="agent-mic-label">{{
-                                isModelStarting
-                                    ? '启动中'
-                                    : isTranscribing
-                                      ? '识别中'
-                                      : isRecording
-                                        ? '录音中'
-                                        : '语音'
-                            }}</span>
-                            <!-- 模型下载进度条 -->
-                            <span
-                                v-if="
-                                    (isModelStarting || isTranscribing) &&
-                                    modelProgress &&
-                                    modelProgress.pct > 0 &&
-                                    modelProgress.pct < 100
-                                "
-                                class="agent-mic-progress"
-                            >
-                                <span
-                                    class="agent-mic-progress__bar"
-                                    :style="{ width: modelProgress.pct + '%' }"
-                                />
-                            </span>
+                            <Gem :size="14" /> 专家
                         </button>
                     </div>
-                    <div class="agent-input-foot__right">
+
+                    <!-- 微信与历史对话状态 -->
+                    <div class="agent-status-area">
+                        <div class="agent-wechat-bridge">
+                            <button
+                                v-if="agentStore.wechatStatus?.phase === 'connected'"
+                                class="agent-status-chip agent-status-chip--success"
+                                @click="openWechatConversation"
+                            >
+                                <MessageCircle :size="13" />
+                                <span class="agent-status-dot" />
+                                微信已连接
+                            </button>
+                            <button
+                                v-else-if="isWechatConnecting"
+                                class="agent-status-chip"
+                                @click="showWechatDialog = true"
+                            >
+                                <QrCode :size="13" /> 查看微信二维码
+                            </button>
+                            <button v-else class="agent-status-chip" @click="connectWechat">
+                                <QrCode :size="13" /> 连接微信
+                            </button>
+                            <button
+                                v-if="agentStore.wechatStatus?.phase === 'connected'"
+                                class="agent-wechat-disconnect"
+                                title="断开微信"
+                                aria-label="断开微信"
+                                @click="disconnectWechat"
+                            >
+                                <Unplug :size="14" />
+                            </button>
+                        </div>
                         <button
-                            v-if="agentStore.isProcessing"
-                            class="agent-input-stop"
-                            title="停止回答"
-                            :disabled="agentStore.isStopping"
-                            @click="stopResponse"
+                            v-if="agentStore.conversations.length"
+                            class="agent-status-chip"
+                            @click="togglePanel('convs')"
                         >
-                            <Square
-                                :size="13"
-                                :fill="agentStore.isStopping ? 'none' : 'currentColor'"
-                            />
-                        </button>
-                        <button
-                            v-else
-                            class="agent-input-send"
-                            title="发送"
-                            :disabled="!inputMessage.trim() || !agentStore.hasConfig"
-                            @click="send"
-                        >
-                            <ArrowUp :size="18" />
+                            <History :size="13" />
+                            历史对话 {{ agentStore.conversations.length }}
                         </button>
                     </div>
                 </div>
-            </div>
-        </footer>
+
+                <!-- 有消息时的消息时间线 -->
+                <template v-else>
+                    <div
+                        v-if="agentStore.currentConversationId && agentStore.isLoadingMessages"
+                        class="agent-history-status"
+                    >
+                        正在加载更早消息…
+                    </div>
+                    <button
+                        v-else-if="agentStore.messageError && agentStore.currentConversationId"
+                        class="agent-history-status agent-history-status--error"
+                        @click="loadOlderAndPreserve"
+                    >
+                        {{ agentStore.messageError }}，点击重试
+                    </button>
+
+                    <AgentMessage v-for="msg in displayMessages" :key="msg.id" :message="msg" />
+
+                    <!-- 等待首个响应指示 -->
+                    <div v-if="agentStore.isAwaitingResponse && hasMessages" class="agent-thinking">
+                        <span /><span /><span />
+                    </div>
+
+                    <!-- 一键回到底部 -->
+                    <button
+                        class="agent-scroll-btn"
+                        :class="{ 'agent-scroll-btn--hidden': !showScrollBtn }"
+                        @click="scrollToBottom"
+                    >
+                        <ChevronDown :size="18" />
+                    </button>
+                </template>
+            </main>
+
+            <!-- ══════ 输入区 ══════ -->
+            <footer class="agent-input-area" :class="{ 'agent-input-area--empty': !hasMessages }">
+                <div v-if="hasMessages && agentStore.queuedMessages.length" class="agent-queue">
+                    <div
+                        v-for="(queuedMessage, index) in agentStore.queuedMessages"
+                        :key="queuedMessage.id"
+                        class="agent-queue__item"
+                    >
+                        <span class="agent-queue__index">队列 {{ index + 1 }}</span>
+                        <span class="agent-queue__content" :title="queuedMessage.content">
+                            {{ queuedMessage.content }}
+                        </span>
+                        <button
+                            class="agent-queue__guide"
+                            title="打断当前回答并发送此消息"
+                            :disabled="agentStore.isStopping"
+                            @click="guideQueuedMessage(queuedMessage.id)"
+                        >
+                            <CornerDownRight :size="13" /> 引导
+                        </button>
+                        <button
+                            class="agent-queue__delete"
+                            title="删除队列消息"
+                            :aria-label="`删除队列消息：${queuedMessage.content}`"
+                            @click="agentStore.removeQueuedMessage(queuedMessage.id)"
+                        >
+                            <Trash2 :size="14" />
+                        </button>
+                    </div>
+                </div>
+                <div class="agent-input-card">
+                    <textarea
+                        ref="inputRef"
+                        v-model="inputMessage"
+                        class="agent-textarea"
+                        placeholder="给小笔发消息，比如：午饭 38 元，刷的招行卡…"
+                        rows="1"
+                        :disabled="!agentStore.hasConfig"
+                        @keydown.enter.exact.prevent="send"
+                        @input="autoResize"
+                    />
+
+                    <!-- 底部功能区 -->
+                    <div class="agent-input-foot">
+                        <div class="agent-input-foot__left">
+                            <button
+                                class="agent-foot-btn"
+                                :class="{ 'agent-foot-btn--active': agentStore.deepThink }"
+                                :disabled="agentStore.isWechatConversation"
+                                :title="
+                                    agentStore.isWechatConversation
+                                        ? '微信会话默认开启深度思考'
+                                        : '深度思考'
+                                "
+                                @click="agentStore.deepThink = !agentStore.deepThink"
+                            >
+                                <BrainCircuit :size="15" /> 深度思考
+                            </button>
+                            <button
+                                v-if="sttEnabled"
+                                class="agent-foot-btn agent-mic-btn"
+                                :class="{
+                                    'agent-mic-btn--recording': isRecording,
+                                    'agent-mic-btn--loading': isModelStarting || isTranscribing
+                                }"
+                                :title="
+                                    isRecording
+                                        ? '点击停止录音'
+                                        : isModelStarting
+                                          ? '语音模型启动中'
+                                          : isTranscribing
+                                            ? '识别中…'
+                                            : '点击开始录音'
+                                "
+                                :disabled="
+                                    isModelStarting || isTranscribing || agentStore.isProcessing
+                                "
+                                @click="toggleRecording"
+                            >
+                                <Mic :size="15" />
+                                <span class="agent-mic-label">{{
+                                    isModelStarting
+                                        ? '启动中'
+                                        : isTranscribing
+                                          ? '识别中'
+                                          : isRecording
+                                            ? '录音中'
+                                            : '语音'
+                                }}</span>
+                                <span
+                                    v-if="
+                                        (isModelStarting || isTranscribing) &&
+                                        modelProgress &&
+                                        modelProgress.pct > 0 &&
+                                        modelProgress.pct < 100
+                                    "
+                                    class="agent-mic-progress"
+                                >
+                                    <span
+                                        class="agent-mic-progress__bar"
+                                        :style="{ width: modelProgress.pct + '%' }"
+                                    />
+                                </span>
+                            </button>
+                        </div>
+                        <div class="agent-input-foot__right">
+                            <button
+                                v-if="agentStore.isProcessing"
+                                class="agent-input-stop"
+                                title="停止回答"
+                                :disabled="agentStore.isStopping"
+                                @click="stopResponse"
+                            >
+                                <Square
+                                    :size="13"
+                                    :fill="agentStore.isStopping ? 'none' : 'currentColor'"
+                                />
+                            </button>
+                            <button
+                                v-else
+                                class="agent-input-send"
+                                title="发送"
+                                :disabled="!inputMessage.trim() || !agentStore.hasConfig"
+                                @click="send"
+                            >
+                                <ArrowUp :size="18" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 空状态：快捷操作卡片 -->
+                <div v-if="!hasMessages && agentStore.hasConfig" class="agent-quick-actions">
+                    <button
+                        class="qa-card"
+                        type="button"
+                        :disabled="agentStore.isProcessing"
+                        @click="onQuickAction('record')"
+                    >
+                        <span class="qa-icon"><Pencil :size="18" /></span>
+                        <span class="qa-title">记一笔</span>
+                        <span class="qa-desc">语音或文字随手记</span>
+                    </button>
+                    <button
+                        class="qa-card"
+                        type="button"
+                        :disabled="agentStore.isProcessing"
+                        @click="onQuickAction('query')"
+                    >
+                        <span class="qa-icon"><BarChart3 :size="18" /></span>
+                        <span class="qa-title">查账单</span>
+                        <span class="qa-desc">这个月花了多少</span>
+                    </button>
+                    <button
+                        class="qa-card"
+                        type="button"
+                        :disabled="agentStore.isProcessing"
+                        @click="onQuickAction('report')"
+                    >
+                        <span class="qa-icon"><ReceiptText :size="18" /></span>
+                        <span class="qa-title">出报表</span>
+                        <span class="qa-desc">生成月度消费报告</span>
+                    </button>
+                    <button
+                        class="qa-card"
+                        type="button"
+                        :disabled="agentStore.isProcessing"
+                        @click="onQuickAction('budget')"
+                    >
+                        <span class="qa-icon"><PiggyBank :size="18" /></span>
+                        <span class="qa-title">看预算</span>
+                        <span class="qa-desc">预算还剩多少</span>
+                    </button>
+                </div>
+            </footer>
+        </div>
+
+        <!-- ══════ 右侧速览面板 ══════ -->
+        <Transition name="context-panel">
+            <ContextPanel v-if="showContextPanel === true" />
+        </Transition>
 
         <!-- ══════ 统一右侧抽屉（保持不变） ══════ -->
         <Teleport to="body">
@@ -865,13 +911,17 @@
 
 <script setup lang="ts">
 /**
- * 智能体对话页面 —— DeepSeek 风格
+ * 智能体对话页面 -- 小笔主页
+ * 空状态居中英雄区引导交互，对话开始后输入框停靠底部
+ * 右侧速览面板可折叠，所有技能/工具/对话抽屉保持不变
  * @author xiangwei
  */
 
 import { ref, reactive, onMounted, onUnmounted, nextTick, computed, watch } from 'vue'
 import { useAgentStore } from '../stores/agent.store'
+import { useUserStore } from '../stores/user.store'
 import AgentMessage from '../components/AgentMessage.vue'
+import ContextPanel from '../components/ContextPanel.vue'
 import { BbModal, BbPopconfirm, BbSwitch, Message } from '../components/ui'
 import {
     Plus,
@@ -893,7 +943,12 @@ import {
     Square,
     CornerDownRight,
     QrCode,
-    Unplug
+    Unplug,
+    BarChart3,
+    ReceiptText,
+    PiggyBank,
+    PanelRight,
+    History
 } from '@lucide/vue'
 import { desktopApi } from '../api/desktop-api'
 import type { McpServerConfig, SkillDetail, SttProgressEvent } from '@shared/types'
@@ -903,6 +958,7 @@ const STT_SAMPLE_RATE = 16_000
 const STT_AUDIO_MIME_TYPE = 'audio/webm;codecs=opus'
 
 const agentStore = useAgentStore()
+const userStore = useUserStore()
 const inputMessage = ref('')
 const inputRef = ref<HTMLTextAreaElement | null>(null)
 const messagesRef = ref<HTMLElement | null>(null)
@@ -917,8 +973,25 @@ const currentMode = ref<'fast' | 'expert'>('fast')
 /** 一键回到底部按钮显示状态 */
 const showScrollBtn = ref(false)
 const showWechatDialog = ref(false)
+/** 右侧速览面板展开状态，null 表示尚未从设置恢复，避免关闭时闪烁 */
+const showContextPanel = ref<boolean | null>(null)
+const CONTEXT_PANEL_SETTING_KEY = 'agent_context_panel_visible'
 let shouldStickToBottom = true
 let loadingOlderMessages = false
+
+/** 是否已有消息（控制空状态与对话态切换） */
+const hasMessages = computed(() => agentStore.messages.length > 0)
+
+/** 根据当前时间生成问候语 */
+const greeting = computed(() => {
+    const hour = new Date().getHours()
+    if (hour < 12) return '早上好'
+    if (hour < 18) return '下午好'
+    return '晚上好'
+})
+
+/** 当前用户名称，缺失时回退到首字母 */
+const userName = computed(() => userStore.currentUser?.name || userStore.userInitial)
 
 /** 语音输入状态 */
 const isRecording = ref(false)
@@ -1227,13 +1300,6 @@ async function saveEditConv(id: string): Promise<void> {
     editingConvId.value = null
 }
 
-const quickQuestions = [
-    '我这个月花了多少钱？',
-    '查一下各账户余额',
-    '预算执行情况如何？',
-    '分析一下我的支出趋势'
-]
-
 const TOOL_CN_MAP: Record<string, string> = {
     queryTransactions: '流水查询',
     queryRecentTransactions: '最近流水',
@@ -1342,6 +1408,12 @@ function onNewConv(): void {
     if (agentStore.isProcessing) return
     closePanel()
     agentStore.newConversation()
+}
+
+/** 切换右侧速览面板展开状态 */
+function toggleContextPanel(): void {
+    if (showContextPanel.value === null) return
+    showContextPanel.value = !showContextPanel.value
 }
 
 async function openSkillDetail(name: string): Promise<void> {
@@ -1709,6 +1781,33 @@ async function askQuickQuestion(text: string): Promise<void> {
     inputMessage.value = text
     await send()
 }
+
+/**
+ * 空状态快捷操作卡片点击处理
+ *
+ * @param action 操作类型：record 记一笔 / query 查账单 / report 出报表 / budget 看预算
+ * @author xiangwei
+ */
+function onQuickAction(action: 'record' | 'query' | 'report' | 'budget'): void {
+    if (agentStore.isProcessing) return
+    switch (action) {
+        case 'record':
+            // 记一笔：填入前缀并聚焦输入框，等待用户补充详情后发送
+            inputMessage.value = '记一笔：'
+            nextTick(() => inputRef.value?.focus())
+            break
+        case 'query':
+            void askQuickQuestion('我这个月花了多少钱？')
+            break
+        case 'report':
+            void askQuickQuestion('生成本月消费报表')
+            break
+        case 'budget':
+            void askQuickQuestion('预算执行情况如何？')
+            break
+    }
+}
+
 async function scrollToBottom(): Promise<void> {
     await nextTick()
     if (messagesRef.value) {
@@ -1784,10 +1883,22 @@ onMounted(async () => {
                 desktopApi.agent.onTranscribeProgress(handleTranscribeProgress)
         }
     }
+    // 读取右侧速览面板展开状态
+    const panelResult = await desktopApi.setting.get<boolean>(CONTEXT_PANEL_SETTING_KEY, true)
+    if (panelResult.ok && viewMounted) {
+        showContextPanel.value = panelResult.data === true
+    }
     // 监听滚动以控制回底按钮
     messagesRef.value?.addEventListener('scroll', onMessagesScroll)
     if (agentStore.messages.length) await scrollToBottom()
 })
+
+// 速览面板展开状态持久化（初始 null 时不保存）
+watch(showContextPanel, (visible) => {
+    if (visible === null) return
+    void desktopApi.setting.set(CONTEXT_PANEL_SETTING_KEY, visible)
+})
+
 onUnmounted(() => {
     viewMounted = false
     messagesRef.value?.removeEventListener('scroll', onMessagesScroll)
@@ -1797,22 +1908,36 @@ onUnmounted(() => {
 
 <style scoped>
 /* ═══════════════════════════════════════════
-   智能体页面 — DeepSeek 风格设计
+   智能体主页 - 小笔主场布局
    ═══════════════════════════════════════════ */
 
-.agent-shell {
+.agent-home {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* 右侧速览面板显隐动画 */
+.context-panel-enter-active,
+.context-panel-leave-active {
+    transition:
+        transform 0.25s var(--bb-ease),
+        opacity 0.25s var(--bb-ease);
+}
+.context-panel-enter-from,
+.context-panel-leave-to {
+    transform: translateX(20px);
+    opacity: 0;
+}
+
+.agent-chat-col {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     height: 100%;
-    min-height: 0;
-    width: 100%;
-    max-width: var(--bb-page-w-medium);
-    margin: 0 auto;
-    padding: 0;
-    overflow: hidden;
-}
-.agent-shell--empty {
-    justify-content: center;
 }
 
 /* ===== 有消息时的简约顶栏 ===== */
@@ -1820,8 +1945,9 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 0 10px;
-    border-bottom: 1px solid var(--bb-border);
+    padding: 10px 24px;
+    border-bottom: 1px solid var(--bb-border-light);
+    background: rgba(255, 255, 255, 0.6);
     gap: 8px;
     flex-shrink: 0;
 }
@@ -1873,6 +1999,26 @@ onUnmounted(() => {
     align-items: center;
     gap: 6px;
 }
+.agent-bar__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: var(--bb-accent-soft);
+    color: var(--bb-accent-text);
+    cursor: pointer;
+    transition: all 0.15s var(--bb-ease);
+}
+.agent-bar__toggle:hover {
+    background: var(--bb-accent-light);
+}
+.agent-bar__toggle--off {
+    background: transparent;
+    color: var(--bb-text-tertiary);
+}
 .agent-bar__new {
     display: flex;
     align-items: center;
@@ -1896,70 +2042,128 @@ onUnmounted(() => {
 }
 
 /* ===== 消息区 ===== */
-.agent-messages {
+.agent-scroll-area {
     flex: 1;
     overflow-y: auto;
-    padding: 16px 16px;
+    padding: 16px 24px;
     min-height: 0;
     position: relative;
 }
-.agent-messages--empty {
-    flex: 0 1 auto;
+.agent-scroll-area--empty {
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    overflow: visible;
-    padding-top: 0;
-    padding-bottom: 0;
+    align-items: center;
+    overflow-y: auto;
+    padding: 24px 24px;
 }
-.agent-messages--empty .agent-scroll-btn {
+.agent-scroll-area--empty .agent-scroll-btn {
     display: none;
 }
 
-/* DeepSeek 风格欢迎页 */
-.agent-hero {
+/* 空状态英雄区 */
+.agent-empty-hero {
+    width: 100%;
+    max-width: 640px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 14px;
     text-align: center;
-    padding: 8px 24px 0;
 }
-.agent-hero__logo {
-    width: 56px;
-    height: 56px;
+.empty-hero__logo {
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    background: var(--bb-accent-light);
+    color: var(--bb-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 8px 32px rgba(217, 164, 4, 0.18),
+        0 0 0 8px rgba(217, 164, 4, 0.04);
 }
-.agent-hero__title {
-    font-size: 24px;
+.empty-hero__logo img {
+    width: 34px;
+    height: 34px;
+    object-fit: cover;
+    border-radius: var(--bb-radius-md);
+}
+.empty-hero__greeting {
+    font-size: 26px;
     font-weight: var(--bb-weight-bold);
     color: var(--bb-text-primary);
-    margin-bottom: 6px;
     letter-spacing: -0.02em;
+    margin: 0;
 }
-.agent-hero__subtitle {
-    font-size: 13px;
-    color: var(--bb-text-tertiary);
-    margin: 14px 0 0;
-    line-height: 1.5;
+.empty-hero__subtitle {
+    font-size: 14px;
+    color: var(--bb-text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* 模式切换 */
+.agent-mode-switch {
+    display: inline-flex;
+    gap: 3px;
+    padding: 3px;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-sm);
+    background: var(--bb-bg-input);
+}
+.agent-mode-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px 16px;
+    min-height: 30px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--bb-text-secondary);
+    font-size: 12px;
+    font-weight: var(--bb-weight-medium);
+    cursor: pointer;
+    transition: all 0.15s var(--bb-ease);
+    white-space: nowrap;
+    font-family: var(--bb-font);
+    line-height: 1.4;
+}
+.agent-mode-btn.active {
+    background: var(--bb-bg-card);
+    color: var(--bb-accent-text);
+    font-weight: var(--bb-weight-semibold);
+    box-shadow: var(--bb-shadow-xs);
+}
+.agent-mode-btn:hover:not(.active) {
+    color: var(--bb-text-primary);
+}
+
+/* 状态区：微信与历史对话 */
+.agent-status-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
 }
 .agent-wechat-bridge {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    min-height: 32px;
-    margin-top: 12px;
 }
-.agent-wechat-button {
+.agent-status-chip {
     display: inline-flex;
-    min-height: 30px;
     align-items: center;
-    justify-content: center;
     gap: 6px;
     padding: 5px 12px;
     border: 1px solid var(--bb-border);
-    border-radius: 6px;
+    border-radius: 20px;
     background: var(--bb-bg-card);
     color: var(--bb-text-secondary);
     font-family: var(--bb-font);
@@ -1968,17 +2172,17 @@ onUnmounted(() => {
     cursor: pointer;
     transition: all 0.15s var(--bb-ease);
 }
-.agent-wechat-button:hover {
+.agent-status-chip:hover {
     border-color: var(--bb-accent);
     color: var(--bb-accent-text);
     background: var(--bb-accent-soft);
 }
-.agent-wechat-button--connected {
+.agent-status-chip--success {
     border-color: rgba(22, 163, 74, 0.24);
     color: var(--bb-success);
     background: var(--bb-success-light);
 }
-.agent-wechat-status-dot {
+.agent-status-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
@@ -1991,90 +2195,31 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     border: 1px solid var(--bb-border);
-    border-radius: 6px;
+    border-radius: 50%;
     background: var(--bb-bg-card);
     color: var(--bb-text-tertiary);
     cursor: pointer;
+    transition: all 0.15s var(--bb-ease);
 }
 .agent-wechat-disconnect:hover {
     border-color: var(--bb-danger);
     color: var(--bb-danger);
     background: var(--bb-danger-light);
 }
-.wechat-connect {
+
+/* 加载/错误/未配置状态 */
+.agent-hero {
     display: flex;
-    min-height: 248px;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     text-align: center;
-}
-.wechat-connect__pending,
-.wechat-connect__error {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    padding: 8px 24px 0;
     gap: 14px;
-    color: var(--bb-text-secondary);
-    font-size: 13px;
-    line-height: 1.6;
-}
-.wechat-connect__spinner {
-    width: 24px;
-    height: 24px;
-    border: 2px solid var(--bb-border);
-    border-top-color: var(--bb-accent);
-    border-radius: 50%;
-    animation: tool-spin 0.8s linear infinite;
-}
-.wechat-connect__qr-frame {
-    width: 232px;
-    height: 232px;
-    padding: 4px;
-    border: 1px solid var(--bb-border);
-    border-radius: 8px;
-    background: #fff;
-}
-.wechat-connect__qr {
-    display: block;
-    width: 224px;
-    height: 224px;
-}
-.wechat-connect__title {
-    margin-top: 14px;
-    color: var(--bb-text-primary);
-    font-size: 13px;
-    font-weight: var(--bb-weight-semibold);
-}
-.wechat-connect__error {
-    color: var(--bb-danger);
-}
-.agent-hero-history {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    margin-top: 16px;
-    padding: 6px 14px;
-    border: 1px solid var(--bb-border);
-    border-radius: 8px;
-    background: var(--bb-bg-card);
-    color: var(--bb-text-tertiary);
-    font-size: 12px;
-    font-weight: var(--bb-weight-medium);
-    cursor: pointer;
-    transition: all 0.15s var(--bb-ease);
-    font-family: var(--bb-font);
-}
-.agent-hero-history:hover {
-    border-color: var(--bb-accent);
-    color: var(--bb-accent-text);
-    background: var(--bb-accent-soft);
 }
 .agent-hero__desc {
     font-size: 14px;
     color: var(--bb-text-tertiary);
     line-height: 1.6;
-    margin-bottom: 24px;
 }
 .agent-page-loader {
     display: flex;
@@ -2111,45 +2256,6 @@ onUnmounted(() => {
     color: var(--bb-danger);
 }
 
-/* 模式切换（与导入页支付宝/微信切换同款样式） */
-.agent-mode-switch {
-    display: inline-flex;
-    gap: 3px;
-    padding: 3px;
-    border: 1px solid var(--bb-border);
-    border-radius: var(--bb-radius-sm);
-    background: var(--bb-bg-input);
-    margin-bottom: 8px;
-}
-.agent-mode-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    padding: 5px 14px;
-    min-height: 30px;
-    border: none;
-    border-radius: 4px;
-    background: transparent;
-    color: var(--bb-text-secondary);
-    font-size: 12px;
-    font-weight: var(--bb-weight-medium);
-    cursor: pointer;
-    transition: all 0.15s var(--bb-ease);
-    white-space: nowrap;
-    font-family: var(--bb-font);
-    line-height: 1.4;
-}
-.agent-mode-btn.active {
-    background: var(--bb-bg-card);
-    color: var(--bb-accent-text);
-    font-weight: var(--bb-weight-semibold);
-    box-shadow: var(--bb-shadow-xs);
-}
-.agent-mode-btn:hover:not(.active) {
-    color: var(--bb-text-primary);
-}
-
 /* 思考动画 */
 .agent-thinking {
     display: flex;
@@ -2181,30 +2287,6 @@ onUnmounted(() => {
         opacity: 1;
         transform: scale(1.2);
     }
-}
-
-/* 实时深度思考 */
-.agent-live-think {
-    display: flex;
-    gap: 6px;
-    align-items: flex-start;
-    padding: 8px 12px;
-    margin-bottom: 10px;
-    background: var(--bb-bg-input);
-    border: 1px solid var(--bb-border-light);
-    border-radius: var(--bb-radius-sm);
-    font-size: 12px;
-    color: var(--bb-text-secondary);
-    line-height: 1.6;
-}
-.agent-live-think__icon {
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-.agent-live-think__text {
-    flex: 1;
-    min-width: 0;
-    word-break: break-word;
 }
 
 /* 一键回到底部 */
@@ -2247,33 +2329,19 @@ onUnmounted(() => {
 
 /* ===== 输入区 ===== */
 .agent-input-area {
-    margin-top: auto;
     flex-shrink: 0;
-    padding-top: 12px;
+    padding: 12px 24px 12px;
     background: var(--bb-bg-page);
 }
-.agent-shell--empty .agent-input-area {
-    width: min(100%, var(--bb-page-w-narrow));
-    margin: 20px auto 0;
-    padding-top: 0;
-}
-
-@media (max-height: 600px) {
-    .agent-shell--empty {
-        justify-content: flex-start;
-    }
-    .agent-shell--empty .agent-messages--empty {
-        flex: 1 1 auto;
-        justify-content: flex-start;
-        overflow-y: auto;
-        padding-top: 14px;
-    }
-    .agent-shell--empty .agent-hero__subtitle {
-        display: none;
-    }
-    .agent-shell--empty .agent-input-area {
-        margin-top: 8px;
-    }
+.agent-input-area--empty {
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 12px 0 24px;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 /* 待发送消息队列 */
@@ -2356,12 +2424,12 @@ onUnmounted(() => {
     flex-direction: column;
     background: var(--bb-bg-card);
     border: 1px solid var(--bb-border);
-    border-radius: 16px;
+    border-radius: var(--bb-radius-xl);
     padding: 14px 16px 10px;
     transition:
         border-color 0.15s var(--bb-ease),
         box-shadow 0.15s var(--bb-ease);
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+    box-shadow: var(--bb-shadow-float);
 }
 .agent-input-card:focus-within {
     border-color: var(--bb-accent);
@@ -2389,37 +2457,6 @@ onUnmounted(() => {
 }
 .agent-textarea:disabled {
     color: var(--bb-text-disabled);
-}
-
-/* 快捷提问（内嵌在输入卡片中） */
-.agent-input-quickies {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin: 10px 0 4px;
-}
-.agent-qpill {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 12px;
-    font-size: 12px;
-    font-weight: var(--bb-weight-medium);
-    color: var(--bb-text-tertiary);
-    background: var(--bb-bg-input);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.15s var(--bb-ease);
-    font-family: var(--bb-font);
-    white-space: nowrap;
-}
-.agent-qpill:hover {
-    background: var(--bb-accent-light);
-    color: var(--bb-accent-text);
-}
-.agent-qpill:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
 }
 
 /* 底部功能区 */
@@ -2581,6 +2618,64 @@ onUnmounted(() => {
     background: var(--bb-text-disabled);
     cursor: not-allowed;
     transform: none;
+}
+
+/* ===== 空状态快捷操作卡片 ===== */
+.agent-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+.qa-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-lg);
+    background: var(--bb-bg-card);
+    cursor: pointer;
+    transition:
+        transform 0.2s var(--bb-ease),
+        box-shadow 0.2s var(--bb-ease),
+        border-color 0.2s var(--bb-ease);
+    font-family: var(--bb-font);
+    text-align: left;
+}
+.qa-card:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: var(--bb-accent-lighter);
+    box-shadow: var(--bb-shadow-sm);
+}
+.qa-card:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+.qa-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: var(--bb-accent-soft);
+    color: var(--bb-accent);
+}
+.qa-title {
+    font-size: 14px;
+    font-weight: var(--bb-weight-semibold);
+    color: var(--bb-text-primary);
+}
+.qa-desc {
+    font-size: 12px;
+    color: var(--bb-text-tertiary);
+    line-height: 1.4;
+}
+
+@media (max-width: 720px) {
+    .agent-quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 /* ═══════════════════════════════════════════
@@ -3239,5 +3334,55 @@ onUnmounted(() => {
 .drawer-skill-card__del:hover {
     color: var(--bb-danger);
     background: var(--bb-danger-light);
+}
+
+/* ===== 微信连接弹窗 ===== */
+.wechat-connect {
+    display: flex;
+    min-height: 248px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.wechat-connect__pending,
+.wechat-connect__error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    color: var(--bb-text-secondary);
+    font-size: 13px;
+    line-height: 1.6;
+}
+.wechat-connect__spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--bb-border);
+    border-top-color: var(--bb-accent);
+    border-radius: 50%;
+    animation: tool-spin 0.8s linear infinite;
+}
+.wechat-connect__qr-frame {
+    width: 232px;
+    height: 232px;
+    padding: 4px;
+    border: 1px solid var(--bb-border);
+    border-radius: 8px;
+    background: #fff;
+}
+.wechat-connect__qr {
+    display: block;
+    width: 224px;
+    height: 224px;
+}
+.wechat-connect__title {
+    margin-top: 14px;
+    color: var(--bb-text-primary);
+    font-size: 13px;
+    font-weight: var(--bb-weight-semibold);
+}
+.wechat-connect__error {
+    color: var(--bb-danger);
 }
 </style>

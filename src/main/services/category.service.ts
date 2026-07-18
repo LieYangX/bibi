@@ -14,6 +14,7 @@ import type {
     UpdateCategoryDTO
 } from '@shared/types'
 import { categories, db, getNativeDatabase, subCategories } from '../database/drizzle'
+import { CATEGORY_COLORS } from '../database/presets'
 import { seedDefaultCategories } from '../database/seed'
 import { logger } from '../utils/logger'
 
@@ -73,6 +74,7 @@ export async function createCategory(data: CreateCategoryDTO, userId: string): P
     const id = randomUUID()
     const now = new Date().toISOString()
     const icon = data.icon || 'IconBook'
+    const color = data.color || autoAssignColor(userId, data.type)
 
     const [maxRow] = await db
         .select({ maxSort: sql<number>`COALESCE(MAX(sort_order), 0)` })
@@ -86,6 +88,7 @@ export async function createCategory(data: CreateCategoryDTO, userId: string): P
         name: data.name,
         type: data.type,
         icon,
+        color,
         sort_order: nextSortOrder,
         created_at: now,
         updated_at: now
@@ -97,6 +100,7 @@ export async function createCategory(data: CreateCategoryDTO, userId: string): P
         name: data.name,
         type: data.type,
         icon,
+        color,
         is_system: 0,
         sort_order: nextSortOrder,
         created_at: now,
@@ -161,6 +165,7 @@ export async function updateCategory(
     }
     if (data.name !== undefined) updateValues.name = data.name
     if (data.icon !== undefined) updateValues.icon = data.icon
+    if (data.color !== undefined) updateValues.color = data.color
 
     await db
         .update(categories)
@@ -279,6 +284,23 @@ export async function updateSubCategory(
  * @param userId 用户 ID
  * @author xiangwei
  */
+/**
+ * 自动为分类分配调色板中的颜色
+ *
+ * @param userId 用户 ID
+ * @param type 分类类型
+ * @returns 颜色值
+ * @author xiangwei
+ */
+function autoAssignColor(userId: string, type: 'expense' | 'income'): string {
+    const database = getNativeDatabase()
+    const row = database
+        .prepare('SELECT COUNT(*) AS count FROM categories WHERE user_id = ? AND type = ?')
+        .get(userId, type) as { count: number }
+    const totalCount = row?.count ?? 0
+    return CATEGORY_COLORS[totalCount % CATEGORY_COLORS.length]
+}
+
 export async function deleteSubCategory(id: string, userId: string): Promise<void> {
     const database = getNativeDatabase()
     const remove = database.transaction(() => {
