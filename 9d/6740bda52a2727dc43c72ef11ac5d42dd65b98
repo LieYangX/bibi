@@ -1,0 +1,45 @@
+src/renderer/src/views/AgentChatView.vue
+  s_cd1fbbb010802f::t_8beda4fdfbab25 980-985
+  s_cd1fbbb010802f::t_753de4b91db420 96
+src/renderer/src/views/sections/SttSettings.vue
+  s_cd1fbbb010802f::t_a7cae1ee6b961d 2
+  s_cd1fbbb010802f::t_4333132d86f4e5 128
+  s_cd1fbbb010802f::t_3eafbfedba0798 344,346-347
+src/renderer/src/views/sections/AgentSettings.vue
+  s_cd1fbbb010802f::t_88448208c79083 8
+  s_cd1fbbb010802f::t_42cdc55b9e214d 68,78
+  s_cd1fbbb010802f::t_52cf5c0cfa9d79 2-3
+  s_cd1fbbb010802f::t_0e82ea7f7d62a7 195-197
+  s_cd1fbbb010802f::t_d6c0ad077899be 4-7,10-14,16,18-22,24,26-30,32-33,35,38-67,69-77,80-89,91-100,198
+  s_3148e211f8e791::t_b9335a208d7a92 79
+src/renderer/src/views/SettingsView.vue
+  s_cd1fbbb010802f::t_a5e283e76b4e4e 69-75
+  s_cd1fbbb010802f::t_451c51411647b8 5,8-9
+  s_cd1fbbb010802f::t_708c1451893a12 227
+  s_cd1fbbb010802f::t_70686f9077168d 53-54,56-58
+  s_cd1fbbb010802f::t_15d029308873f3 385-390
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "9d6740bda52a2727dc43c72ef11ac5d42dd65b98",
+  "prompts": {},
+  "sessions": {
+    "s_3148e211f8e791": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_08cc04ab0ffe3WCISZzgwgCJxD",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_cd1fbbb010802f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_08cc04ab0ffe3WCISZzgwgCJxD",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
