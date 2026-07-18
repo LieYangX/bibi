@@ -35,7 +35,7 @@ function close(): void {
 .bb-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.35);
+    background: var(--bb-bg-overlay);
     backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
@@ -44,7 +44,7 @@ function close(): void {
 }
 .bb-modal-panel {
     width: 90vw;
-    background: #fff;
+    background: var(--bb-bg-card);
     border-radius: 16px;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.14);
     max-height: 85vh;

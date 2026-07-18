@@ -46,6 +46,7 @@ const importItemTypeSchema = z.enum(['expense', 'income', 'skip'])
 const importTransactionTypeSchema = z.enum(['expense', 'income'])
 const importAccountRoleSchema = z.enum(['payment', 'receipt'])
 const sttModelIdSchema = z.enum(STT_MODEL_IDS)
+const themeModeSchema = z.enum(['light', 'dark', 'system'])
 const skillNameSchema = z
     .string()
     .trim()
@@ -304,7 +305,8 @@ export const IPC_SCHEMAS = {
                 .refine((ids) => new Set(ids).size === ids.length, '流水 ID 不能重复')
         ]),
         list: z.tuple([transactionFilterSchema]),
-        getById: z.tuple([idSchema])
+        getById: z.tuple([idSchema]),
+        export: z.tuple([transactionFilterSchema])
     },
     budget: {
         set: z.tuple([budgetSchema]),
@@ -353,13 +355,15 @@ export const IPC_SCHEMAS = {
                 z.union([z.boolean(), z.undefined()])
             ]),
             z.tuple([z.literal('stt_enabled'), z.union([z.boolean(), z.undefined()])]),
-            z.tuple([z.literal('stt_model'), z.union([sttModelIdSchema, z.undefined()])])
+            z.tuple([z.literal('stt_model'), z.union([sttModelIdSchema, z.undefined()])]),
+            z.tuple([z.literal('theme'), z.union([themeModeSchema, z.undefined()])])
         ]),
         set: z.union([
             z.tuple([z.literal('amount_mask'), z.boolean()]),
             z.tuple([z.literal('agent_context_panel_visible'), z.boolean()]),
             z.tuple([z.literal('stt_enabled'), z.boolean()]),
-            z.tuple([z.literal('stt_model'), sttModelIdSchema])
+            z.tuple([z.literal('stt_model'), sttModelIdSchema]),
+            z.tuple([z.literal('theme'), themeModeSchema])
         ])
     },
     app: {

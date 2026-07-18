@@ -43,6 +43,7 @@ function select(key: string): void {
     gap: 2px;
     margin-bottom: 24px;
     background: var(--bb-bg-input);
+    border: 1px solid var(--bb-border);
     border-radius: 10px;
     padding: 3px;
 }
@@ -61,9 +62,10 @@ function select(key: string): void {
     text-align: center;
 }
 .bb-tab.active {
-    background: var(--bb-bg-card);
+    background: var(--bb-bg-elevated);
     color: var(--bb-accent-text);
     font-weight: var(--bb-weight-semibold);
+    box-shadow: var(--bb-shadow-sm);
 }
 .bb-tabs-content {
     min-height: 100px;

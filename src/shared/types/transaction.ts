@@ -87,3 +87,10 @@ export interface TransactionListResult {
 export interface BatchDeleteTransactionsResult {
     deleted_count: number
 }
+
+/** 导出流水结果 */
+export interface ExportTransactionsResult {
+    canceled?: boolean
+    file_path?: string
+    count: number
+}

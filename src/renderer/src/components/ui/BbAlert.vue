@@ -23,8 +23,8 @@ defineProps<{ title: string; type?: 'info' | 'success' | 'warning'; content?: st
     border: 1px solid;
 }
 .bb-alert--info {
-    background: rgba(217, 164, 4, 0.06);
-    border-color: rgba(217, 164, 4, 0.15);
+    background: var(--bb-info-light);
+    border-color: color-mix(in srgb, var(--bb-info) 25%, transparent);
 }
 .bb-alert--success {
     background: rgba(16, 185, 129, 0.06);

@@ -485,7 +485,7 @@ function errorMessage(error: unknown, fallback: string): string {
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(217, 164, 4, 0.2);
+    border: 1px solid var(--bb-border);
     border-radius: var(--bb-radius-sm);
     background: var(--bb-accent-light);
     color: var(--bb-accent);
@@ -535,10 +535,10 @@ function errorMessage(error: unknown, fallback: string): string {
 }
 
 .source-switch button.active {
-    background: var(--bb-bg-card);
+    background: var(--bb-bg-elevated);
     color: var(--bb-accent-text);
     font-weight: var(--bb-weight-semibold);
-    box-shadow: var(--bb-shadow-xs);
+    box-shadow: var(--bb-shadow-sm);
 }
 
 .source-switch button:disabled {

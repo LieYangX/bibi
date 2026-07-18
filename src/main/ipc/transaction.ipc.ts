@@ -3,12 +3,14 @@
  * @author xiangwei
  */
 
+import { dialog } from 'electron'
 import { IPC_CHANNELS } from '@shared/ipc/channels'
 import { IPC_SCHEMAS } from '@shared/ipc/schemas'
 import {
     createTransaction,
     deleteTransactions,
     deleteTransaction,
+    exportTransactions,
     getTransactionById,
     listTransactions,
     updateTransaction
@@ -51,5 +53,21 @@ export function registerTransactionIpc(): void {
         IPC_SCHEMAS.transaction.getById,
         '获取流水详情失败',
         (userId, _event, id) => getTransactionById(id, userId)
+    )
+    registerUserIpcHandler(
+        IPC_CHANNELS.transaction.export,
+        IPC_SCHEMAS.transaction.export,
+        '导出流水失败',
+        async (userId, _event, filter) => {
+            const today = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+            const result = await dialog.showSaveDialog({
+                defaultPath: `流水导出_${today}.xlsx`,
+                filters: [{ name: 'Excel 文件', extensions: ['xlsx'] }]
+            })
+            if (result.canceled || !result.filePath) {
+                return { canceled: true, count: 0 }
+            }
+            return exportTransactions(userId, filter, result.filePath)
+        }
     )
 }

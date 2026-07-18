@@ -145,7 +145,7 @@ async function del(id: string): Promise<void> {
 .bg-orb--1 {
     width: 420px;
     height: 420px;
-    background: rgba(217, 164, 4, 0.25);
+    background: rgba(128, 128, 128, 0.12);
     top: -120px;
     left: -80px;
     animation: float 12s ease-in-out infinite;
@@ -161,7 +161,7 @@ async function del(id: string): Promise<void> {
 .bg-orb--3 {
     width: 200px;
     height: 200px;
-    background: rgba(217, 164, 4, 0.1);
+    background: rgba(128, 128, 128, 0.06);
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -185,13 +185,13 @@ async function del(id: string): Promise<void> {
     position: relative;
     width: 380px;
     padding: 40px 36px 36px;
-    background: rgba(255, 255, 255, 0.82);
+    background: var(--bb-glass-bg-strong);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(226, 232, 240, 0.6);
+    border: 1px solid var(--bb-glass-border);
     border-radius: 20px;
     box-shadow:
-        0 4px 24px rgba(217, 164, 4, 0.06),
+        var(--bb-shadow-lg),
         0 1px 4px rgba(0, 0, 0, 0.04);
     animation: card-in 0.4s var(--bb-ease-spring) both;
 }
@@ -229,7 +229,7 @@ async function del(id: string): Promise<void> {
     position: absolute;
     inset: -6px;
     border-radius: 20px;
-    background: radial-gradient(circle, rgba(217, 164, 4, 0.2) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.06) 0%, transparent 70%);
     animation: glow-pulse 3s ease-in-out infinite;
 }
 @keyframes logo-bounce {
@@ -312,7 +312,7 @@ async function del(id: string): Promise<void> {
 }
 .user-card:hover {
     border-color: var(--bb-accent);
-    box-shadow: 0 3px 12px rgba(217, 164, 4, 0.1);
+    box-shadow: var(--bb-shadow-md);
     transform: translateX(3px);
 }
 .user-card:active {
@@ -391,7 +391,7 @@ async function del(id: string): Promise<void> {
 }
 .create-input-wrap:focus-within {
     border-color: var(--bb-accent);
-    box-shadow: 0 0 0 3px rgba(217, 164, 4, 0.1);
+    box-shadow: 0 0 0 3px var(--bb-accent-light);
 }
 .create-input-icon {
     color: var(--bb-text-tertiary);
@@ -426,16 +426,16 @@ async function del(id: string): Promise<void> {
     cursor: pointer;
     transition: all 0.15s ease;
     outline: none;
-    box-shadow: 0 3px 12px rgba(217, 164, 4, 0.2);
+    box-shadow: var(--bb-shadow-sm);
 }
 .create-btn:hover:not(:disabled) {
     background: var(--bb-accent-hover);
-    box-shadow: 0 5px 18px rgba(217, 164, 4, 0.3);
+    box-shadow: var(--bb-shadow-md);
     transform: translateY(-1px);
 }
 .create-btn:active:not(:disabled) {
     transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(217, 164, 4, 0.12);
+    box-shadow: var(--bb-shadow-xs);
 }
 .create-btn:disabled {
     opacity: 0.45;

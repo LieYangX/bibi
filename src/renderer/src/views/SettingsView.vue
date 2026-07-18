@@ -19,6 +19,18 @@
                     @update:model-value="onMaskChange"
                 />
             </div>
+            <div class="settings-row settings-row--theme">
+                <div class="settings-info">
+                    <div class="settings-title">主题模式</div>
+                    <div class="settings-desc">选择浅色或深色主题，或跟随系统偏好自动切换</div>
+                </div>
+                <BbSelect
+                    :model-value="settingStore.theme"
+                    :options="themeOptions"
+                    width="140px"
+                    @update:model-value="onThemeChange"
+                />
+            </div>
         </div>
 
         <!-- 通用设置 -->
@@ -211,7 +223,9 @@
 import { inject, ref, onMounted } from 'vue'
 import { PageHeader } from '../components/common'
 import { useSettingStore } from '../stores/setting.store'
-import { BbSwitch, BbModal, Message } from '../components/ui'
+import type { ThemeMode } from '../stores/setting.store'
+import { BbSwitch, BbSelect, BbModal, Message } from '../components/ui'
+import type { BbSelectOption } from '../components/ui/BbSelect.vue'
 import AboutSection from './sections/AboutSection.vue'
 import AgentSettings from './sections/AgentSettings.vue'
 import SttSettings from './sections/SttSettings.vue'
@@ -251,6 +265,25 @@ const featureIcons = {
 async function onMaskChange(enabled: boolean): Promise<void> {
     if (!(await settingStore.saveAmountMask(enabled))) {
         Message.error(settingStore.error || '保存金额脱敏设置失败')
+    }
+}
+
+/** 主题模式选项：浅色 / 深色 / 跟随系统 */
+const themeOptions: BbSelectOption[] = [
+    { value: 'light', label: '浅色' },
+    { value: 'dark', label: '深色' },
+    { value: 'system', label: '跟随系统' }
+]
+
+/**
+ * 切换主题模式并持久化
+ *
+ * @param value 选中的主题模式值
+ * @author xiangwei
+ */
+async function onThemeChange(value: string | number): Promise<void> {
+    if (!(await settingStore.saveTheme(value as ThemeMode))) {
+        Message.error(settingStore.error || '保存主题设置失败')
     }
 }
 
@@ -316,6 +349,12 @@ onMounted(async () => {
     align-items: center;
     justify-content: space-between;
     gap: 16px;
+}
+.settings-row + .settings-row {
+    margin-top: 14px;
+}
+.settings-row--theme {
+    flex-wrap: nowrap;
 }
 .settings-info {
     flex: 1;

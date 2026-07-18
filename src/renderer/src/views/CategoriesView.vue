@@ -88,10 +88,10 @@ onUnmounted(() => offRefresh?.())
 }
 
 .cat-switch__btn.active {
-    background: var(--bb-bg-card);
+    background: var(--bb-bg-elevated);
     color: var(--bb-accent-text);
     font-weight: var(--bb-weight-semibold);
-    box-shadow: var(--bb-shadow-xs);
+    box-shadow: var(--bb-shadow-sm);
 }
 .category-status {
     display: flex;

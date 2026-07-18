@@ -77,6 +77,7 @@ async function bootstrapRenderer(): Promise<void> {
         console.error('用户会话初始化失败', error)
     }
     void settingStore.loadAmountMask()
+    void settingStore.loadTheme()
 }
 
 void bootstrapRenderer().catch((error: unknown) => {

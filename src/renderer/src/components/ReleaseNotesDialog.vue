@@ -155,7 +155,7 @@ const emit = defineEmits<{ acknowledge: [] }>()
 
 .release-notes__latest {
     padding: 2px 7px;
-    border: 1px solid rgba(217, 164, 4, 0.3);
+    border: 1px solid var(--bb-border);
     border-radius: 4px;
     background: var(--bb-accent-light);
     color: var(--bb-accent-text);

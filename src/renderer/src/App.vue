@@ -16,10 +16,11 @@
 </template>
 
 <script setup lang="ts">
-import { onUnmounted, provide, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import WindowControls from './components/WindowControls.vue'
 import ReleaseNotesDialog from './components/ReleaseNotesDialog.vue'
 import { useUserStore } from './stores/user.store'
+import { useSettingStore } from './stores/setting.store'
 import { desktopApi } from './api/desktop-api'
 import {
     getAllReleaseNotes,
@@ -33,6 +34,7 @@ import {
 import { openReleaseNotesKey } from './app/release-notes-presenter'
 
 const userStore = useUserStore()
+const settingStore = useSettingStore()
 const showReleaseNotes = ref(false)
 const currentReleaseNotes = ref<ReleaseNotes | null>(null)
 const allReleaseNotes = getAllReleaseNotes()
@@ -110,6 +112,41 @@ function acknowledgeReleaseNotes(): void {
 }
 
 provide(openReleaseNotesKey, openCurrentReleaseNotes)
+
+/* ===== 主题应用 =====
+ * 依据 settingStore.theme 与系统 prefers-color-scheme 计算实际生效的主题，
+ * 在 <html> 上切换 .dark 类以触发 base.css 中的深色 token 覆盖。
+ * theme === 'system' 时实时跟随系统主题变化。
+ */
+const prefersDarkMedia = window.matchMedia('(prefers-color-scheme: dark)')
+const systemPrefersDark = ref(prefersDarkMedia.matches)
+
+function handleSchemeChange(event: MediaQueryListEvent): void {
+    systemPrefersDark.value = event.matches
+}
+
+const effectiveDark = computed(() => {
+    const mode = settingStore.theme
+    if (mode === 'dark') return true
+    if (mode === 'light') return false
+    return systemPrefersDark.value
+})
+
+watch(
+    effectiveDark,
+    (dark) => {
+        document.documentElement.classList.toggle('dark', dark)
+    },
+    { immediate: true }
+)
+
+onMounted(() => {
+    prefersDarkMedia.addEventListener('change', handleSchemeChange)
+})
+
+onUnmounted(() => {
+    prefersDarkMedia.removeEventListener('change', handleSchemeChange)
+})
 
 watch(
     () => userStore.initialized,

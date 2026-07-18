@@ -62,6 +62,8 @@
                 :class="{
                     'agent-scroll-area--empty': !hasMessages
                 }"
+                tabindex="-1"
+                @keydown="handleKeydown"
             >
                 <div v-if="agentStore.loading && !hasMessages" class="agent-hero">
                     <div class="agent-page-loader"><span /><span /><span /></div>
@@ -78,7 +80,7 @@
                 <!-- 未配置 -->
                 <div v-else-if="!agentStore.hasConfig && !hasMessages" class="agent-hero">
                     <div class="empty-hero__logo">
-                        <img src="../assets/app-icon.png" alt="小笔" />
+                        <img class="empty-hero__img" src="../assets/app-icon.png" alt="小笔" />
                     </div>
                     <h1 class="empty-hero__greeting">小笔</h1>
                     <p class="agent-hero__desc">请先在设置中配置 DeepSeek API Key 并启用小笔功能</p>
@@ -87,7 +89,7 @@
                 <!-- 空对话 -- 居中英雄区 -->
                 <div v-else-if="!hasMessages" class="agent-empty-hero">
                     <div class="empty-hero__logo">
-                        <img src="../assets/app-icon.png" alt="小笔" />
+                        <img class="empty-hero__img" src="../assets/app-icon.png" alt="小笔" />
                     </div>
                     <h1 class="empty-hero__greeting">{{ greeting }}，{{ userName }}</h1>
                     <p class="empty-hero__subtitle">
@@ -171,7 +173,12 @@
                         {{ agentStore.messageError }}，点击重试
                     </button>
 
-                    <AgentMessage v-for="msg in displayMessages" :key="msg.id" :message="msg" />
+                    <AgentMessage
+                        v-for="msg in displayMessages"
+                        :key="msg.id"
+                        :message="msg"
+                        @edit="handleEditMessage"
+                    />
 
                     <!-- 等待首个响应指示 -->
                     <div v-if="agentStore.isAwaitingResponse && hasMessages" class="agent-thinking">
@@ -1041,7 +1048,12 @@ async function transcribeRecordedAudio(): Promise<void> {
         if (!viewMounted) return
 
         if (result.ok) {
-            inputMessage.value = result.data || ''
+            const text = result.data || ''
+            if (inputMessage.value && text) {
+                inputMessage.value += ' ' + text
+            } else {
+                inputMessage.value = text
+            }
             await nextTick()
             inputRef.value?.dispatchEvent(new Event('input'))
             inputRef.value?.focus()
@@ -1750,6 +1762,32 @@ async function send(): Promise<void> {
     await scrollToBottom()
 }
 
+/** 编辑用户消息：将消息内容回填到输入框 */
+function handleEditMessage(messageId: string): void {
+    const msg = agentStore.findMessageById(messageId)
+    if (msg && msg.role === 'user') {
+        inputMessage.value = msg.content
+        inputRef.value?.focus()
+    }
+}
+
+/** Ctrl+A 仅在消息区内全选，避免选中页面其他文字 */
+function handleKeydown(event: KeyboardEvent): void {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
+        const el = messagesRef.value
+        if (el && el.contains(document.activeElement)) {
+            event.preventDefault()
+            const range = document.createRange()
+            range.selectNodeContents(el)
+            const selection = window.getSelection()
+            if (selection) {
+                selection.removeAllRanges()
+                selection.addRange(range)
+            }
+        }
+    }
+}
+
 /**
  * 停止当前智能体回答
  * @author xiangwei
@@ -1947,7 +1985,7 @@ onUnmounted(() => {
     justify-content: space-between;
     padding: 10px 24px;
     border-bottom: 1px solid var(--bb-border-light);
-    background: rgba(255, 255, 255, 0.6);
+    background: var(--bb-glass-bg);
     gap: 8px;
     flex-shrink: 0;
 }
@@ -1978,7 +2016,8 @@ onUnmounted(() => {
 }
 .agent-bar__tab.active {
     color: var(--bb-accent-text);
-    background: var(--bb-accent-soft);
+    background: var(--bb-bg-elevated);
+    box-shadow: var(--bb-shadow-sm);
 }
 .agent-bar__badge {
     display: inline-flex;
@@ -2056,7 +2095,7 @@ onUnmounted(() => {
     justify-content: center;
     align-items: center;
     overflow-y: auto;
-    padding: 24px 24px;
+    padding: 0;
 }
 .agent-scroll-area--empty .agent-scroll-btn {
     display: none;
@@ -2065,31 +2104,23 @@ onUnmounted(() => {
 /* 空状态英雄区 */
 .agent-empty-hero {
     width: 100%;
-    max-width: 640px;
+    max-width: 900px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 14px;
+    gap: 16px;
     text-align: center;
+    padding: 0 20px;
 }
 .empty-hero__logo {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: var(--bb-accent-light);
-    color: var(--bb-accent);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow:
-        0 8px 32px rgba(217, 164, 4, 0.18),
-        0 0 0 8px rgba(217, 164, 4, 0.04);
 }
-.empty-hero__logo img {
-    width: 34px;
-    height: 34px;
-    object-fit: cover;
-    border-radius: var(--bb-radius-md);
+.empty-hero__img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
 }
 .empty-hero__greeting {
     font-size: 26px;
@@ -2134,10 +2165,10 @@ onUnmounted(() => {
     line-height: 1.4;
 }
 .agent-mode-btn.active {
-    background: var(--bb-bg-card);
+    background: var(--bb-bg-elevated);
     color: var(--bb-accent-text);
     font-weight: var(--bb-weight-semibold);
-    box-shadow: var(--bb-shadow-xs);
+    box-shadow: var(--bb-shadow-sm);
 }
 .agent-mode-btn:hover:not(.active) {
     color: var(--bb-text-primary);
@@ -2335,9 +2366,9 @@ onUnmounted(() => {
 }
 .agent-input-area--empty {
     width: 100%;
-    max-width: 640px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 12px 0 24px;
+    padding: 12px 20px 24px;
     background: transparent;
     display: flex;
     flex-direction: column;
@@ -3296,7 +3327,7 @@ onUnmounted(() => {
 }
 .create-skill-textarea:focus {
     border-color: var(--bb-accent);
-    box-shadow: 0 0 0 3px rgba(217, 164, 4, 0.1);
+    box-shadow: 0 0 0 3px var(--bb-accent-light);
 }
 .create-skill-textarea--compact {
     min-height: 104px;

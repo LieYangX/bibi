@@ -9,13 +9,24 @@
         </div>
         <div class="bb-msg__body">
             <div class="bb-msg__content bb-msg__content--user">{{ message.content }}</div>
+            <div class="bb-msg__meta">
+                <span class="bb-msg__actions">
+                    <button class="bb-msg__action" title="复制" @click="copyMessage">
+                        <Copy :size="12" />
+                    </button>
+                    <button class="bb-msg__action" title="修改" @click="editMessage">
+                        <Pencil :size="12" />
+                    </button>
+                </span>
+                <span class="bb-msg__time">{{ formattedTime }}</span>
+            </div>
         </div>
     </div>
 
     <!-- 工具调用消息 -->
     <div v-else-if="message.role === 'tool'" class="bb-msg bb-msg--tool">
         <div class="bb-msg__avatar bb-msg__avatar--ai">
-            <img class="bb-msg__logo" src="../assets/app-icon.png" alt="笔笔" />
+            <span class="bb-msg__avatar-text">笔</span>
         </div>
         <div class="bb-msg__body">
             <div class="bb-tool-card">
@@ -43,7 +54,7 @@
     <!-- 连续工具调用分组 -->
     <div v-else-if="message.role === 'tool-group'" class="bb-msg bb-msg--tool">
         <div class="bb-msg__avatar bb-msg__avatar--ai">
-            <img class="bb-msg__logo" src="../assets/app-icon.png" alt="笔笔" />
+            <span class="bb-msg__avatar-text">笔</span>
         </div>
         <div class="bb-msg__body">
             <div class="bb-tool-card">
@@ -72,7 +83,7 @@
     <!-- AI 回复消息 -->
     <div v-else class="bb-msg bb-msg--ai">
         <div class="bb-msg__avatar bb-msg__avatar--ai">
-            <img class="bb-msg__logo" src="../assets/app-icon.png" alt="笔笔" />
+            <span class="bb-msg__avatar-text">笔</span>
         </div>
         <div class="bb-msg__body">
             <!-- 深度思考内容（可折叠） -->
@@ -90,15 +101,24 @@
             <div v-if="message.content" class="bb-msg__content bb-msg__content--ai">
                 <MarkdownContent :content="message.content" />
             </div>
+            <div v-if="message.content" class="bb-msg__meta bb-msg__meta--ai">
+                <span class="bb-msg__time">{{ formattedTime }}</span>
+                <span class="bb-msg__actions">
+                    <button class="bb-msg__action" title="复制" @click="copyMessage">
+                        <Copy :size="12" />
+                    </button>
+                </span>
+            </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from 'vue'
-import { ChevronDown, BrainCircuit } from '@lucide/vue'
+import { ChevronDown, BrainCircuit, Copy, Pencil } from '@lucide/vue'
 import { useUserStore } from '../stores/user.store'
 import MarkdownContent from './MarkdownContent.vue'
+import { Message } from './ui'
 
 const ToolResultDetail = defineAsyncComponent(() => import('./ToolResultDetail.vue'))
 
@@ -107,6 +127,7 @@ const props = defineProps<{
         id: string
         role: string
         content: string
+        created_at?: string
         toolName?: string
         toolArgs?: string
         isStreaming?: boolean
@@ -116,9 +137,55 @@ const props = defineProps<{
     }
 }>()
 
+const emit = defineEmits<{
+    edit: [messageId: string]
+}>()
+
 const userStore = useUserStore()
 const showTool = ref(false)
 const showThinking = ref(false)
+
+/** 格式化消息时间 */
+const formattedTime = computed(() => {
+    if (!props.message.created_at) return ''
+    const date = new Date(props.message.created_at)
+    if (isNaN(date.getTime())) return ''
+    const now = new Date()
+    const pad = (n: number): string => String(n).padStart(2, '0')
+    const time = `${pad(date.getHours())}:${pad(date.getMinutes())}`
+    if (date.toDateString() === now.toDateString()) return time
+    if (date.getFullYear() === now.getFullYear())
+        return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${time}`
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${time}`
+})
+
+/** 复制消息内容到剪贴板 */
+function copyMessage(): void {
+    try {
+        if (window.electronAPI?.clipboard?.writeText) {
+            window.electronAPI.clipboard.writeText(props.message.content)
+        } else {
+            // Fallback for non-Electron environments
+            const textarea = document.createElement('textarea')
+            textarea.value = props.message.content
+            textarea.style.position = 'fixed'
+            textarea.style.opacity = '0'
+            document.body.appendChild(textarea)
+            textarea.select()
+            document.execCommand('copy')
+            document.body.removeChild(textarea)
+        }
+        Message.success('已复制')
+    } catch {
+        Message.warning('复制失败')
+    }
+}
+
+/** 编辑用户消息 */
+function editMessage(): void {
+    emit('edit', props.message.id)
+}
+
 const thinkingDurationText = computed(() =>
     formatThinkingDuration(props.message.thinkingDurationMs)
 )
@@ -184,16 +251,15 @@ function formatThinkingDuration(durationMs?: number): string {
     color: #fff;
     font-weight: var(--bb-weight-semibold);
 }
-/* AI 头像：应用 Logo */
+/* AI 头像：暖金底 + 文字 */
 .bb-msg__avatar--ai {
-    background: var(--bb-bg-card);
-    overflow: hidden;
+    background: var(--bb-accent);
+    color: #fff;
+    font-weight: var(--bb-weight-bold);
+    font-size: 16px;
 }
-.bb-msg__logo {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: scale(1.3);
+.bb-msg__avatar-text {
+    line-height: 1;
 }
 /* 工具头像：信息色 */
 .bb-msg__avatar--tool {
@@ -228,6 +294,55 @@ function formatThinkingDuration(durationMs?: number): string {
 }
 
 /* ===== 深度思考 ===== */
+/* 消息元信息：时间常显 + 操作 hover 可见 */
+.bb-msg__meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+}
+.bb-msg__meta--ai {
+    justify-content: flex-start;
+}
+.bb-msg--user .bb-msg__meta {
+    justify-content: flex-end;
+}
+.bb-msg__time {
+    font-size: 11px;
+    color: var(--bb-text-tertiary);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+.bb-msg__actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.15s var(--bb-ease);
+}
+.bb-msg:hover .bb-msg__actions {
+    opacity: 1;
+}
+.bb-msg__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--bb-text-tertiary);
+    cursor: pointer;
+    transition:
+        color 0.15s var(--bb-ease),
+        background 0.15s var(--bb-ease);
+}
+.bb-msg__action:hover {
+    color: var(--bb-accent-text);
+    background: var(--bb-accent-light);
+}
+
 .bb-msg__thinking-block {
     border: 1px solid var(--bb-border-light);
     border-radius: var(--bb-radius-sm);

@@ -25,6 +25,7 @@ import type { MonthlyStatistics, AnnualStatistics } from './statistics'
 import type {
     BatchDeleteTransactionsResult,
     CreateTransactionDTO,
+    ExportTransactionsResult,
     Transaction,
     TransactionFilter,
     TransactionListResult,
@@ -51,6 +52,9 @@ export interface RendererErrorReport {
 }
 
 export interface ElectronAPI {
+    clipboard: {
+        writeText: (text: string) => void
+    }
     user: {
         list: () => Promise<IpcResult<UserListResult>>
         create: (name: string) => Promise<IpcResult<User>>
@@ -80,6 +84,7 @@ export interface ElectronAPI {
         batchDelete: (ids: string[]) => Promise<IpcResult<BatchDeleteTransactionsResult>>
         list: (filter: TransactionFilter) => Promise<IpcResult<TransactionListResult>>
         getById: (id: string) => Promise<IpcResult<Transaction | null>>
+        export: (filter: TransactionFilter) => Promise<IpcResult<ExportTransactionsResult>>
     }
     budget: {
         set: (data: SetBudgetDTO) => Promise<IpcResult<Budget>>

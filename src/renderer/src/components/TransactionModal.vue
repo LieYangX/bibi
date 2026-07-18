@@ -516,16 +516,16 @@ async function handleSave(): Promise<void> {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: 0 3px 12px rgba(217, 164, 4, 0.25);
+    box-shadow: var(--bb-shadow-md);
 }
 .save-btn:hover:not(.loading) {
     background: var(--bb-accent-hover);
-    box-shadow: 0 5px 18px rgba(217, 164, 4, 0.35);
+    box-shadow: var(--bb-shadow-lg);
     transform: translateY(-1px);
 }
 .save-btn:active:not(.loading) {
     transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(217, 164, 4, 0.18);
+    box-shadow: var(--bb-shadow-sm);
 }
 .save-btn.loading {
     opacity: 0.7;

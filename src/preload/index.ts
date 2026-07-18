@@ -4,7 +4,7 @@
  * @author xiangwei
  */
 
-import { contextBridge, ipcRenderer } from 'electron'
+import { clipboard, contextBridge, ipcRenderer } from 'electron'
 import { IPC_CHANNELS } from '@shared/ipc/channels'
 import type {
     CreateAccountDTO,
@@ -50,6 +50,9 @@ async function invokeWithLog<T>(channel: string, ...args: unknown[]): Promise<T>
 }
 
 const electronAPI: ElectronAPI = {
+    clipboard: {
+        writeText: (text: string) => clipboard.writeText(text)
+    },
     user: {
         list: () => invokeWithLog(IPC_CHANNELS.user.list),
         create: (name: string) => invokeWithLog(IPC_CHANNELS.user.create, name),
@@ -84,7 +87,9 @@ const electronAPI: ElectronAPI = {
         delete: (id: string) => invokeWithLog(IPC_CHANNELS.transaction.delete, id),
         batchDelete: (ids: string[]) => invokeWithLog(IPC_CHANNELS.transaction.batchDelete, ids),
         list: (filter: TransactionFilter) => invokeWithLog(IPC_CHANNELS.transaction.list, filter),
-        getById: (id: string) => invokeWithLog(IPC_CHANNELS.transaction.getById, id)
+        getById: (id: string) => invokeWithLog(IPC_CHANNELS.transaction.getById, id),
+        export: (filter: TransactionFilter) =>
+            invokeWithLog(IPC_CHANNELS.transaction.export, filter)
     },
     budget: {
         set: (data: SetBudgetDTO) => invokeWithLog(IPC_CHANNELS.budget.set, data),

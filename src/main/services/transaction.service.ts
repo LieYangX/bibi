@@ -7,9 +7,11 @@ import { randomUUID } from 'crypto'
 import { alias } from 'drizzle-orm/sqlite-core'
 import { and, asc, count, desc, eq, gt, like, lt, or, sql } from 'drizzle-orm'
 import type { SQL } from 'drizzle-orm'
+import { Workbook } from 'exceljs'
 import type {
     BatchDeleteTransactionsResult,
     CreateTransactionDTO,
+    ExportTransactionsResult,
     Transaction,
     TransactionFilter,
     TransactionListResult,
@@ -538,4 +540,111 @@ export async function getTransactionById(id: string, userId: string): Promise<Tr
         )
         .limit(1)
     return item ? (item as Transaction) : null
+}
+
+/**
+ * 获取流水类型中文标签
+ *
+ * @param type 流水类型
+ * @returns 中文标签
+ * @author xiangwei
+ */
+function typeLabel(type: TransactionType): string {
+    return (
+        {
+            expense: '支出',
+            income: '收入',
+            transfer: '转账',
+            adjustment: '调整'
+        }[type] || type
+    )
+}
+
+/**
+ * 导出流水为 Excel
+ *
+ * @param userId 用户 ID
+ * @param filter 筛选条件
+ * @param filePath 导出文件路径
+ * @returns 导出结果
+ * @author xiangwei
+ */
+export async function exportTransactions(
+    userId: string,
+    filter: TransactionFilter,
+    filePath: string
+): Promise<ExportTransactionsResult> {
+    const conditions: SQL[] = [eq(transactions.user_id, userId), eq(transactions.is_deleted, 0)]
+    if (filter.start_date) conditions.push(sql`${transactions.date} >= ${filter.start_date}`)
+    if (filter.end_date) conditions.push(sql`${transactions.date} <= ${filter.end_date}`)
+    if (filter.type && filter.type !== 'all') {
+        conditions.push(eq(transactions.type, filter.type))
+    }
+    if (filter.account_id) {
+        conditions.push(
+            sql`(${transactions.account_id} = ${filter.account_id} OR ${transactions.target_account_id} = ${filter.account_id})`
+        )
+    }
+    if (filter.category_id) conditions.push(eq(transactions.category_id, filter.category_id))
+    if (filter.keyword) conditions.push(like(transactions.note, `%${filter.keyword}%`))
+
+    const targetAccounts = alias(accounts, 'target_accounts')
+    const rows = await db
+        .select({
+            id: transactions.id,
+            type: transactions.type,
+            account_id: transactions.account_id,
+            target_account_id: transactions.target_account_id,
+            category_id: transactions.category_id,
+            sub_category_id: transactions.sub_category_id,
+            amount_cents: transactions.amount_cents,
+            date: transactions.date,
+            time: transactions.time,
+            note: transactions.note,
+            created_at: transactions.created_at,
+            account_name: accounts.name,
+            target_account_name: targetAccounts.name,
+            category_name: categories.name,
+            sub_category_name: subCategories.name
+        })
+        .from(transactions)
+        .leftJoin(accounts, eq(transactions.account_id, accounts.id))
+        .leftJoin(targetAccounts, eq(transactions.target_account_id, targetAccounts.id))
+        .leftJoin(categories, eq(transactions.category_id, categories.id))
+        .leftJoin(subCategories, eq(transactions.sub_category_id, subCategories.id))
+        .where(and(...conditions))
+        .orderBy(desc(transactions.date), desc(transactions.id))
+
+    const workbook = new Workbook()
+    const worksheet = workbook.addWorksheet('流水明细')
+    worksheet.columns = [
+        { header: '日期', key: 'date', width: 12 },
+        { header: '时间', key: 'time', width: 10 },
+        { header: '类型', key: 'type', width: 10 },
+        { header: '分类', key: 'category', width: 14 },
+        { header: '二级分类', key: 'sub_category', width: 14 },
+        { header: '账户', key: 'account', width: 14 },
+        { header: '目标账户', key: 'target_account', width: 14 },
+        { header: '金额（元）', key: 'amount', width: 14 },
+        { header: '备注', key: 'note', width: 30 },
+        { header: '创建时间', key: 'created_at', width: 20 }
+    ]
+
+    for (const item of rows) {
+        worksheet.addRow({
+            date: item.date,
+            time: item.time ?? '',
+            type: typeLabel(item.type as TransactionType),
+            category: item.category_name ?? '',
+            sub_category: item.sub_category_name ?? '',
+            account: item.account_name ?? '',
+            target_account: item.target_account_name ?? '',
+            amount: (item.amount_cents / 100).toFixed(2),
+            note: item.note ?? '',
+            created_at: item.created_at
+        })
+    }
+
+    await workbook.xlsx.writeFile(filePath)
+    return { file_path: filePath, count: rows.length }
 }

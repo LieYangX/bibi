@@ -2,7 +2,12 @@
     <div class="shell">
         <!-- 左侧图标轨道 -->
         <aside class="rail">
-            <router-link to="/" class="rail-logo" title="笔笔" aria-label="笔笔">
+            <router-link
+                :to="agentStore.config.enabled ? '/' : '/overview'"
+                class="rail-logo"
+                title="笔笔"
+                aria-label="笔笔"
+            >
                 <img src="../assets/app-icon.png" alt="笔笔" />
             </router-link>
 
@@ -66,13 +71,22 @@
             </div>
         </div>
 
-        <!-- 浮动操作栈：回到小笔 + 记账 FAB（小笔主页隐藏） -->
-        <div v-if="!isAgentHome" class="fab-stack">
-            <button class="fab" title="记一笔" @click="showTxnModal = true">
-                <Pencil :size="22" />
-            </button>
-            <button class="back-to-bot" title="回到小笔" @click="goHome">回到小笔</button>
-        </div>
+        <!-- 浮动操作栈：回到小笔 + 记账 FAB（小笔主页隐藏，未启用小笔时不显示回到小笔） -->
+        <transition name="fab" appear>
+            <div v-if="!isAgentHome" class="fab-stack">
+                <button class="fab" title="记一笔" @click="showTxnModal = true">
+                    <Pencil :size="22" />
+                </button>
+                <button
+                    v-if="agentStore.config.enabled"
+                    class="back-to-bot"
+                    title="回到小笔"
+                    @click="goHome"
+                >
+                    回到小笔
+                </button>
+            </div>
+        </transition>
 
         <!-- 记账弹窗 -->
         <TransactionModal v-model:visible="showTxnModal" @saved="onTransactionSaved" />
@@ -195,14 +209,14 @@ watch(
     color: #fff;
     margin-bottom: 10px;
     text-decoration: none;
-    box-shadow: 0 4px 12px rgba(217, 164, 4, 0.28);
+    box-shadow: var(--bb-shadow-md);
     transition:
         transform var(--bb-duration-fast) var(--bb-ease),
         box-shadow var(--bb-duration-fast) var(--bb-ease);
 }
 .rail-logo:hover {
     transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(217, 164, 4, 0.35);
+    box-shadow: var(--bb-shadow-lg);
 }
 .rail-logo img {
     width: 100%;
@@ -324,6 +338,7 @@ watch(
     align-items: flex-end;
     gap: 12px;
     z-index: 100;
+    will-change: transform, opacity;
 }
 .fab {
     width: 52px;
@@ -336,15 +351,18 @@ watch(
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 16px rgba(217, 164, 4, 0.38);
+    transition:
+        transform var(--bb-duration) var(--bb-ease-spring),
+        box-shadow var(--bb-duration) var(--bb-ease);
+    box-shadow: var(--bb-shadow-float);
 }
 .fab:hover {
-    transform: scale(1.08);
-    box-shadow: 0 6px 24px rgba(217, 164, 4, 0.48);
+    transform: translateY(-2px) scale(1.06);
+    box-shadow: var(--bb-shadow-float);
 }
 .fab:active {
-    transform: scale(0.95);
+    transform: translateY(0) scale(0.94);
+    box-shadow: var(--bb-shadow-sm);
 }
 .back-to-bot {
     display: flex;
@@ -361,15 +379,36 @@ watch(
     cursor: pointer;
     box-shadow: var(--bb-shadow-float);
     transition:
-        transform var(--bb-duration-fast) var(--bb-ease),
-        box-shadow var(--bb-duration-fast) var(--bb-ease);
+        transform var(--bb-duration) var(--bb-ease-spring),
+        box-shadow var(--bb-duration) var(--bb-ease);
 }
 .back-to-bot:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 36px rgba(217, 164, 4, 0.2);
+    transform: translateY(-2px);
+    box-shadow: var(--bb-shadow-float);
 }
 .back-to-bot:active {
-    transform: translateY(0) scale(0.97);
+    transform: translateY(0) scale(0.96);
+    box-shadow: var(--bb-shadow-md);
+}
+
+/* 浮动按钮栈入场/离场动效：scale + fade + slide，非侵入式短时长 */
+.fab-enter-active {
+    transition:
+        opacity var(--bb-duration-slow) var(--bb-ease-out),
+        transform var(--bb-duration-slow) var(--bb-ease-spring);
+}
+.fab-leave-active {
+    transition:
+        opacity var(--bb-duration-fast) var(--bb-ease),
+        transform var(--bb-duration-fast) var(--bb-ease);
+}
+.fab-enter-from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.85);
+}
+.fab-leave-to {
+    opacity: 0;
+    transform: scale(0.9);
 }
 
 /* 动效 */
@@ -382,5 +421,21 @@ watch(
 .fade-enter-from,
 .fade-leave-to {
     opacity: 0;
+}
+
+/* 尊重用户的减少动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+    .fab-enter-active,
+    .fab-leave-active {
+        transition-duration: 0.01ms;
+    }
+    .fab-enter-from,
+    .fab-leave-to {
+        transform: none;
+    }
+    .fab,
+    .back-to-bot {
+        transition-duration: 0.01ms;
+    }
 }
 </style>

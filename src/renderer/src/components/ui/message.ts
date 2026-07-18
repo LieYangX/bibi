@@ -30,8 +30,8 @@ function show(text: string, type: ToastType = 'info', duration = 2500): void {
     el.style.cssText = `
     pointer-events: auto; padding: 10px 20px; border-radius: 8px;
     font-size: 14px; font-weight: 500; line-height: 1.5;
-    background: #fff; border: 1px solid #e2e8f0; color: #0f172a;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    background: var(--bb-bg-card); border: 1px solid var(--bb-border); color: var(--bb-text-primary);
+    box-shadow: var(--bb-shadow-md);
     animation: toast-in 0.25s ease; white-space: nowrap;
     display: flex; align-items: center; gap: 8px;
   `

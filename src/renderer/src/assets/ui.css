@@ -36,18 +36,18 @@
     background: var(--bb-accent);
     border-color: var(--bb-accent);
     color: #fff;
-    box-shadow: 0 2px 8px rgba(217, 164, 4, 0.2);
+    box-shadow: var(--bb-shadow-sm);
 }
 .bb-btn-primary:hover {
     background: var(--bb-accent-hover);
     border-color: var(--bb-accent-hover);
     color: #fff;
-    box-shadow: 0 4px 14px rgba(217, 164, 4, 0.28);
+    box-shadow: var(--bb-shadow-md);
     transform: translateY(-1px);
 }
 .bb-btn-primary:active {
     transform: translateY(0);
-    box-shadow: 0 1px 4px rgba(217, 164, 4, 0.15);
+    box-shadow: var(--bb-shadow-xs);
 }
 
 .bb-btn-text {
@@ -267,6 +267,7 @@ input[type='date'].bb-input {
     display: flex;
     gap: 6px;
     background: var(--bb-bg-input);
+    border: 1px solid var(--bb-border);
     border-radius: 10px;
     padding: 3px;
 }
@@ -285,10 +286,10 @@ input[type='date'].bb-input {
     text-align: center;
 }
 .bb-pill.active {
-    background: var(--bb-bg-card);
+    background: var(--bb-bg-elevated);
     color: var(--bb-accent-text);
     font-weight: var(--bb-weight-semibold);
-    box-shadow: 0 1px 3px rgba(217, 164, 4, 0.1);
+    box-shadow: var(--bb-shadow-sm);
 }
 
 /* ---------- 来源选择 ---------- */

@@ -106,7 +106,7 @@ onUnmounted(() => {
 }
 .bb-popconfirm {
     width: 200px;
-    background: #fff;
+    background: var(--bb-bg-card);
     border: 1px solid var(--bb-border);
     border-radius: 10px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);

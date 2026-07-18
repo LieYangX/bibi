@@ -437,8 +437,8 @@ onUnmounted(() => {
     margin-bottom: 10px;
 }
 .setting-hint--warn {
-    background: rgba(217, 164, 4, 0.08);
-    color: #b8860b;
+    background: var(--bb-warning-light);
+    color: var(--bb-warning);
 }
 .setting-hint--ok {
     background: rgba(34, 197, 94, 0.08);

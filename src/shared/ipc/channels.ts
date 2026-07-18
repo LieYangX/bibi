@@ -33,7 +33,8 @@ export const IPC_CHANNELS = {
         delete: 'transaction:delete',
         batchDelete: 'transaction:batchDelete',
         list: 'transaction:list',
-        getById: 'transaction:getById'
+        getById: 'transaction:getById',
+        export: 'transaction:export'
     },
     budget: {
         set: 'budget:set',

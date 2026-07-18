@@ -68,6 +68,14 @@
             <div v-if="groupedTransactions.length" class="batch-bar">
                 <button
                     v-if="!batchMode"
+                    class="bb-btn bb-btn-text export-trigger"
+                    :disabled="exporting"
+                    @click="handleExport"
+                >
+                    <FileSpreadsheet :size="14" />{{ exporting ? '导出中…' : '导出 Excel' }}
+                </button>
+                <button
+                    v-if="!batchMode"
                     class="bb-btn bb-btn-text batch-trigger"
                     @click="enterBatchMode"
                 >
@@ -266,12 +274,13 @@ import { storeToRefs } from 'pinia'
 import { useTransactionStore, type TransactionInfo } from '../stores/transaction.store'
 import { useAccountStore } from '../stores/account.store'
 import { useSettingStore } from '../stores/setting.store'
+import { desktopApi } from '../api/desktop-api'
 import { BbPopconfirm, BbSelect, BbDatePicker, BbModal, Message } from '../components/ui'
 import { PageHeader, EmptyState, BbAmount } from '../components/common'
 import { onRefresh } from '../composables/useRefreshBus'
 import TransactionModal from '../components/TransactionModal.vue'
 import type { TransactionType } from '@shared/types'
-import { Trash2, Search, X, Inbox, Eye, EyeOff, Info, ArrowUp } from '@lucide/vue'
+import { Trash2, Search, X, Inbox, Eye, EyeOff, Info, ArrowUp, FileSpreadsheet } from '@lucide/vue'
 
 const transactionStore = useTransactionStore()
 const accountStore = useAccountStore()
@@ -299,6 +308,7 @@ const showBatchDelModal = ref(false)
 const batchMode = ref(false)
 const loadMoreRef = ref<HTMLElement | null>(null)
 const showBackToTop = ref(false)
+const exporting = ref(false)
 let loadMoreObserver: IntersectionObserver | null = null
 let scrollContainer: HTMLElement | null = null
 
@@ -524,6 +534,28 @@ function exitBatchMode(): void {
     selectedIds.value = new Set()
 }
 
+async function handleExport(): Promise<void> {
+    if (exporting.value) return
+    exporting.value = true
+    try {
+        const result = await desktopApi.transaction.export({
+            type: filter.type !== 'all' ? filter.type : undefined,
+            account_id: filter.account_id || undefined,
+            start_date: filter.start_date || undefined,
+            end_date: filter.end_date || undefined,
+            keyword: filter.keyword || undefined
+        })
+        if (!result.ok) {
+            Message.error(result.error || '导出失败')
+            return
+        }
+        if (result.data.canceled) return
+        Message.success(`已导出 ${result.data.count} 条流水到 ${result.data.file_path}`)
+    } finally {
+        exporting.value = false
+    }
+}
+
 async function handleBatchDelete(): Promise<void> {
     if (selectedIds.value.size === 0) return
     showBatchDelModal.value = true
@@ -653,6 +685,19 @@ async function handleDelete(id: string): Promise<void> {
 .batch-count {
     font-size: 12px;
     color: var(--bb-text-tertiary);
+}
+
+.export-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--bb-text-tertiary);
+}
+
+.export-trigger:hover {
+    color: var(--bb-success);
+    background: var(--bb-success-light);
 }
 
 .batch-trigger {

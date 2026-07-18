@@ -43,6 +43,7 @@ export interface AgentMsg {
     id: string
     role: AgentMsgRole
     content: string
+    created_at: string
     toolName?: string
     toolArgs?: string
     isStreaming?: boolean
@@ -59,6 +60,9 @@ export interface QueuedAgentMessage {
 let _seq = 0
 function uid(): string {
     return `msg_${Date.now()}_${++_seq}_${Math.random().toString(36).slice(2, 7)}`
+}
+function nowISO(): string {
+    return new Date().toISOString()
 }
 
 /**
@@ -185,7 +189,8 @@ export const useAgentStore = defineStore('agent', () => {
                         messages.value.push({
                             id: message.id,
                             role: 'user',
-                            content: message.content || ''
+                            content: message.content || '',
+                            created_at: nowISO()
                         })
                     }
                     break
@@ -200,6 +205,7 @@ export const useAgentStore = defineStore('agent', () => {
                         id: message.id,
                         role: message.role === 'tool' ? 'tool' : 'assistant',
                         content: message.content || '',
+                        created_at: nowISO(),
                         toolName: message.tool_used,
                         isStreaming: message.streaming ?? false,
                         thinking: deepThink.value ? message.thinking || undefined : undefined,
@@ -249,7 +255,8 @@ export const useAgentStore = defineStore('agent', () => {
                         messages.value.push({
                             id: uid(),
                             role: 'assistant',
-                            content: errorMessage
+                            content: errorMessage,
+                            created_at: nowISO()
                         })
                     }
                 }
@@ -484,7 +491,7 @@ export const useAgentStore = defineStore('agent', () => {
         currentThinking.value = ''
 
         // 本地先添加用户消息（即时反馈，后端也会发但会跳过）
-        messages.value.push({ id: uid(), role: 'user', content: message })
+        messages.value.push({ id: uid(), role: 'user', content: message, created_at: nowISO() })
 
         try {
             const result = await desktopApi.agent.chat(
@@ -497,7 +504,8 @@ export const useAgentStore = defineStore('agent', () => {
             messages.value.push({
                 id: uid(),
                 role: 'assistant',
-                content: `❌ ${result.error || '发送失败'}`
+                content: `❌ ${result.error || '发送失败'}`,
+                created_at: nowISO()
             })
             isProcessing.value = false
             isAwaitingResponse.value = false
@@ -506,7 +514,8 @@ export const useAgentStore = defineStore('agent', () => {
             messages.value.push({
                 id: uid(),
                 role: 'assistant',
-                content: '❌ 发送失败，请重试'
+                content: '❌ 发送失败，请重试',
+                created_at: nowISO()
             })
             isProcessing.value = false
             isAwaitingResponse.value = false
@@ -643,6 +652,7 @@ export const useAgentStore = defineStore('agent', () => {
             id: message.id,
             role: message.role === 'tool' ? 'tool' : message.role === 'user' ? 'user' : 'assistant',
             content: message.content,
+            created_at: message.created_at,
             toolName: message.tool_used,
             thinking: message.thinking,
             thinkingDurationMs: message.thinking_duration_ms
@@ -961,6 +971,10 @@ export const useAgentStore = defineStore('agent', () => {
         nextMessageCursor.value = null
     }
 
+    function findMessageById(id: string): AgentMsg | undefined {
+        return messages.value.find((m) => m.id === id)
+    }
+
     return {
         config,
         conversations,
@@ -992,6 +1006,7 @@ export const useAgentStore = defineStore('agent', () => {
         loadConfig,
         initialize,
         loadMoreConversations,
+        findMessageById,
         sendMessage,
         connectWechat,
         disconnectWechat,

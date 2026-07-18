@@ -89,7 +89,7 @@ function updateRememberMappings(event: Event): void {
     padding: 10px 78px 10px 14px;
     border: 1px solid var(--bb-border);
     border-radius: var(--bb-radius-md);
-    background: rgba(255, 255, 255, 0.96);
+    background: var(--bb-glass-bg-strong);
     box-shadow: var(--bb-shadow-float);
     backdrop-filter: blur(14px);
 }
