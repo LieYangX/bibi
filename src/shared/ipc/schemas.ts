@@ -364,6 +364,9 @@ export const IPC_SCHEMAS = {
         setAutoLaunch: z.tuple([z.boolean()]),
         getAutoLaunch: z.tuple([])
     },
+    window: {
+        setMinimizePreference: z.tuple([z.boolean()])
+    },
     agent: {
         connectWechat: z.tuple([]),
         disconnectWechat: z.tuple([]),

@@ -123,6 +123,8 @@ export interface ElectronAPI {
         isMaximized: () => Promise<IpcResult<boolean>>
         onMaximizeChange: (callback: (maximized: boolean) => void) => () => void
         minimizeToTray: () => void
+        getMinimizePreference: () => Promise<IpcResult<boolean>>
+        setMinimizePreference: (value: boolean) => Promise<IpcResult>
     }
     agent: AgentAPI
 }

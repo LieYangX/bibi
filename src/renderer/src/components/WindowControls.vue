@@ -111,9 +111,15 @@ let stopMaximizeListener: (() => void) | undefined
 const showCloseConfirm = ref(false)
 
 /**
- * 是否最小化到系统托盘
+ * 弹窗中"最小化到系统托盘"勾选框的当前值
  */
 const minimizeToTray = ref(false)
+
+/**
+ * 从 session 读取的上次保存的选择
+ * 用于打开弹窗时恢复显示，避免取消操作污染下次显示
+ */
+const savedMinimizeToTray = ref(false)
 
 /**
  * 组件挂载后同步窗口最大化状态并监听变化
@@ -131,12 +137,25 @@ onMounted(() => {
             isMaximized.value = maximized
         }
     )
+    // 读取 session 中保存的最小化偏好，作为弹窗初始勾选状态
+    void loadMinimizePreference()
 })
 
 onUnmounted(() => {
     stopMaximizeListener?.()
     stopMaximizeListener = undefined
 })
+
+/**
+ * 从主进程加载上次保存的最小化偏好
+ */
+async function loadMinimizePreference(): Promise<void> {
+    const result = await desktopApi.window.getMinimizePreference()
+    if (result.ok) {
+        savedMinimizeToTray.value = result.data
+        minimizeToTray.value = result.data
+    }
+}
 
 /**
  * 最小化窗口
@@ -154,26 +173,32 @@ function handleMaximize(): void {
 
 /**
  * 关闭窗口前显示确认弹窗
+ * 打开时将勾选框恢复为上次保存的选择
  */
 function handleClose(): void {
-    minimizeToTray.value = false
+    minimizeToTray.value = savedMinimizeToTray.value
     showCloseConfirm.value = true
 }
 
 /**
  * 取消关闭
+ * 不重置勾选框，下次打开时由 handleClose 恢复为上次保存的选择
  */
 function handleCancelClose(): void {
     showCloseConfirm.value = false
-    minimizeToTray.value = false
 }
 
 /**
  * 确认关闭或最小化到托盘
+ * 将当前勾选状态保存到 session，作为下次弹窗的初始状态
  */
-function handleConfirmClose(): void {
+async function handleConfirmClose(): Promise<void> {
     showCloseConfirm.value = false
-    if (minimizeToTray.value) {
+    const preference = minimizeToTray.value
+    // 更新本地缓存并持久化到 session
+    savedMinimizeToTray.value = preference
+    await desktopApi.window.setMinimizePreference(preference)
+    if (preference) {
         desktopApi.window.minimizeToTray()
     } else {
         desktopApi.window.close()

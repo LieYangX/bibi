@@ -75,7 +75,11 @@ export const IPC_CHANNELS = {
         close: 'window:close',
         isMaximized: 'window:isMaximized',
         maximizeChange: 'window:maximizeChange',
-        minimizeToTray: 'window:minimizeToTray'
+        minimizeToTray: 'window:minimizeToTray',
+        /** 读取退出弹窗"最小化到托盘"勾选框的上次选择 */
+        getMinimizePreference: 'window:getMinimizePreference',
+        /** 保存退出弹窗"最小化到托盘"勾选框的选择 */
+        setMinimizePreference: 'window:setMinimizePreference'
     },
     agent: {
         chat: 'agent:chat',

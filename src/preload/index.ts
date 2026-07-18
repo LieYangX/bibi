@@ -138,7 +138,10 @@ const electronAPI: ElectronAPI = {
             ipcRenderer.on(IPC_CHANNELS.window.maximizeChange, listener)
             return () => ipcRenderer.removeListener(IPC_CHANNELS.window.maximizeChange, listener)
         },
-        minimizeToTray: () => ipcRenderer.send(IPC_CHANNELS.window.minimizeToTray)
+        minimizeToTray: () => ipcRenderer.send(IPC_CHANNELS.window.minimizeToTray),
+        getMinimizePreference: () => invokeWithLog(IPC_CHANNELS.window.getMinimizePreference),
+        setMinimizePreference: (value: boolean) =>
+            invokeWithLog(IPC_CHANNELS.window.setMinimizePreference, value)
     },
     agent: {
         chat: (conversationId, message, deepThink) =>
