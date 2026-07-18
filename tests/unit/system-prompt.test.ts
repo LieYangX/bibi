@@ -32,10 +32,10 @@ describe('Agent 系统提示词', () => {
         )
 
         expect(prompt).toContain('- data-query（数据查询）：查询流水和账户数据')
-        expect(prompt).toContain('必须先调用 getSkill 获取完整内容')
-        expect(prompt).toContain('读取 Skill 完整内容后再制定计划')
-        expect(prompt).toContain('严格按计划逐步调用工具')
-        expect(prompt).toContain('只有验证通过后才能向用户确认完成')
+        expect(prompt).toContain('必须先 getSkill 读完整内容才能调工具')
+        expect(prompt).toContain('读 Skill 后再制定')
+        expect(prompt).toContain('逐步调工具')
+        expect(prompt).toContain('验证通过才确认完成')
         expect(prompt).toContain(
             '先匹配 Skill；命中后先 getSkill；读取完整内容后制定计划；按计划分步调用工具；最后验证结果。'
         )
@@ -47,6 +47,6 @@ describe('Agent 系统提示词', () => {
         const prompt = buildSystemPrompt([], [], [])
 
         expect(prompt).toContain('- 暂无已启用 Skill')
-        expect(prompt).toContain('没有匹配 Skill 但存在合适工具时')
+        expect(prompt).toContain('无匹配 Skill 但有合适工具时')
     })
 })
