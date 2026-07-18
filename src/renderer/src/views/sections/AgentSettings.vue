@@ -1,123 +1,107 @@
 <template>
-    <div class="agent-settings">
-        <h2 class="section-title">智能体设置</h2>
-
-        <section class="settings-section">
-            <h3>基本配置</h3>
-
-            <!-- 启用开关（立即保存） -->
-            <div class="setting-field">
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-title">启用小笔</div>
-                        <div class="setting-desc">启用后可在侧栏访问小笔对话页面</div>
-                    </div>
-                    <BbSwitch
-                        :model-value="localConfig.enabled"
-                        :disabled="saving"
-                        @change="onToggleEnabled"
-                    />
+    <div class="agent-fields">
+        <!-- 启用开关（立即保存） -->
+        <div class="setting-field">
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">启用小笔</div>
+                    <div class="setting-desc">启用后可访问小笔智能体</div>
                 </div>
+                <BbSwitch
+                    :model-value="localConfig.enabled"
+                    :disabled="saving"
+                    @change="onToggleEnabled"
+                />
             </div>
+        </div>
 
-            <div class="setting-field">
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-title">记忆提炼阈值</div>
-                        <div class="setting-desc">累计达到该数量的用户消息后更新灵魂记忆</div>
-                    </div>
-                    <div class="memory-threshold-control">
-                        <input
-                            v-model.number="localConfig.memoryDistillationThreshold"
-                            type="number"
-                            class="bb-input memory-threshold-input"
-                            :min="MIN_MEMORY_DISTILLATION_THRESHOLD"
-                            :max="MAX_MEMORY_DISTILLATION_THRESHOLD"
-                            :disabled="saving"
-                            aria-label="记忆提炼阈值"
-                            @change="saveMemoryDistillationThreshold"
-                        />
-                        <span>条</span>
-                    </div>
+        <div class="setting-field">
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">记忆提炼阈值</div>
+                    <div class="setting-desc">累计达到该数量的用户消息后更新灵魂记忆</div>
                 </div>
-            </div>
-
-            <!-- API Key（独立保存） -->
-            <div class="setting-field">
-                <label class="setting-label">API Key</label>
-                <div class="setting-input-row">
+                <div class="memory-threshold-control">
                     <input
-                        v-model="apiKeyInput"
-                        type="password"
-                        class="bb-input"
-                        placeholder="sk-..."
-                    />
-                    <button
-                        class="bb-btn bb-btn--primary"
-                        :disabled="!apiKeyInput || saving"
-                        @click="saveApiKey"
-                    >
-                        保存
-                    </button>
-                    <button
-                        v-if="localConfig.apiKey"
-                        class="bb-btn bb-btn-danger"
+                        v-model.number="localConfig.memoryDistillationThreshold"
+                        type="number"
+                        class="bb-input memory-threshold-input"
+                        :min="MIN_MEMORY_DISTILLATION_THRESHOLD"
+                        :max="MAX_MEMORY_DISTILLATION_THRESHOLD"
                         :disabled="saving"
-                        @click="clearApiKey"
-                    >
-                        清除
-                    </button>
-                </div>
-                <p class="setting-desc">
-                    在
-                    <a href="https://platform.deepseek.com/api_keys" target="_blank"
-                        >DeepSeek 控制台</a
-                    >
-                    获取 API Key
-                </p>
-            </div>
-
-            <!-- 温度（变更立即保存） -->
-            <div class="setting-field">
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <div class="setting-title">温度 ({{ localConfig.temperature }})</div>
-                        <div class="setting-desc">
-                            较低的值使回答更确定，较高的值使回答更具创造性
-                        </div>
-                    </div>
-                    <input
-                        v-model.number="localConfig.temperature"
-                        type="range"
-                        min="0"
-                        max="2"
-                        step="0.1"
-                        class="bb-range"
-                        :disabled="saving"
-                        @change="savePartial({ temperature: localConfig.temperature })"
+                        aria-label="记忆提炼阈值"
+                        @change="saveMemoryDistillationThreshold"
                     />
+                    <span>条</span>
                 </div>
             </div>
+        </div>
 
-            <!-- 反馈消息 -->
-            <div
-                v-if="feedback"
-                class="setting-feedback"
-                :class="feedbackOk ? 'feedback--ok' : 'feedback--err'"
-            >
-                {{ feedback }}
+        <!-- API Key（独立保存） -->
+        <div class="setting-field">
+            <label class="setting-label">API Key</label>
+            <div class="setting-input-row">
+                <input
+                    v-model="apiKeyInput"
+                    type="password"
+                    class="bb-input"
+                    placeholder="sk-..."
+                />
+                <button
+                    class="bb-btn bb-btn--primary"
+                    :disabled="!apiKeyInput || saving"
+                    @click="saveApiKey"
+                >
+                    保存
+                </button>
+                <button
+                    v-if="localConfig.apiKey"
+                    class="bb-btn bb-btn-danger"
+                    :disabled="saving"
+                    @click="clearApiKey"
+                >
+                    清除
+                </button>
             </div>
-        </section>
+            <p class="setting-desc">
+                在
+                <a href="https://platform.deepseek.com/api_keys" target="_blank">DeepSeek 控制台</a>
+                获取 API Key
+            </p>
+        </div>
+
+        <!-- 温度（变更立即保存） -->
+        <div class="setting-field">
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">温度 ({{ localConfig.temperature }})</div>
+                    <div class="setting-desc">较低的值使回答更确定，较高的值使回答更具创造性</div>
+                </div>
+                <input
+                    v-model.number="localConfig.temperature"
+                    type="range"
+                    min="0"
+                    max="2"
+                    step="0.1"
+                    class="bb-range"
+                    :disabled="saving"
+                    @change="savePartial({ temperature: localConfig.temperature })"
+                />
+            </div>
+        </div>
+
+        <!-- 反馈消息 -->
+        <div
+            v-if="feedback"
+            class="setting-feedback"
+            :class="feedbackOk ? 'feedback--ok' : 'feedback--err'"
+        >
+            {{ feedback }}
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
-/**
- * 智能体配置面板
- * 每个配置项独立调用后端 IPC 保存
- * @author xiangwei
- */
-
 import { ref, onMounted, reactive } from 'vue'
 import { useAgentStore } from '../../stores/agent.store'
 import { BbSwitch } from '../../components/ui'
@@ -208,39 +192,10 @@ async function clearApiKey(): Promise<void> {
 </script>
 
 <style scoped>
-.agent-settings {
-    max-width: var(--bb-page-w-medium);
-}
-
-.section-title {
-    font-size: 20px;
-    font-weight: var(--bb-weight-bold);
-    color: var(--bb-text-primary);
-    margin-bottom: 24px;
-}
-
-.settings-section {
-    background: var(--bb-bg-card);
-    border: 1px solid var(--bb-glass-border);
-    border-radius: 14px;
-    padding: 18px 20px;
-    margin-bottom: 16px;
-}
-
-.settings-section h3 {
-    font-size: 14px;
-    font-weight: var(--bb-weight-semibold);
-    color: var(--bb-text-primary);
-    margin-bottom: 14px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--bb-border);
-}
-
-.setting-field {
-    margin-bottom: 16px;
-}
-.setting-field:last-child {
-    margin-bottom: 0;
+.agent-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .setting-row {
@@ -299,7 +254,6 @@ async function clearApiKey(): Promise<void> {
     text-align: center;
 }
 
-/* 反馈消息 */
 .setting-feedback {
     font-size: 13px;
     padding: 8px 12px;

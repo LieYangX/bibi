@@ -2,10 +2,11 @@
     <div class="bb-page-container bb-page-container--medium">
         <PageHeader title="设置" />
 
+        <!-- 通用设置 -->
         <div class="settings-card">
             <div class="settings-head">
-                <Eye :size="18" />
-                <span>显示设置</span>
+                <Sliders :size="18" />
+                <span>通用设置</span>
             </div>
             <div class="settings-row">
                 <div class="settings-info">
@@ -31,14 +32,6 @@
                     @update:model-value="onThemeChange"
                 />
             </div>
-        </div>
-
-        <!-- 通用设置 -->
-        <div class="settings-card">
-            <div class="settings-head">
-                <Power :size="18" />
-                <span>通用设置</span>
-            </div>
             <div class="settings-row">
                 <div class="settings-info">
                     <div class="settings-title">开机自启</div>
@@ -54,10 +47,24 @@
             </div>
         </div>
 
+        <!-- 智能体设置 -->
+        <div class="settings-card">
+            <div class="settings-head">
+                <Bot :size="18" />
+                <span>智能体设置</span>
+            </div>
+            <AgentSettings />
+            <div class="settings-divider"></div>
+            <SttSettings />
+        </div>
+
+        <!-- 语音转文字设置 -->
+
+        <!-- 关于应用 -->
         <div class="settings-card">
             <div class="settings-head">
                 <Info :size="18" />
-                <span>功能说明</span>
+                <span>关于应用</span>
             </div>
             <div class="settings-row settings-row--clickable" @click="showFeatures = true">
                 <div class="settings-info">
@@ -65,20 +72,6 @@
                     <div class="settings-desc">了解笔笔的所有功能特性</div>
                 </div>
                 <ChevronRight :size="16" class="settings-row-arrow" />
-            </div>
-        </div>
-
-        <!-- 智能体设置 -->
-        <AgentSettings />
-
-        <!-- 语音转文字设置 -->
-        <SttSettings />
-
-        <!-- 关于应用 -->
-        <div class="settings-card">
-            <div class="settings-head">
-                <Info :size="18" />
-                <span>关于应用</span>
             </div>
             <div class="settings-row settings-row--clickable" @click="showReleaseNotes">
                 <div class="settings-info">
@@ -231,7 +224,7 @@ import AgentSettings from './sections/AgentSettings.vue'
 import SttSettings from './sections/SttSettings.vue'
 import { desktopApi } from '../api/desktop-api'
 import { openReleaseNotesKey } from '../app/release-notes-presenter'
-import { Eye, Info, ChevronRight, Power } from '@lucide/vue'
+import { Sliders, Info, ChevronRight, Bot } from '@lucide/vue'
 
 const settingStore = useSettingStore()
 const showFeatures = ref(false)
@@ -387,6 +380,12 @@ onMounted(async () => {
 .settings-row-arrow {
     color: var(--bb-text-tertiary);
     flex-shrink: 0;
+}
+
+.settings-divider {
+    height: 1px;
+    background: var(--bb-border);
+    margin: 16px 0;
 }
 
 .feature-list {

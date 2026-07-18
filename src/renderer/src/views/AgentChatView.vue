@@ -93,7 +93,7 @@
                     </div>
                     <h1 class="empty-hero__greeting">{{ greeting }}，{{ userName }}</h1>
                     <p class="empty-hero__subtitle">
-                        我是小笔，你的记账搭子 -- 说话就能记账、查账、出报表
+                        {{ modeSubtitle }}
                     </p>
 
                     <!-- 模式切换 -->
@@ -977,6 +977,12 @@ const toolsLoading = ref(false)
 const inspectingMcpNames = ref<string[]>([])
 /** 当前模式 */
 const currentMode = ref<'fast' | 'expert'>('fast')
+/** 根据当前模式展示对应模型能力的小标题 */
+const modeSubtitle = computed(() => {
+    return currentMode.value === 'fast'
+        ? '快速模式：轻量快速，适合日常记账、简单查账和快速问答'
+        : '专家模式：深度推理，擅长复杂分析、多步计算和详细报表'
+})
 /** 一键回到底部按钮显示状态 */
 const showScrollBtn = ref(false)
 const showWechatDialog = ref(false)

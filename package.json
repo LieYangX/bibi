@@ -1,6 +1,6 @@
 {
     "name": "bibi",
-    "version": "3.0.7",
+    "version": "4.0.0",
     "description": "笔笔个人记账桌面应用",
     "main": "./out/main/index.js",
     "author": "lieyang",

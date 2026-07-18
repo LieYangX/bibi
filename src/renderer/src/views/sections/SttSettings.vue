@@ -1,10 +1,5 @@
 <template>
-    <div class="settings-section">
-        <h3>
-            <Mic :size="16" />
-            语音转文字
-        </h3>
-
+    <div class="stt-fields">
         <!-- 启用开关 -->
         <div class="setting-field">
             <div class="setting-row">
@@ -130,7 +125,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { desktopApi } from '../../api/desktop-api'
 import { BbSwitch, BbSelect } from '../../components/ui'
-import { Mic, Download, Trash2, RefreshCw, AlertCircle, CheckCircle, Loader } from '@lucide/vue'
+import { Download, Trash2, RefreshCw, AlertCircle, CheckCircle, Loader } from '@lucide/vue'
 
 /** 可用模型列表 */
 interface SttModelInfo {
@@ -346,33 +341,13 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.settings-section {
-    background: var(--bb-bg-card);
-    border: 1px solid var(--bb-glass-border);
-    border-radius: 14px;
-    padding: 18px 20px;
-    margin-bottom: 16px;
-}
-
-.settings-section h3 {
-    font-size: 14px;
-    font-weight: var(--bb-weight-semibold);
-    color: var(--bb-text-primary);
-    margin-bottom: 14px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--bb-border);
+.stt-fields {
     display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.settings-section h3 svg {
-    color: var(--bb-accent);
+    flex-direction: column;
+    gap: 16px;
 }
 
 .setting-field {
-    margin-bottom: 16px;
-}
-.setting-field:last-child {
     margin-bottom: 0;
 }
 
