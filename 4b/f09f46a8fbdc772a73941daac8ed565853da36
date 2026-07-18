@@ -1,0 +1,93 @@
+src/renderer/src/views/AgentChatView.vue
+  s_4a77330103ca82::t_2137b89c01531f 83-88,97-102,244,721-759,1938-1940,2159-2164,3258-3263,3265-3295,3331,3341,3347,3351-3354
+doc/修改点.md
+  s_85ad0c7815b4e7::t_9c31265a0e0b6c 62-69
+  s_4a77330103ca82::t_2137b89c01531f 70-71
+src/main/windows/web-security.ts
+  s_4a77330103ca82::t_3090f284b755d4 78-82,99
+src/main/agent/orchestrator.ts
+  s_4a77330103ca82::t_109ade277571d7 224-228
+  s_4a77330103ca82::t_f202cab13583cd 336-337,343-344
+  s_4a77330103ca82::t_ddd133b3d91b6f 362
+  s_4a77330103ca82::t_ecb69bbb9cc42b 371-372,375
+  s_4a77330103ca82::t_8d86fd56b696e2 360-361,363-365
+src/shared/ipc/schemas.ts
+  s_4a77330103ca82::t_2137b89c01531f 359-363,370-371
+src/renderer/src/views/DashboardView.vue
+  s_4a77330103ca82::t_2137b89c01531f 439-459
+  s_4a77330103ca82::t_8627167d0c1b1f 475-476,482-483,491-492
+src/renderer/src/stores/agent.store.ts
+  s_4a77330103ca82::t_0fe782842d9b95 717
+  s_4a77330103ca82::t_24460dd3e19b6e 80-81
+  s_4a77330103ca82::t_c8287c24a65630 1053-1054
+  s_4a77330103ca82::t_bab5d942b09e80 651-655
+  s_4a77330103ca82::t_f2819024d7bb9a 247
+  s_4a77330103ca82::t_a02de1772ce2a2 649-650,656-657,669
+  s_4a77330103ca82::t_0d74d404ce4dfa 399-413
+  s_4a77330103ca82::t_a42f9372d730cf 398
+src/renderer/src/components/ContextPanel.vue
+  s_4a77330103ca82::t_3fea04c438310b 590,594-595
+  s_4a77330103ca82::t_f5cfd52ab17125 460,469-474
+  s_4a77330103ca82::t_75d48bcc17cb36 157-176,186,188
+  s_4a77330103ca82::t_0ada4c38cdc03c 579-589,598-732,734-736
+  s_4a77330103ca82::t_e5cae1e0ea5671 733
+  s_4a77330103ca82::t_67629ebe4ee7a9 207-250
+  s_4a77330103ca82::t_d3cb0b7d018c2a 325-326
+  s_4a77330103ca82::t_5a4e9b3791ec34 596-597
+  s_4a77330103ca82::t_476d550be1aabb 121-124
+  s_4a77330103ca82::t_da7c843071c4b7 407-408
+  s_4a77330103ca82::t_3b409a7c4deff2 411-412
+  s_4a77330103ca82::t_2f56ae7a086ca5 591-593
+  s_4a77330103ca82::t_4ed16b9573447e 405-406,409-410
+  s_4a77330103ca82::t_938ef2ce74d2ea 16-77
+  s_4a77330103ca82::t_77434844ccb55e 526
+src/renderer/src/components/AgentMessage.vue
+  s_4a77330103ca82::t_1acea0a00feb55 163,170
+  s_4a77330103ca82::t_7c6b5eecc0c0cf 164-168
+src/renderer/src/components/AppLayout.vue
+  s_4a77330103ca82::t_d4175a4e440398 13
+  s_4a77330103ca82::t_fee7dabe382e58 361,363,368-370,376
+  s_4a77330103ca82::t_34ab0ea241945b 10-11
+  s_4a77330103ca82::t_c7cfd24cd78e49 362,364-365,371-372,377-378
+  s_4a77330103ca82::t_a065329bbbce8d 228-229
+src/renderer/src/views/AccountsView.vue
+  s_4a77330103ca82::t_1394eb6443e441 58
+src/main/agent/memory/conversation-store.ts
+  s_4a77330103ca82::t_ce2b4b9803a375 200
+  s_4a77330103ca82::t_7a1f967db5540c 210
+  s_4a77330103ca82::t_4661160bd54842 166,181,188-191,201-202
+  s_4a77330103ca82::t_2b364d83ca5885 192-199
+src/renderer/src/views/DetailView.vue
+  s_4a77330103ca82::t_f68e2a9147cba9 625,628-639
+  s_4a77330103ca82::t_cd3508a29d5215 962-972,989,991
+  s_4a77330103ca82::t_2137b89c01531f 93,171,195-198,979-981
+  s_4a77330103ca82::t_89e36642d7897f 177-179
+  s_4a77330103ca82::t_bf6d75e06cf01c 172-173
+  s_4a77330103ca82::t_cbd3a2b48eb275 69-92,94-97,108-109
+  s_4a77330103ca82::t_039621f66f8d80 194,199-205
+  s_4a77330103ca82::t_81326a131b9748 973-977,982,984-985,988,990
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "4bf09f46a8fbdc772a73941daac8ed565853da36",
+  "prompts": {},
+  "sessions": {
+    "s_4a77330103ca82": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_08a103263ffeg3fANWMaea1E8s",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_85ad0c7815b4e7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_08a79ba92ffehV0uBVtBHZATfS",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
