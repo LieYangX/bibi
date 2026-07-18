@@ -1,0 +1,127 @@
+src/renderer/src/views/DetailView.vue
+  s_cd1fbbb010802f::t_8a61ba5a74aa6f 782
+  s_cd1fbbb010802f::t_9186857db46019 474-482
+  s_cd1fbbb010802f::t_638a89eaee887e 152
+  s_cd1fbbb010802f::t_525f68f9637687 836-839
+tests/integration/database.integration.test.ts
+  s_cd1fbbb010802f::t_590478f97a821e 61
+src/renderer/src/app/session/reset-user-data.ts
+  s_99eb901a5381a9::t_c5c067d4140a5c 9,25
+src/shared/ipc/schemas.ts
+  s_cd1fbbb010802f::t_bb8f6742dc217c 114-118,123-124,131-132
+  s_cd1fbbb010802f::t_68945dec7b24a9 351-354,360
+src/main/database/drizzle/schema.ts
+  s_cd1fbbb010802f::t_5723565e427481 120
+src/renderer/src/router/index.ts
+  s_99eb901a5381a9::t_9f80cc37704111 4,22-27,41
+src/main/database/seed.ts
+  s_cd1fbbb010802f::t_df9b190acc78a9 46,66
+  s_cd1fbbb010802f::t_9f5b843fe6cff0 26-27
+  s_cd1fbbb010802f::t_c0b934ae8c0083 80,83-111
+  s_cd1fbbb010802f::t_d146eabeb905af 8
+  s_cd1fbbb010802f::t_1fae864eaff9db 112
+src/renderer/src/views/AgentChatView.vue
+  s_cd1fbbb010802f::t_fb95f023c6028f 41
+  s_99eb901a5381a9::t_c36e84cb1aa9a9 79,84,134,167,177,193,267,324
+  s_cd1fbbb010802f::t_5142c1919a7d6d 976-977
+  s_cd1fbbb010802f::t_727aec51410de6 80-82,89-92
+  s_cd1fbbb010802f::t_8c152484db4e5d 1886-1890,1895,1897,1899-1901
+  s_cd1fbbb010802f::t_ad41bc54c9edc9 370-372
+  s_cd1fbbb010802f::t_aefec060adb48f 1415
+  s_99eb901a5381a9::t_5f15f07ea576d6 2-6,8-10,12-15,18-20,22-25,28-30,32-35,37-38,40,42-43,45,48-51,53,56-64,66-69,71-74,77-78,83,87-88,93-98,100-102,104,107-109,111-121,123-133,135-153,156-166,168-176,178-192,194-203,205-206,208,210,213-216,218,222-266,268-323,325-369,914-916,922,924,946-951,961,982-995,1413-1414,1416-1418,1784-1810,1911,1914,1916,1921,1935-1940,1948-1950,2002-2021,2045,2048,2052-2053,2057-2059,2061,2065-2068,2072,2075-2077,2079-2087,2094-2095,2099,2101-2153,2160,2166,2175,2180,2185,2198,2202,2209-2211,2216,2333,2336-2344,2427,2432,2623-2680,3338-3387
+  s_cd1fbbb010802f::t_67bc3d6b4ba137 1896,1898
+  s_cd1fbbb010802f::t_539af7699e2c5b 2088-2092
+  s_cd1fbbb010802f::t_12ca9edaa350b2 1922-1934
+  s_cd1fbbb010802f::t_e2d9333a6684da 978
+src/main/database/drizzle/migrations/0007_add_category_color.sql
+  s_cd1fbbb010802f::t_5e1d04131e74c7 1
+src/shared/types/category.ts
+  s_cd1fbbb010802f::t_68d76323424191 14,33,44
+src/renderer/src/stores/import.store.ts
+  s_99eb901a5381a9::t_f196923c8883e6 1-40
+src/shared/types/transaction.ts
+  s_cd1fbbb010802f::t_2ed1b3de5f4800 30
+src/main/database/drizzle/migrations/index.ts
+  s_cd1fbbb010802f::t_acc9cb36e5a158 55-57
+src/main/services/transaction.service.ts
+  s_cd1fbbb010802f::t_276e18c978a442 524-525
+  s_cd1fbbb010802f::t_0c616a120b30d7 461-462
+src/renderer/src/components/AppLayout.vue
+  s_cd1fbbb010802f::t_71bc89f0fd9c80 74
+  s_cd1fbbb010802f::t_dcd52fbdbf5c5a 119-121,126
+  s_cd1fbbb010802f::t_bd8fe5d30b66da 207-211
+  s_99eb901a5381a9::t_86c060a719b087 3-5,9,11,15,19,21-22,25,30-31,33-38,40-43,50,69-73,75,85,91,110,116-117,129-132,141,146,173-175,179-181,187,190-196,200-201,203-204,214,217-218,220-221,224-226,228,230-234,236,238,240,244-249,251-252,254-255,259,262-267,270-271,274-275,278,307,317-318,320-328,349-373
+  s_99eb901a5381a9::t_a6ee18c65855db 32
+  s_cd1fbbb010802f::t_7759c6c661219f 6,13,20
+  s_99eb901a5381a9::t_c36e84cb1aa9a9 44-49,60
+src/renderer/src/views/sections/ImportSection.vue
+  s_99eb901a5381a9::t_a992853315e4ff 174,196
+  s_99eb901a5381a9::t_a71ed3b60dea1c 280-281
+  s_99eb901a5381a9::t_6d95807e5784c8 233,245-248
+  s_99eb901a5381a9::t_3507a7c20d6188 249
+src/main/services/category.service.ts
+  s_cd1fbbb010802f::t_1bc0db09c787cb 17
+  s_cd1fbbb010802f::t_6ebe50db0a7c2a 168
+  s_cd1fbbb010802f::t_45dd99939c8f36 77
+  s_cd1fbbb010802f::t_4dba33650332a5 296-300
+  s_cd1fbbb010802f::t_ed0596a7b67e97 301
+  s_cd1fbbb010802f::t_84e5f2a653263b 287-295,302-303
+  s_cd1fbbb010802f::t_dc1a69101ed3bf 91,103
+doc/ui-redesign/ai-centric-ui-board.html
+  s_99eb901a5381a9::t_c36e84cb1aa9a9 1,3-2292,2294-2404,2407-2420,2422-2486,2488-2489,2492-2508,2510-2798,2800-2821,2824-3103,3105-3353,3355-3673,3675-3735,3737-3843,3845-3964,3966-3973,3975-3976,3978
+  s_3bd6fbc15f2020::t_5942d679a1629c 2,2293,2405-2406,2421,2487,2490-2491,2509,2799,2822-2823,3104,3354,3674,3736,3844,3965,3974,3977,3979
+src/renderer/src/components/ContextPanel.vue
+  s_cd1fbbb010802f::t_2887fe4c52c170 96-97,104,113-114
+  s_99eb901a5381a9::t_7496af6f86e10a 1-7,10,13-63,66-78,80-95,98-103,105-106,108-112,115-155,157,159-161,166-203,217-444
+  s_99eb901a5381a9::t_c36e84cb1aa9a9 64,79
+  s_cd1fbbb010802f::t_7da3931904ec50 65
+  s_cd1fbbb010802f::t_908fa8232dff86 156,158,162-165
+  s_cd1fbbb010802f::t_17325cfa778413 204-216
+  s_cd1fbbb010802f::t_22ec095aaa1097 107
+  s_cd1fbbb010802f::t_d51ce2ed440565 8-9,11-12
+src/main/app/bootstrap.ts
+  s_cd1fbbb010802f::t_88f3c4937e318e 19
+  s_cd1fbbb010802f::t_994ed9f8f2623b 175-176
+src/renderer/src/views/sections/CategoriesSection.vue
+  s_cd1fbbb010802f::t_577af17d37dd92 20,33
+  s_cd1fbbb010802f::t_5daf0fae987aa9 276-290
+  s_cd1fbbb010802f::t_ff3cfaf7015e5d 95,108
+  s_cd1fbbb010802f::t_8207f91a65d051 15-19,21-32,34-36,59-62,90-94,96-107,109-111,232,238-256,262,267,270,291-297,333-337,341,351-352,359-362,415,515-520,571-621,705
+src/main/database/presets.ts
+  s_cd1fbbb010802f::t_9148145b897c9b 11,15-34
+  s_cd1fbbb010802f::t_22619180f3e1b1 44,50,56,62,68,74,80,86,92,98
+  s_cd1fbbb010802f::t_eea1a37455bb05 110,116,122,128,134
+  s_cd1fbbb010802f::t_d819944fbc19f4 35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "33aa586435539ebc21a1a7cf9257a63a881cbb62",
+  "prompts": {},
+  "sessions": {
+    "s_3bd6fbc15f2020": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_08cb43787ffeQGlQ9YqJRThKyf",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_99eb901a5381a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_08c81c932ffeQ0yhyI1jey9nMZ",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_cd1fbbb010802f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_08cc04ab0ffe3WCISZzgwgCJxD",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
