@@ -221,8 +221,11 @@ async function runConversation(
         toolCount: Object.keys(allTools).length
     })
 
-    // 保存并发射 user 消息
-    await conversationStore.saveMessage(conversationId, userId, 'user', userMessage)
+    // 保存并发射 user 消息（按内容估算 token）
+    const userTokenEstimate = Math.max(Math.round(userMessage.length / 2), 1)
+    await conversationStore.saveMessage(conversationId, userId, 'user', userMessage, {
+        token_count: userTokenEstimate
+    })
     await emit({
         type: 'message',
         message: { id: randomUUID(), role: 'user', content: userMessage }
@@ -330,13 +333,15 @@ async function runConversation(
                 })
                 currentAsstId = null
                 thinkingForNextMsg = ''
+                const toolContent = resultStr.slice(0, MAX_TOOL_MESSAGE_LENGTH)
+                const toolTokenEstimate = Math.max(Math.round(toolContent.length / 2), 1)
                 void conversationStore
                     .saveMessage(
                         conversationId,
                         userId,
                         'tool',
-                        resultStr.slice(0, MAX_TOOL_MESSAGE_LENGTH),
-                        { tool_used: cnName }
+                        toolContent,
+                        { tool_used: cnName, token_count: toolTokenEstimate }
                     )
                     .catch((error: unknown) => {
                         logger.error('Agent', '工具结果持久化失败', { toolName, error })
@@ -346,24 +351,28 @@ async function runConversation(
             if (part.type === 'finish-step') {
                 const usage = part.usage
                 if (usage?.totalTokens) totalTokens += usage.totalTokens
-                logger.debug('Agent', '模型步骤完成', {
-                    totalTokens: usage?.totalTokens ?? 0,
-                    accumulatedTokens: totalTokens
-                })
                 continue
             }
             if (part.type === 'error') {
                 throw part.error instanceof Error ? part.error : new Error(String(part.error))
             }
         }
+
+        // 流消费完后取最终用量（部分提供商不在 finish-step 中返回用量）
+        const finalUsage = await result.usage
+        if (finalUsage?.totalTokens && !totalTokens) {
+            totalTokens = finalUsage.totalTokens
+        }
     } finally {
         await closeMcpClients(mcpRuntime.clients)
     }
 
     if (fullResponse) {
+        // 最终兜底：按内容长度估算 token
+        const asstTokens = totalTokens || Math.max(Math.round(fullResponse.length / 2), 1)
         await conversationStore.saveMessage(conversationId, userId, 'assistant', fullResponse, {
             finish_reason: 'stop',
-            token_count: totalTokens || undefined,
+            token_count: asstTokens,
             thinking: firstPhaseThinking || undefined,
             thinking_duration_ms: thinkingDurationMs || undefined
         })

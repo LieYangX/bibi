@@ -66,34 +66,35 @@
 
             <!-- 批量操作栏 -->
             <div v-if="groupedTransactions.length" class="batch-bar">
-                <button
-                    v-if="!batchMode"
-                    class="bb-btn bb-btn-text export-trigger"
-                    :disabled="exporting"
-                    @click="handleExport"
-                >
-                    <FileSpreadsheet :size="14" />{{ exporting ? '导出中…' : '导出 Excel' }}
-                </button>
-                <button
-                    v-if="!batchMode"
-                    class="bb-btn bb-btn-text batch-trigger"
-                    @click="enterBatchMode"
-                >
-                    <Trash2 :size="14" />批量删除
-                </button>
-                <template v-else>
-                    <label class="batch-check">
-                        <input
-                            type="checkbox"
-                            :checked="allSelected"
-                            :indeterminate="partialSelected"
-                            @change="toggleSelectAll"
-                        />
-                        <span class="check-visual"></span>
-                        <span>全选</span>
-                    </label>
-                    <span class="batch-count">{{ selectedIds.size }} 条选中</span>
-                    <div class="batch-actions">
+                <div class="batch-bar__left">
+                    <template v-if="batchMode">
+                        <label class="batch-check">
+                            <input
+                                type="checkbox"
+                                :checked="allSelected"
+                                :indeterminate="partialSelected"
+                                @change="toggleSelectAll"
+                            />
+                            <span class="check-visual"></span>
+                            <span>全选</span>
+                        </label>
+                        <span class="batch-count">{{ selectedIds.size }} 条选中</span>
+                    </template>
+                </div>
+                <div class="batch-bar__right">
+                    <button
+                        class="bb-btn bb-btn-text export-trigger"
+                        :disabled="exporting"
+                        @click="handleExport"
+                    >
+                        <FileSpreadsheet :size="14" />{{ exporting ? '导出中…' : '导出流水' }}
+                    </button>
+                    <template v-if="!batchMode">
+                        <button class="bb-btn bb-btn-text batch-trigger" @click="enterBatchMode">
+                            <Trash2 :size="14" />批量删除
+                        </button>
+                    </template>
+                    <template v-else>
                         <button class="bb-btn bb-btn-text batch-cancel" @click="exitBatchMode">
                             取消
                         </button>
@@ -104,8 +105,8 @@
                         >
                             <Trash2 :size="14" />删除选中
                         </button>
-                    </div>
-                </template>
+                    </template>
+                </div>
             </div>
 
             <div
@@ -167,16 +168,15 @@
                                         >· {{ item.sub_category_name }}</span
                                     >
                                 </div>
-                                <div
-                                    v-if="item.note || item.account_name || item.time"
-                                    class="txn-info__meta"
-                                >
-                                    <span v-if="item.time" class="txn-time">{{ item.time }}</span
-                                    >{{ item.account_name
-                                    }}<span v-if="item.note"> · {{ item.note }}</span>
+                                <div v-if="item.time || item.note" class="txn-info__meta">
+                                    <span v-if="item.time" class="txn-time">{{ item.time }}</span>
+                                    <span v-if="item.note">{{ item.note }}</span>
                                 </div>
                             </div>
                             <div class="txn-right">
+                                <span v-if="item.account_name" class="txn-account-tag">{{
+                                    item.account_name
+                                }}</span>
                                 <span
                                     class="txn-amount"
                                     :class="{
@@ -191,13 +191,18 @@
                                         :masked="pageMaskEnabled"
                                     />
                                 </span>
-                                <BbPopconfirm content="确定删除吗？" @ok="handleDelete(item.id)">
-                                    <template #reference>
-                                        <button class="bb-btn bb-btn-text txn-del">
-                                            <Trash2 :size="15" />
-                                        </button>
-                                    </template>
-                                </BbPopconfirm>
+                                <div class="txn-del-wrap">
+                                    <BbPopconfirm
+                                        content="确定删除吗？"
+                                        @ok="handleDelete(item.id)"
+                                    >
+                                        <template #reference>
+                                            <button class="bb-btn bb-btn-text txn-del">
+                                                <Trash2 :size="15" />
+                                            </button>
+                                        </template>
+                                    </BbPopconfirm>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -617,9 +622,21 @@ async function handleDelete(id: string): Promise<void> {
 .batch-bar {
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: space-between;
     margin-bottom: 10px;
     padding: 0 4px;
+    gap: 12px;
+}
+.batch-bar__left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.batch-bar__right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
 }
 
 .batch-check {
@@ -706,7 +723,6 @@ async function handleDelete(id: string): Promise<void> {
     gap: 4px;
     font-size: 12px;
     color: var(--bb-text-tertiary);
-    margin-left: auto;
 }
 
 .batch-trigger:hover {
@@ -943,14 +959,35 @@ async function handleDelete(id: string): Promise<void> {
 .txn-amount.is-income {
     color: var(--bb-success);
 }
-.txn-del {
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity var(--bb-duration-fast) var(--bb-ease);
+.txn-account-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--bb-bg-input);
+    color: var(--bb-text-secondary);
+    font-size: 11px;
+    font-weight: var(--bb-weight-medium);
+    white-space: nowrap;
 }
-.txn-item:hover .txn-del {
-    visibility: visible;
+.txn-del-wrap {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    width: 0;
+    opacity: 0;
+    transition:
+        width var(--bb-duration) var(--bb-ease),
+        opacity var(--bb-duration) var(--bb-ease);
+    flex-shrink: 0;
+}
+.txn-item:hover .txn-del-wrap {
+    width: 32px;
     opacity: 1;
+}
+.txn-del {
+    display: inline-flex;
+    flex-shrink: 0;
 }
 .txn-load-error {
     display: flex;

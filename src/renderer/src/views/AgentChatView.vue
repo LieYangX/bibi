@@ -80,7 +80,12 @@
                 <!-- 未配置 -->
                 <div v-else-if="!agentStore.hasConfig && !hasMessages" class="agent-hero">
                     <div class="empty-hero__logo">
-                        <img class="empty-hero__img" src="../assets/app-icon.png" alt="小笔" />
+                        <img
+                            class="empty-hero__img"
+                            src="../assets/app-icon.png"
+                            alt="小笔"
+                            draggable="false"
+                        />
                     </div>
                     <h1 class="empty-hero__greeting">小笔</h1>
                     <p class="agent-hero__desc">请先在设置中配置 DeepSeek API Key 并启用小笔功能</p>
@@ -89,7 +94,12 @@
                 <!-- 空对话 -- 居中英雄区 -->
                 <div v-else-if="!hasMessages" class="agent-empty-hero">
                     <div class="empty-hero__logo">
-                        <img class="empty-hero__img" src="../assets/app-icon.png" alt="小笔" />
+                        <img
+                            class="empty-hero__img"
+                            src="../assets/app-icon.png"
+                            alt="小笔"
+                            draggable="false"
+                        />
                     </div>
                     <h1 class="empty-hero__greeting">{{ greeting }}，{{ userName }}</h1>
                     <p class="empty-hero__subtitle">
@@ -231,7 +241,7 @@
                         ref="inputRef"
                         v-model="inputMessage"
                         class="agent-textarea"
-                        placeholder="给小笔发消息，比如：午饭 38 元，刷的招行卡…"
+                        placeholder="给小笔发消息....."
                         rows="1"
                         :disabled="!agentStore.hasConfig"
                         @keydown.enter.exact.prevent="send"
@@ -670,9 +680,6 @@
 
                             <!-- 对话面板 -->
                             <template v-if="activePanel === 'convs'">
-                                <div class="drawer-conv-hint">
-                                    双击标题编辑 · Enter / ✓ 确认 · Esc 取消
-                                </div>
                                 <div class="drawer-convs">
                                     <div
                                         v-for="conv in sortedConvs"
@@ -689,7 +696,6 @@
                                             <span
                                                 v-if="editingConvId !== conv.id"
                                                 class="drawer-conv-title"
-                                                @dblclick.stop="startEditConv(conv)"
                                                 ><span
                                                     v-if="conv.source === 'wechat'"
                                                     class="drawer-conv-wechat-tag"
@@ -698,7 +704,6 @@
                                             >
                                             <div v-else class="drawer-conv-edit-row">
                                                 <input
-                                                    ref="editInput"
                                                     v-model="editingTitle"
                                                     class="drawer-conv-title-input"
                                                     @keydown.enter.prevent="saveEditConv(conv.id)"
@@ -713,25 +718,46 @@
                                                     <Check :size="14" />
                                                 </button>
                                             </div>
-                                            <span class="drawer-conv-meta">
-                                                {{ conv.message_count }} 条{{
-                                                    conv.total_tokens > 0
-                                                        ? ` · ${conv.total_tokens} tokens`
-                                                        : ''
-                                                }}{{
-                                                    conv.model
-                                                        ? ` · ${conv.model === 'deepseek-v4-pro' ? '专家' : '快速'}`
-                                                        : ''
-                                                }}
-                                            </span>
+                                            <div class="drawer-conv-tags">
+                                                <span class="drawer-conv-tag"
+                                                    >{{ conv.message_count }}条</span
+                                                >
+                                                <span
+                                                    class="drawer-conv-tag drawer-conv-tag--tokens"
+                                                    >{{ conv.total_tokens }} tokens</span
+                                                >
+                                                <span
+                                                    v-if="conv.model"
+                                                    class="drawer-conv-tag"
+                                                    :class="
+                                                        conv.model === 'deepseek-v4-pro'
+                                                            ? 'drawer-conv-tag--pro'
+                                                            : 'drawer-conv-tag--flash'
+                                                    "
+                                                    >{{
+                                                        conv.model === 'deepseek-v4-pro'
+                                                            ? '专家'
+                                                            : '快速'
+                                                    }}</span
+                                                >
+                                            </div>
                                         </div>
-                                        <button
-                                            class="drawer-conv-del"
-                                            title="删除"
-                                            @click.stop="onDeleteConv(conv.id)"
-                                        >
-                                            <Trash2 :size="14" />
-                                        </button>
+                                        <div class="drawer-conv-actions">
+                                            <button
+                                                class="drawer-conv-edit"
+                                                title="修改标题"
+                                                @click.stop="startEditConv(conv)"
+                                            >
+                                                <Pencil :size="13" />
+                                            </button>
+                                            <button
+                                                class="drawer-conv-del"
+                                                title="删除"
+                                                @click.stop="onDeleteConv(conv.id)"
+                                            >
+                                                <Trash2 :size="14" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 <button
@@ -1909,6 +1935,9 @@ onMounted(async () => {
     viewMounted = true
     await agentStore.initialize()
     if (!viewMounted) return
+    // 恢复上次打开的会话
+    await agentStore.restoreLastConversation()
+    if (!viewMounted) return
     // 后台预检已启用的 MCP 服务，使顶栏工具数量在进入页面时即时准确
     void preInspectMcpServers()
     // 从当前配置同步模式
@@ -2127,6 +2156,12 @@ onUnmounted(() => {
     width: 60px;
     height: 60px;
     object-fit: contain;
+    transition: transform var(--bb-duration) var(--bb-ease-spring);
+    -webkit-user-drag: none;
+    user-select: none;
+}
+.empty-hero__logo:hover .empty-hero__img {
+    transform: rotate(-8deg) scale(1.05);
 }
 .empty-hero__greeting {
     font-size: 26px;
@@ -2466,7 +2501,6 @@ onUnmounted(() => {
     transition:
         border-color 0.15s var(--bb-ease),
         box-shadow 0.15s var(--bb-ease);
-    box-shadow: var(--bb-shadow-float);
 }
 .agent-input-card:focus-within {
     border-color: var(--bb-accent);
@@ -3221,15 +3255,44 @@ onUnmounted(() => {
     line-height: 1.4;
     vertical-align: middle;
 }
-.drawer-conv-meta {
-    font-size: 12px;
-    color: var(--bb-text-secondary);
+.drawer-conv-tags {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 3px;
 }
-.drawer-conv-hint {
-    font-size: 11px;
-    color: var(--bb-text-disabled);
-    margin-bottom: 10px;
-    padding: 0 2px;
+.drawer-conv-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 6px;
+    border-radius: 6px;
+    background: var(--bb-bg-input);
+    color: var(--bb-text-tertiary);
+    font-size: 10px;
+    font-weight: var(--bb-weight-medium);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.6;
+    flex-shrink: 0;
+}
+.drawer-conv-tag--tokens {
+    font-weight: var(--bb-weight-semibold);
+}
+.drawer-conv-tag--pro {
+    background: var(--bb-accent-lighter);
+    color: var(--bb-accent-text);
+    font-weight: var(--bb-weight-semibold);
+}
+.drawer-conv-tag--flash {
+    background: var(--bb-info-light);
+    color: var(--bb-info);
+    font-weight: var(--bb-weight-semibold);
+}
+.drawer-conv-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
 }
 .drawer-conv-title-input {
     flex: 1;
@@ -3265,6 +3328,7 @@ onUnmounted(() => {
 .drawer-conv-title-ok:hover {
     background: var(--bb-accent-hover);
 }
+.drawer-conv-edit,
 .drawer-conv-del {
     display: flex;
     align-items: center;
@@ -3274,14 +3338,19 @@ onUnmounted(() => {
     border: none;
     border-radius: 6px;
     background: transparent;
-    color: var(--bb-text-disabled);
+    color: var(--bb-text-tertiary);
     cursor: pointer;
     flex-shrink: 0;
     opacity: 0;
     transition: all 0.15s var(--bb-ease);
 }
+.drawer-card:hover .drawer-conv-edit,
 .drawer-card:hover .drawer-conv-del {
     opacity: 1;
+}
+.drawer-conv-edit:hover {
+    color: var(--bb-accent-text);
+    background: var(--bb-accent-light);
 }
 .drawer-conv-del:hover {
     color: var(--bb-danger);

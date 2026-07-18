@@ -13,6 +13,68 @@
             </button>
         </div>
 
+        <!-- 今日天气 -->
+        <div
+            class="ctx-weather"
+            :class="{ 'ctx-weather--stale': weather?.isStale }"
+            aria-label="当前天气"
+        >
+            <template v-if="weather">
+                <div class="ctx-weather__main">
+                    <span class="ctx-weather__icon" :class="weatherToneClass">
+                        <component :is="weatherIcon" :size="20" aria-hidden="true" />
+                    </span>
+                    <div class="ctx-weather__info">
+                        <div class="ctx-weather__location">
+                            <MapPin :size="10" aria-hidden="true" />
+                            <span>{{ weatherLocation }}</span>
+                        </div>
+                        <div class="ctx-weather__condition">
+                            <strong>{{ weather.temperature }}°</strong>
+                            <span>{{ weather.weather }}</span>
+                        </div>
+                    </div>
+                    <button
+                        class="ctx-weather__refresh"
+                        title="刷新天气"
+                        :disabled="weatherLoading"
+                        @click="loadWeather(true)"
+                    >
+                        <RefreshCw :size="13" :class="{ spinning: weatherLoading }" />
+                    </button>
+                </div>
+                <div class="ctx-weather__meta">
+                    <span>
+                        <Droplets :size="11" aria-hidden="true" />
+                        {{ weather.humidity }}%
+                    </span>
+                    <span>
+                        <Wind :size="11" aria-hidden="true" />
+                        {{ weather.windDirection }} {{ weather.windPower }}
+                    </span>
+                    <span v-if="weather.isStale" class="ctx-weather__cache">缓存</span>
+                </div>
+                <div v-if="weather.alerts.length" class="ctx-weather__alert">
+                    <span>{{ weather.alerts[0].title }}</span>
+                </div>
+            </template>
+            <template v-else>
+                <div class="ctx-weather__placeholder">
+                    <CloudOff v-if="weatherError" :size="16" aria-hidden="true" />
+                    <CloudSun v-else :size="16" aria-hidden="true" />
+                    <span>{{ weatherError ? '天气暂不可用' : '获取天气…' }}</span>
+                </div>
+                <button
+                    class="ctx-weather__refresh"
+                    title="重新获取天气"
+                    :disabled="weatherLoading"
+                    @click="loadWeather(true)"
+                >
+                    <RefreshCw :size="13" :class="{ spinning: weatherLoading }" />
+                </button>
+            </template>
+        </div>
+
         <!-- 本月收支速览 -->
         <div class="ctx-stat-grid">
             <div class="ctx-stat-card">
@@ -56,10 +118,10 @@
 
         <!-- 最近流水 -->
         <section class="ctx-section">
-            <router-link class="ctx-section__head ctx-section__head--link" to="/detail">
-                最近流水
-                <span class="ctx-section__more">查看全部 →</span>
-            </router-link>
+            <div class="ctx-section__head ctx-section__head--row">
+                <span>最近流水</span>
+                <router-link class="ctx-section__more" to="/detail">查看全部 →</router-link>
+            </div>
             <div v-if="recentTransactions.length" class="ctx-tx-list">
                 <div v-for="tx in recentTransactions" :key="tx.id" class="ctx-tx-row">
                     <span class="ctx-tx-dot" :style="{ background: txDotColor(tx) }" />
@@ -92,8 +154,26 @@
  * @author xiangwei
  */
 
-import { computed, onMounted, onUnmounted } from 'vue'
-import { Eye, EyeOff, TrendingDown, Lightbulb, ChevronRight } from '@lucide/vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import {
+    Eye,
+    EyeOff,
+    TrendingDown,
+    Lightbulb,
+    ChevronRight,
+    MapPin,
+    RefreshCw,
+    Sun,
+    Cloud,
+    CloudSun,
+    CloudRain,
+    CloudLightning,
+    CloudFog,
+    Snowflake,
+    CloudOff,
+    Droplets,
+    Wind
+} from '@lucide/vue'
 import { storeToRefs } from 'pinia'
 import { BbAmount } from './common'
 import { BbProgress } from './ui'
@@ -103,8 +183,9 @@ import { useBudgetStore } from '../stores/budget.store'
 import { useImportStore } from '../stores/import.store'
 import { useSettingStore } from '../stores/setting.store'
 import { onRefreshMany } from '../composables/useRefreshBus'
+import { desktopApi } from '../api/desktop-api'
 import { formatLocalDate } from '../utils/date'
-import type { BudgetWithProgress, Transaction } from '@shared/types'
+import type { BudgetWithProgress, Transaction, WeatherSnapshot } from '@shared/types'
 
 const statisticsStore = useStatisticsStore()
 const transactionStore = useTransactionStore()
@@ -122,6 +203,50 @@ const budgetList = computed(() =>
         .sort((a, b) => b.progress_pct - a.progress_pct)
         .slice(0, 3)
 )
+
+// ── 天气 ──
+const weather = ref<WeatherSnapshot | null>(null)
+const weatherLoading = ref(false)
+const weatherError = ref('')
+
+const weatherLocation = computed(() => {
+    const parts = [weather.value?.city, weather.value?.district].filter(
+        (part, index, values): part is string => !!part && values.indexOf(part) === index
+    )
+    return parts.join(' · ') || weather.value?.province || '当前位置'
+})
+
+const weatherIcon = computed(() => {
+    const condition = weather.value?.weather ?? ''
+    if (/雷/.test(condition)) return CloudLightning
+    if (/雪|冰雹/.test(condition)) return Snowflake
+    if (/雨/.test(condition)) return CloudRain
+    if (/雾|霾|沙|尘/.test(condition)) return CloudFog
+    if (/多云/.test(condition)) return CloudSun
+    if (/阴|云/.test(condition)) return Cloud
+    return Sun
+})
+
+const weatherToneClass = computed(() => {
+    const condition = weather.value?.weather ?? ''
+    if (/雷|雨/.test(condition)) return 'ctx-weather__icon--rain'
+    if (/雪|冰雹/.test(condition)) return 'ctx-weather__icon--snow'
+    if (/雾|霾|沙|尘/.test(condition)) return 'ctx-weather__icon--muted'
+    return 'ctx-weather__icon--sunny'
+})
+
+async function loadWeather(forceRefresh: boolean = false): Promise<void> {
+    if (weatherLoading.value) return
+    weatherLoading.value = true
+    weatherError.value = ''
+    const result = await desktopApi.weather.getCurrent(forceRefresh)
+    weatherLoading.value = false
+    if (!result.ok) {
+        weatherError.value = result.error
+        return
+    }
+    weather.value = result.data
+}
 
 const currentMonthLabel = computed(() => {
     const now = new Date()
@@ -197,7 +322,8 @@ async function loadData(): Promise<void> {
             sort_field: 'date',
             sort_order: 'desc',
             page_size: 3
-        })
+        }),
+        loadWeather()
     ])
 }
 
@@ -276,6 +402,14 @@ onUnmounted(() => offRefresh?.())
     border: 1px solid var(--bb-border);
     border-radius: var(--bb-radius-md);
     background: var(--bb-bg-card);
+    cursor: default;
+    transition:
+        transform var(--bb-duration-fast) var(--bb-ease),
+        box-shadow var(--bb-duration-fast) var(--bb-ease);
+}
+.ctx-stat-card:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--bb-shadow-md);
 }
 .ctx-stat-label {
     font-size: 11px;
@@ -323,21 +457,21 @@ onUnmounted(() => offRefresh?.())
     font-weight: var(--bb-weight-semibold);
     letter-spacing: 0.5px;
 }
-.ctx-section__head--link {
+.ctx-section__head--row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    text-decoration: none;
-    color: var(--bb-text-tertiary);
-    transition: color var(--bb-duration-fast) var(--bb-ease);
-}
-.ctx-section__head--link:hover {
-    color: var(--bb-accent-text);
 }
 .ctx-section__more {
     font-size: 11px;
     font-weight: var(--bb-weight-medium);
     color: var(--bb-text-tertiary);
+    text-decoration: none;
+    transition: color var(--bb-duration-fast) var(--bb-ease);
+    cursor: pointer;
+}
+.ctx-section__more:hover {
+    color: var(--bb-accent-text);
 }
 .ctx-empty-inline {
     padding: 8px 2px;
@@ -389,6 +523,7 @@ onUnmounted(() => offRefresh?.())
     gap: 8px;
     padding: 7px 0;
     border-bottom: 1px solid var(--bb-border-light);
+    cursor: default;
 }
 .ctx-tx-row:last-child {
     border-bottom: none;
@@ -440,5 +575,163 @@ onUnmounted(() => offRefresh?.())
 }
 .ctx-alert__arrow {
     margin-left: auto;
+}
+
+/* ===== 天气卡片 ===== */
+.ctx-weather {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px;
+    border: 1px solid var(--bb-border);
+    border-left: 3px solid var(--bb-accent);
+    border-radius: var(--bb-radius-md);
+    background: var(--bb-bg-card);
+    cursor: default;
+    transition:
+        transform var(--bb-duration-fast) var(--bb-ease),
+        box-shadow var(--bb-duration-fast) var(--bb-ease);
+}
+.ctx-weather:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--bb-shadow-md);
+}
+.ctx-weather--stale {
+    border-left-color: var(--bb-warning);
+}
+.ctx-weather__main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.ctx-weather__icon {
+    display: inline-flex;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+.ctx-weather__icon--sunny {
+    background: var(--bb-accent-light);
+    color: var(--bb-accent-text);
+}
+.ctx-weather__icon--rain {
+    background: var(--bb-info-light);
+    color: var(--bb-info);
+}
+.ctx-weather__icon--snow {
+    background: rgba(14, 165, 233, 0.1);
+    color: #0284c7;
+}
+.ctx-weather__icon--muted {
+    background: var(--bb-bg-input);
+    color: var(--bb-text-secondary);
+}
+.ctx-weather__info {
+    flex: 1;
+    min-width: 0;
+}
+.ctx-weather__location {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--bb-text-tertiary);
+    font-size: 10px;
+}
+.ctx-weather__location span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ctx-weather__condition {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin-top: 1px;
+}
+.ctx-weather__condition strong {
+    color: var(--bb-text-primary);
+    font-family: var(--bb-font-mono);
+    font-size: 20px;
+    font-weight: var(--bb-weight-bold);
+    line-height: 1.2;
+}
+.ctx-weather__condition span {
+    color: var(--bb-text-primary);
+    font-size: 12px;
+    font-weight: var(--bb-weight-semibold);
+}
+.ctx-weather__refresh {
+    display: inline-flex;
+    width: 26px;
+    height: 26px;
+    flex: 0 0 26px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--bb-text-tertiary);
+    cursor: pointer;
+    transition: all var(--bb-duration-fast) var(--bb-ease);
+}
+.ctx-weather__refresh:hover:not(:disabled) {
+    background: var(--bb-bg-hover);
+    color: var(--bb-accent-text);
+}
+.ctx-weather__refresh:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+.ctx-weather__meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--bb-text-tertiary);
+    font-size: 10px;
+}
+.ctx-weather__meta svg {
+    vertical-align: -2px;
+    margin-right: 2px;
+}
+.ctx-weather__cache {
+    margin-left: auto;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: var(--bb-warning-light);
+    color: var(--bb-warning);
+    font-size: 9px;
+    font-weight: var(--bb-weight-semibold);
+}
+.ctx-weather__alert {
+    padding: 4px 8px;
+    border-radius: var(--bb-radius-sm);
+    background: rgba(245, 158, 11, 0.08);
+    color: var(--bb-warning);
+    font-size: 10px;
+    font-weight: var(--bb-weight-medium);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ctx-weather__placeholder {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--bb-text-tertiary);
+    font-size: 11px;
+}
+
+@keyframes ctx-weather-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+.ctx-weather__refresh.spinning,
+.ctx-weather__refresh .spinning {
+    animation: ctx-weather-spin 0.9s linear infinite;
 }
 </style>

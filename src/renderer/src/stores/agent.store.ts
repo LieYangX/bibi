@@ -77,6 +77,8 @@ function formatStreamError(event: StreamEvent): string {
     return event.traceId ? `${errorMessage}（排查编号：${event.traceId}）` : errorMessage
 }
 
+const LAST_CONVERSATION_KEY = 'last_conversation_id'
+
 export const useAgentStore = defineStore('agent', () => {
     const config = ref<AgentConfig>({
         apiKey: '',
@@ -242,6 +244,7 @@ export const useAgentStore = defineStore('agent', () => {
             case 'done':
                 finishStreamProcessing()
                 currentConversationId.value = event.conversationId || currentConversationId.value
+                void persistConversationId()
                 void refreshConversationList()
                 scheduleQueuedMessageDispatch()
                 break
@@ -390,6 +393,22 @@ export const useAgentStore = defineStore('agent', () => {
         if (result.ok && isUserRequestCurrent(generation)) {
             config.value = result.data
         }
+    }
+
+    /**
+     * 从 settings 恢复上次打开的会话
+     *
+     * @returns 是否恢复成功
+     * @author xiangwei
+     */
+    async function restoreLastConversation(): Promise<boolean> {
+        const result = await desktopApi.setting.get<string>(LAST_CONVERSATION_KEY)
+        if (!result.ok || !result.data) return false
+        const convId = result.data
+        // 检查会话是否仍然存在
+        const convExists = conversations.value.some((c) => c.id === convId)
+        if (!convExists) return false
+        return await loadConversation(convId)
     }
 
     /**
@@ -627,6 +646,15 @@ export const useAgentStore = defineStore('agent', () => {
         }
     }
 
+    /** 持久化当前会话 ID，供下次打开时恢复 */
+    async function persistConversationId(): Promise<void> {
+        try {
+            await desktopApi.setting.set(LAST_CONVERSATION_KEY, currentConversationId.value)
+        } catch {
+            // 测试环境或初始化阶段 desktopApi 不可用，静默忽略
+        }
+    }
+
     function newConversation(): void {
         if (isProcessing.value) return
         currentConversationId.value = null
@@ -638,6 +666,7 @@ export const useAgentStore = defineStore('agent', () => {
         currentThinking.value = ''
         nextMessageCursor.value = null
         messageError.value = null
+        void persistConversationId()
     }
 
     /**
@@ -685,6 +714,7 @@ export const useAgentStore = defineStore('agent', () => {
         currentConversationSource.value = result.data.source
         messages.value = mapConversationMessages(result.data)
         nextMessageCursor.value = result.data.next_cursor
+        void persistConversationId()
         return true
     }
 
@@ -1020,6 +1050,8 @@ export const useAgentStore = defineStore('agent', () => {
         deleteConversation,
         renameConversation,
         saveConfig,
+        restoreLastConversation,
+        persistConversationId,
         refreshLocalTools,
         refreshSkills,
         toggleSkill,

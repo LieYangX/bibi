@@ -436,9 +436,27 @@ const cards = computed(() => {
     const m = stats.value
     if (!m) {
         return [
-            { label: '收入', valueCents: 0, color: 'var(--bb-success)', icon: cardIcons.income },
-            { label: '支出', valueCents: 0, color: 'var(--bb-danger)', icon: cardIcons.expense },
-            { label: '结余', valueCents: 0, color: 'var(--bb-success)', icon: cardIcons.balance },
+            {
+                label: '收入',
+                valueCents: 0,
+                color: 'var(--bb-success)',
+                icon: cardIcons.income,
+                useLocale: true
+            },
+            {
+                label: '支出',
+                valueCents: 0,
+                color: 'var(--bb-danger)',
+                icon: cardIcons.expense,
+                useLocale: true
+            },
+            {
+                label: '结余',
+                valueCents: 0,
+                color: 'var(--bb-success)',
+                icon: cardIcons.balance,
+                useLocale: true
+            },
             {
                 label: '总余额',
                 valueCents: 0,
@@ -454,13 +472,15 @@ const cards = computed(() => {
             label: '收入',
             valueCents: m.total_income_cents || 0,
             color: 'var(--bb-success)',
-            icon: cardIcons.income
+            icon: cardIcons.income,
+            useLocale: true
         },
         {
             label: '支出',
             valueCents: m.total_expense_cents || 0,
             color: 'var(--bb-danger)',
-            icon: cardIcons.expense
+            icon: cardIcons.expense,
+            useLocale: true
         },
         {
             label: '结余',
@@ -468,7 +488,8 @@ const cards = computed(() => {
             sign: bal >= 0 ? '+' : '-',
             color: bal >= 0 ? 'var(--bb-success)' : 'var(--bb-danger)',
             icon: cardIcons.balance,
-            sub: bal >= 0 ? '收大于支' : '超支'
+            sub: bal >= 0 ? '收大于支' : '超支',
+            useLocale: true
         },
         {
             label: '总余额',

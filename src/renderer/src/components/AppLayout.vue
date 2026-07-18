@@ -7,8 +7,10 @@
                 class="rail-logo"
                 title="笔笔"
                 aria-label="笔笔"
+                draggable="false"
+                @dragstart.prevent
             >
-                <img src="../assets/app-icon.png" alt="笔笔" />
+                <img src="../assets/app-icon.png" alt="笔笔" draggable="false" />
             </router-link>
 
             <nav class="rail-nav-group">
@@ -223,6 +225,8 @@ watch(
     height: 100%;
     object-fit: cover;
     border-radius: var(--bb-radius-md);
+    -webkit-user-drag: none;
+    user-select: none;
 }
 
 .rail-nav-group {
@@ -354,15 +358,24 @@ watch(
     transition:
         transform var(--bb-duration) var(--bb-ease-spring),
         box-shadow var(--bb-duration) var(--bb-ease);
-    box-shadow: var(--bb-shadow-float);
+    /* 双层阴影：近层较实 + 远层扩散，营造悬浮层次感 */
+    /* 颜色值复用 --bb-accent 使其在暗色模式下自动适配 */
+    box-shadow:
+        0 4px 14px color-mix(in srgb, var(--bb-accent) 20%, transparent),
+        var(--bb-shadow-float);
 }
 .fab:hover {
-    transform: translateY(-2px) scale(1.06);
-    box-shadow: var(--bb-shadow-float);
+    transform: translateY(-3px) scale(1.06);
+    /* 悬停时阴影更深更扩散 */
+    box-shadow:
+        0 6px 20px color-mix(in srgb, var(--bb-accent) 24%, transparent),
+        0 14px 50px color-mix(in srgb, var(--bb-accent) 10%, transparent);
 }
 .fab:active {
     transform: translateY(0) scale(0.94);
-    box-shadow: var(--bb-shadow-sm);
+    box-shadow:
+        0 2px 6px color-mix(in srgb, var(--bb-accent) 16%, transparent),
+        0 5px 16px color-mix(in srgb, var(--bb-accent) 6%, transparent);
 }
 .back-to-bot {
     display: flex;

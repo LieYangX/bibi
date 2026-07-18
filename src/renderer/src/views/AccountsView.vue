@@ -55,7 +55,7 @@
                     </BbPopconfirm>
                 </div>
                 <div class="acc-balance" :class="{ negative: acc.balance_cents < 0 }">
-                    <BbAmount :value="acc.balance_cents" />
+                    <BbAmount :value="acc.balance_cents" use-locale />
                 </div>
                 <div v-if="acc.type === 'credit'" class="acc-actions">
                     <button class="bb-btn bb-btn-sm bb-btn-primary" @click.stop="openRepay(acc)">

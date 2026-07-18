@@ -163,6 +163,7 @@ export async function listConversations(
         )
         if (cursorCondition) conditions.push(cursorCondition)
     }
+    // 先查会话列表
     const rows = await db
         .select({
             id: agentConversations.id,
@@ -177,17 +178,27 @@ export async function listConversations(
                 WHERE last_message.conversation_id = ${agentConversations.id}
                 ORDER BY last_message.created_at DESC, last_message.id DESC
                 LIMIT 1
-            )`,
-            total_tokens: sql<number>`COALESCE((
-                SELECT SUM(COALESCE(token_count, 0))
-                FROM agent_messages AS token_message
-                WHERE token_message.conversation_id = ${agentConversations.id}
-            ), 0)`
+            )`
         })
         .from(agentConversations)
         .where(and(...conditions))
         .orderBy(desc(agentConversations.updated_at), desc(agentConversations.id))
         .limit(CONVERSATION_LIST_LIMIT + 1)
+
+    // 单独查每个会话的 token 合计（Drizzle sql 标签在关联子查询中存在问题，改用独立查询）
+    const conversationIds = rows.map((r) => r.id)
+    let tokenMap = new Map<string, number>()
+    if (conversationIds.length > 0) {
+        const tokenRows = await db
+            .select({
+                conversation_id: agentMessages.conversation_id,
+                total: sql<number>`COALESCE(SUM(COALESCE(${agentMessages.token_count}, 0)), 0)`
+            })
+            .from(agentMessages)
+            .where(inArray(agentMessages.conversation_id, conversationIds))
+            .groupBy(agentMessages.conversation_id)
+        tokenMap = new Map(tokenRows.map((r) => [r.conversation_id, Number(r.total)]))
+    }
 
     const hasMore = rows.length > CONVERSATION_LIST_LIMIT
     const pageRows = rows.slice(0, CONVERSATION_LIST_LIMIT)
@@ -196,7 +207,7 @@ export async function listConversations(
         title: row.title,
         message_count: row.message_count,
         last_message: row.last_message?.slice(0, 100) ?? null,
-        total_tokens: Number(row.total_tokens ?? 0),
+        total_tokens: tokenMap.get(row.id) ?? 0,
         model: row.model,
         source: row.source,
         updated_at: row.updated_at

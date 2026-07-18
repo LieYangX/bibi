@@ -160,21 +160,14 @@ const formattedTime = computed(() => {
 })
 
 /** 复制消息内容到剪贴板 */
-function copyMessage(): void {
+async function copyMessage(): Promise<void> {
+    const text = props.message.content
+    if (!text) {
+        Message.warning('没有可复制的内容')
+        return
+    }
     try {
-        if (window.electronAPI?.clipboard?.writeText) {
-            window.electronAPI.clipboard.writeText(props.message.content)
-        } else {
-            // Fallback for non-Electron environments
-            const textarea = document.createElement('textarea')
-            textarea.value = props.message.content
-            textarea.style.position = 'fixed'
-            textarea.style.opacity = '0'
-            document.body.appendChild(textarea)
-            textarea.select()
-            document.execCommand('copy')
-            document.body.removeChild(textarea)
-        }
+        await navigator.clipboard.writeText(text)
         Message.success('已复制')
     } catch {
         Message.warning('复制失败')

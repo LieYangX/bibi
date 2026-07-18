@@ -75,6 +75,11 @@ export function configureWebSecurity(window: BrowserWindow): void {
     webContents.on('will-attach-webview', (event) => event.preventDefault())
     webContents.session.setPermissionRequestHandler(
         (requestingWebContents, permission, callback, details) => {
+            // 剪贴板写入权限由用户手势触发，自动放行
+            if (permission === 'clipboard-sanitized-write') {
+                callback(true)
+                return
+            }
             const mediaTypes = 'mediaTypes' in details ? details.mediaTypes : undefined
             const allowAudio =
                 permission === 'media' &&
@@ -91,6 +96,7 @@ export function configureWebSecurity(window: BrowserWindow): void {
     )
     webContents.session.setPermissionCheckHandler(
         (requestingWebContents, permission, requestingOrigin, details) => {
+            if (permission === 'clipboard-sanitized-write') return true
             const requestingUrl = details.requestingUrl ?? requestingOrigin
             return (
                 permission === 'media' &&

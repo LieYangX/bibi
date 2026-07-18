@@ -356,14 +356,19 @@ export const IPC_SCHEMAS = {
             ]),
             z.tuple([z.literal('stt_enabled'), z.union([z.boolean(), z.undefined()])]),
             z.tuple([z.literal('stt_model'), z.union([sttModelIdSchema, z.undefined()])]),
-            z.tuple([z.literal('theme'), z.union([themeModeSchema, z.undefined()])])
+            z.tuple([z.literal('theme'), z.union([themeModeSchema, z.undefined()])]),
+            z.tuple([
+                z.literal('last_conversation_id'),
+                z.union([z.string(), z.null(), z.undefined()])
+            ])
         ]),
         set: z.union([
             z.tuple([z.literal('amount_mask'), z.boolean()]),
             z.tuple([z.literal('agent_context_panel_visible'), z.boolean()]),
             z.tuple([z.literal('stt_enabled'), z.boolean()]),
             z.tuple([z.literal('stt_model'), sttModelIdSchema]),
-            z.tuple([z.literal('theme'), themeModeSchema])
+            z.tuple([z.literal('theme'), themeModeSchema]),
+            z.tuple([z.literal('last_conversation_id'), z.union([z.string(), z.null()])])
         ])
     },
     app: {
