@@ -975,7 +975,9 @@
                     >{{ agentStore.pendingConfirmation?.detail.filePath }}</pre>
             </div>
             <template #footer>
-                <button class="bb-btn" @click="agentStore.confirmTool(false)">拒绝</button>
+                <button class="bb-btn" @click="agentStore.confirmTool(false)">
+                    {{ confirmCountdown > 0 ? `拒绝（${confirmCountdown}秒）` : '拒绝' }}
+                </button>
                 <button class="bb-btn bb-btn-primary" @click="agentStore.confirmTool(true)">
                     确认执行
                 </button>
@@ -1960,6 +1962,39 @@ async function loadOlderAndPreserve(): Promise<void> {
     }
     loadingOlderMessages = false
 }
+
+/** 确认倒计时（秒），30 秒后自动拒绝 */
+const CONFIRM_TIMEOUT_SEC = 30
+const confirmCountdown = ref(CONFIRM_TIMEOUT_SEC)
+let confirmTimer: ReturnType<typeof setInterval> | null = null
+
+/** 监听确认弹窗显示/隐藏，控制倒计时 */
+watch(
+    () => !!agentStore.pendingConfirmation,
+    (show) => {
+        if (confirmTimer) {
+            clearInterval(confirmTimer)
+            confirmTimer = null
+        }
+        if (show) {
+            confirmCountdown.value = CONFIRM_TIMEOUT_SEC
+            confirmTimer = setInterval(() => {
+                confirmCountdown.value--
+                if (confirmCountdown.value <= 0) {
+                    if (confirmTimer) clearInterval(confirmTimer)
+                    confirmTimer = null
+                    if (agentStore.pendingConfirmation) {
+                        agentStore.confirmTool(false)
+                    }
+                }
+            }, 1000)
+        }
+    }
+)
+
+onUnmounted(() => {
+    if (confirmTimer) clearInterval(confirmTimer)
+})
 
 /** 关闭确认弹窗视为拒绝 */
 function onCloseConfirm(): void {

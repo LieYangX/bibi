@@ -46,7 +46,8 @@ let toolCatalogCache: string | null = null
 export function buildSystemPrompt(
     skillDefs: SkillDefinition[],
     groupedTools: ToolGroupInfo[],
-    mcpToolInfos: McpToolRuntimeInfo[]
+    mcpToolInfos: McpToolRuntimeInfo[],
+    maxSteps: number = 20
 ): string {
     const skillCatalog = buildSkillCatalog(skillDefs)
     const toolCatalog = buildToolCatalog(groupedTools)
@@ -151,7 +152,7 @@ ${mcpCatalog}
   2. 如果是临时失败，用相同参数重试一次。
   3. 如果是参数错误，修正后重试一次。
   4. 如果仍然失败，停止调用该工具，如实告诉用户失败原因，禁止编造结果。
-- 单次对话最多进行 8 次工具调用，超过则停止并向用户说明。
+- 单次对话最多进行 ${maxSteps} 次工具调用，超过则停止并向用户说明。
 </guardrails>
 
 <recap>

@@ -29,6 +29,7 @@ import type {
 } from '@shared/types'
 import {
     AGENT_CHAT_CANCELLED_MESSAGE,
+    DEFAULT_MAX_AGENT_STEPS,
     DEFAULT_MEMORY_DISTILLATION_THRESHOLD
 } from '../../../shared/types/agent'
 import {
@@ -91,7 +92,8 @@ export const useAgentStore = defineStore('agent', () => {
         temperature: 0.7,
         maxTokens: 4096,
         memoryDistillationThreshold: DEFAULT_MEMORY_DISTILLATION_THRESHOLD,
-        enabled: false
+        enabled: false,
+        maxSteps: DEFAULT_MAX_AGENT_STEPS
     })
 
     const conversations = ref<ConversationListItem[]>([])

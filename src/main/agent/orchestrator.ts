@@ -71,7 +71,6 @@ const TOOL_CN: Record<string, string> = {
     editFile: '编辑文件'
 }
 
-const MAX_AGENT_STEPS = 10
 const MAX_TOOL_MESSAGE_LENGTH = 1_000
 const CONVERSATION_TITLE_MAX_LENGTH = 20
 
@@ -311,7 +310,7 @@ async function runConversation(
 
     // 桌面端：追加任务规划指令，让 AI 先创建任务清单再执行
     if (source === 'desktop' && needsToolCall) {
-        effectiveUserMessage += `\n\n[执行要求] 本请求需要调用工具来完成。在调用业务工具之前，先调用 createAgentTasks 创建任务清单让用户看到执行步骤；每完成一步立即调用 updateAgentTaskStatus 更新状态。\n[执行要求]`
+        effectiveUserMessage += `\n\n[执行要求（强制、不允许忽略）] 本请求需要调用工具来完成。在调用业务工具之前，先调用 createAgentTasks 创建任务清单让用户看到执行步骤；每完成一步立即调用 updateAgentTaskStatus 更新状态。\n[执行要求（强制、不允许忽略）]`
     }
     const messages = buildMessages({
         history,
@@ -323,7 +322,8 @@ async function runConversation(
     const systemPrompt = buildSystemPrompt(
         enabledSkills,
         toolRegistry.getGroupedToolInfos(enabledSkillNames),
-        mcpRuntime.toolInfos
+        mcpRuntime.toolInfos,
+        config.maxSteps
     )
     const localTools = toolRegistry.createTools({ userId, conversationId, emit }, enabledSkillNames)
     const allTools: Record<string, Tool> = {
@@ -374,7 +374,7 @@ async function runConversation(
             tools: allTools,
             temperature: config.temperature,
             maxOutputTokens: config.maxTokens,
-            stopWhen: isStepCount(MAX_AGENT_STEPS),
+            stopWhen: isStepCount(config.maxSteps),
             abortSignal,
             providerOptions: {
                 deepseek: deepThink

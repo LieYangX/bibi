@@ -70,6 +70,15 @@ export const MIN_MEMORY_DISTILLATION_THRESHOLD = 1
 /** 最大记忆提炼阈值 */
 export const MAX_MEMORY_DISTILLATION_THRESHOLD = 50
 
+/** 默认最大工具调用步数 */
+export const DEFAULT_MAX_AGENT_STEPS = 20
+
+/** 最小最大工具调用步数 */
+export const MIN_MAX_AGENT_STEPS = 1
+
+/** 最大最大工具调用步数 */
+export const MAX_MAX_AGENT_STEPS = 50
+
 export interface AgentConfig {
     apiKey: string
     model: string
@@ -77,6 +86,7 @@ export interface AgentConfig {
     maxTokens: number
     memoryDistillationThreshold: number
     enabled: boolean
+    maxSteps: number
 }
 
 /** 允许下载和加载的本地语音模型 ID */

@@ -5,7 +5,9 @@
 
 import { z } from 'zod'
 import {
+    MAX_MAX_AGENT_STEPS,
     MAX_MEMORY_DISTILLATION_THRESHOLD,
+    MIN_MAX_AGENT_STEPS,
     MIN_MEMORY_DISTILLATION_THRESHOLD,
     STT_MODEL_IDS
 } from '../types/agent'
@@ -475,7 +477,13 @@ export const IPC_SCHEMAS = {
                         .min(MIN_MEMORY_DISTILLATION_THRESHOLD)
                         .max(MAX_MEMORY_DISTILLATION_THRESHOLD)
                         .optional(),
-                    enabled: z.boolean().optional()
+                    enabled: z.boolean().optional(),
+                    maxSteps: z
+                        .number()
+                        .int()
+                        .min(MIN_MAX_AGENT_STEPS)
+                        .max(MAX_MAX_AGENT_STEPS)
+                        .optional()
                 })
                 .strict()
         ]),

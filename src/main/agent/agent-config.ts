@@ -6,8 +6,11 @@
  */
 
 import {
+    DEFAULT_MAX_AGENT_STEPS,
     DEFAULT_MEMORY_DISTILLATION_THRESHOLD,
+    MAX_MAX_AGENT_STEPS,
     MAX_MEMORY_DISTILLATION_THRESHOLD,
+    MIN_MAX_AGENT_STEPS,
     MIN_MEMORY_DISTILLATION_THRESHOLD,
     type AgentConfig
 } from '@shared/types'
@@ -23,14 +26,30 @@ export async function loadAgentConfig(): Promise<AgentConfig> {
     const memoryDistillationThreshold = normalizeMemoryDistillationThreshold(
         await getSetting<number>('agent_memory_distillation_threshold')
     )
+    const maxSteps = normalizeMaxSteps(await getSetting<number>('agent_max_steps'))
     return {
         apiKey: (await getSetting<string>('agent_api_key')) ?? '',
         model: (await getSetting<string>('agent_model')) ?? 'deepseek-v4-flash',
         temperature: (await getSetting<number>('agent_temperature')) ?? 0.7,
         maxTokens: (await getSetting<number>('agent_max_tokens')) ?? 4096,
         memoryDistillationThreshold,
-        enabled: (await getSetting<boolean>('agent_enabled')) ?? false
+        enabled: (await getSetting<boolean>('agent_enabled')) ?? false,
+        maxSteps
     }
+}
+
+/**
+ * 将持久化最大步数收敛到公开配置允许的范围。
+ *
+ * @param value 持久化值
+ * @returns 可用最大步数
+ * @author xiangwei
+ */
+function normalizeMaxSteps(value: number | undefined): number {
+    if (typeof value !== 'number' || !Number.isInteger(value)) {
+        return DEFAULT_MAX_AGENT_STEPS
+    }
+    return Math.min(MAX_MAX_AGENT_STEPS, Math.max(MIN_MAX_AGENT_STEPS, value))
 }
 
 /**
@@ -67,4 +86,5 @@ export async function updateAgentConfig(config: Partial<AgentConfig>): Promise<v
         await setSetting('agent_memory_distillation_threshold', config.memoryDistillationThreshold)
     }
     if (config.enabled !== undefined) await setSetting('agent_enabled', config.enabled)
+    if (config.maxSteps !== undefined) await setSetting('agent_max_steps', config.maxSteps)
 }

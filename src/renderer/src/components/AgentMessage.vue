@@ -101,10 +101,7 @@
             <div v-if="message.content" class="bb-msg__content bb-msg__content--ai">
                 <template v-for="(seg, segIndex) in parsedSegments" :key="segIndex">
                     <MarkdownContent v-if="seg.type === 'text'" :content="seg.text || ''" />
-                    <div
-                        v-else-if="seg.entry"
-                        class="bb-msg__structured"
-                    >
+                    <div v-else-if="seg.entry" class="bb-msg__structured">
                         <StructuredTable
                             v-if="seg.entry.data_type === 'table'"
                             :data="seg.entry.data as any"

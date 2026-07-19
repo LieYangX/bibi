@@ -116,6 +116,26 @@
             <p class="setting-desc">命令行和文件编辑工具的默认基目录。文件操作仅限于此目录内。</p>
         </div>
 
+        <!-- 最大工具调用步数 -->
+        <div class="setting-field">
+            <div class="setting-row">
+                <div class="setting-info">
+                    <div class="setting-title">最大工具调用步数 ({{ localConfig.maxSteps }})</div>
+                    <div class="setting-desc">单次对话中 AI 最多执行多少步工具操作</div>
+                </div>
+                <input
+                    v-model.number="localConfig.maxSteps"
+                    type="range"
+                    min="1"
+                    max="50"
+                    step="1"
+                    class="bb-range"
+                    :disabled="saving"
+                    @change="savePartial({ maxSteps: localConfig.maxSteps })"
+                />
+            </div>
+        </div>
+
         <!-- 反馈消息 -->
         <div
             v-if="feedback"
@@ -134,6 +154,7 @@ import { BbSwitch } from '../../components/ui'
 import { desktopApi } from '../../api/desktop-api'
 import type { AgentConfig } from '@shared/types'
 import {
+    DEFAULT_MAX_AGENT_STEPS,
     DEFAULT_MEMORY_DISTILLATION_THRESHOLD,
     MAX_MEMORY_DISTILLATION_THRESHOLD,
     MIN_MEMORY_DISTILLATION_THRESHOLD
@@ -147,7 +168,8 @@ const localConfig = reactive<AgentConfig>({
     temperature: 0.7,
     maxTokens: 4096,
     memoryDistillationThreshold: DEFAULT_MEMORY_DISTILLATION_THRESHOLD,
-    enabled: false
+    enabled: false,
+    maxSteps: DEFAULT_MAX_AGENT_STEPS
 })
 
 /** API Key 独立输入（不自动绑定到 localConfig，需手动保存） */
