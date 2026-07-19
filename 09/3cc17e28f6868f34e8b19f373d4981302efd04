@@ -1,0 +1,70 @@
+src/main/agent/confirmation-manager.ts
+  s_06395d43f38651::t_19a1e4cd8e0f50 1-72
+src/main/agent/ipc/agent.ipc.ts
+  s_06395d43f38651::t_a3b557c1bf0ee4 30
+  s_06395d43f38651::t_0db34d417bfc49 464-474
+src/renderer/src/stores/agent.store.ts
+  s_06395d43f38651::t_7e73747f3b4026 1097
+  s_06395d43f38651::t_64f534f460b52a 299-300,306-312
+  s_06395d43f38651::t_f095f336366386 1120
+  s_06395d43f38651::t_148d9f9714bd29 303
+  s_06395d43f38651::t_bbbbb5953acf30 1096
+  s_06395d43f38651::t_a23fb24e67f1f4 301-302,304-305
+  s_06395d43f38651::t_0482f4d6ac3ca6 709
+  s_06395d43f38651::t_6ac499f9622933 745
+  s_06395d43f38651::t_54909ae86f38a6 135-140
+  s_06395d43f38651::t_c77572b1a8d9d6 141-143
+  s_06395d43f38651::t_4bc6c259010766 1075-1082
+src/shared/types/electron-api.ts
+  s_06395d43f38651::t_51fc44ab4c8f01 111-114,116
+src/renderer/src/components/AgentMessage.vue
+  s_06395d43f38651::t_3b066c3c3cdb4e 540-544
+  s_06395d43f38651::t_bc0d3fea781e1c 104-124
+src/preload/index.ts
+  s_06395d43f38651::t_51fc44ab4c8f01 230-231
+  s_06395d43f38651::t_7da6f424dac6db 232-233
+src/main/agent/runtime/system-tools/execute-command.tool.ts
+  s_06395d43f38651::t_c22150fb40bf61 12-13
+  s_06395d43f38651::t_d9db715531b218 45-66
+src/shared/ipc/channels.ts
+  s_06395d43f38651::t_cb3f8788398c2b 150-152
+src/main/agent/runtime/system-tools/edit-file.tool.ts
+  s_06395d43f38651::t_857350cf1712c4 62-80
+  s_06395d43f38651::t_be628e92f0ee69 12-13
+src/shared/ipc/schemas.ts
+  s_06395d43f38651::t_8975ea9d3855d5 516-517
+src/shared/types/agent.ts
+  s_06395d43f38651::t_0df5aabbc66311 305-308
+  s_06395d43f38651::t_0e7122c4a1475d 235-248,260
+  s_06395d43f38651::t_d27af741863a84 410-411
+src/main/agent/runtime/index.ts
+  s_06395d43f38651::t_d20adaf58a80c2 90
+  s_06395d43f38651::t_df0b8c9c656f4c 87-89
+src/renderer/src/views/AgentChatView.vue
+  s_06395d43f38651::t_64ff64c8984bba 268-280
+  s_06395d43f38651::t_be74b08abad39f 958-975,977-983
+  s_06395d43f38651::t_389a5cec3432be 1027-1028
+  s_06395d43f38651::t_317fc1a2572afc 1964-1970
+  s_06395d43f38651::t_482a0a1e20f7c6 3564,3566,3570,3578
+  s_06395d43f38651::t_1547460175498f 956-957,976
+  s_06395d43f38651::t_82b6b5faff8e5d 3563,3565,3567-3569,3571-3577,3579-3589
+  s_06395d43f38651::t_550d55df5a0d31 1026
+  s_06395d43f38651::t_e111344c665a76 2641-2648
+  s_06395d43f38651::t_cc0e40027194c8 267
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "093cc17e28f6868f34e8b19f373d4981302efd04",
+  "prompts": {},
+  "sessions": {
+    "s_06395d43f38651": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_0875321e2ffe7By9Gv7gF9zQB3",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
