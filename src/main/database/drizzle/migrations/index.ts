@@ -64,6 +64,19 @@ const LEGACY_MIGRATION_COLUMNS: Record<string, Record<string, string[]>> = {
     },
     '0009_kind_chameleon': {
         todos: ['id', 'user_id', 'title', 'note', 'status', 'due_date', 'due_time', 'is_deleted']
+    },
+    '0010_add_conversation_summary': {
+        agent_conversations: [
+            'id',
+            'user_id',
+            'title',
+            'message_count',
+            'model',
+            'source',
+            'summary',
+            'created_at',
+            'updated_at'
+        ]
     }
 }
 

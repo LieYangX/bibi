@@ -19,6 +19,7 @@ import { buildMessages } from './context/message-builder'
 import * as conversationStore from './memory/conversation-store'
 import { localMemoryStore } from './memory/local-memory'
 import { distillSoulIfNeeded } from './memory/soul-distiller'
+import { summarizeConversationIfNeeded } from './memory/conversation-summarizer'
 import { loadAgentConfig } from './agent-config'
 import type { AgentConfig } from '@shared/types'
 import type { EventEmitter } from './agent-run-context'
@@ -185,33 +186,48 @@ async function runConversation(
     const enabledSkills = skillRegistry.getEnabledSkills()
 
     const model = createModel(config.apiKey, config.model)
-    const [soulMemory, profileMemory, history, currentUser, mcpRuntime] = await Promise.all([
-        localMemoryStore.readMemory(userId, 'soul'),
-        localMemoryStore.readMemory(userId, 'profile'),
-        conversationStore.restoreRecentMessages(
-            conversationId,
-            userId,
-            Math.max(0, config.memoryDistillationThreshold - 1)
-        ),
-        getUser(userId),
-        loadMcpRuntimeTools()
-    ])
+    const [soulMemory, profileMemory, history, summary, currentUser, mcpRuntime] =
+        await Promise.all([
+            localMemoryStore.readMemory(userId, 'soul'),
+            localMemoryStore.readMemory(userId, 'profile'),
+            conversationStore.restoreRecentMessages(
+                conversationId,
+                userId,
+                Math.max(0, config.memoryDistillationThreshold - 1)
+            ),
+            conversationStore.getConversationSummary(conversationId, userId),
+            getUser(userId),
+            loadMcpRuntimeTools()
+        ])
     if (!currentUser) throw new Error('当前用户不存在')
+    const systemInfo = getRuntimeSystemInfo()
+    // 检测用户请求是否需要调用工具，若是则在用户消息末尾追加任务规划指令
+    // 不使用 system 消息（DeepSeek provider 的 messages 不支持 system 角色）
+    const needsToolCall = detectToolCallRequest(userMessage)
+    const effectiveUserMessage = needsToolCall
+        ? `${userMessage}\n\n[执行要求] 本请求需要调用工具来完成。在调用业务工具之前，先调用 createAgentTasks 创建任务清单让用户看到执行步骤；每完成一步立即调用 updateAgentTaskStatus 更新状态。\n[执行要求]`
+        : userMessage
     const messages = buildMessages({
         history,
-        userMessage,
+        userMessage: effectiveUserMessage,
         maxUserTurns: config.memoryDistillationThreshold,
-        soulMemory: soulMemory.content,
-        profileMemory: profileMemory.content,
-        userName: currentUser.name,
-        systemInfo: getRuntimeSystemInfo()
+        summary
     })
+    const enabledSkillNames = new Set(enabledSkills.map((skill) => skill.meta.name))
     const systemPrompt = buildSystemPrompt(
         enabledSkills,
-        toolRegistry.getGroupedToolInfos(),
-        mcpRuntime.toolInfos
+        toolRegistry.getGroupedToolInfos(enabledSkillNames),
+        mcpRuntime.toolInfos,
+        {
+            userName: currentUser.name,
+            currentDate: formatSystemDate(new Date()),
+            currentTime: formatSystemTime(new Date()),
+            systemInfo,
+            profileMemory: profileMemory.content,
+            soulMemory: soulMemory.content
+        }
     )
-    const localTools = toolRegistry.createTools({ userId, conversationId, emit })
+    const localTools = toolRegistry.createTools({ userId, conversationId, emit }, enabledSkillNames)
     const allTools: Record<string, Tool> = {
         ...localTools,
         ...mcpRuntime.tools
@@ -396,7 +412,7 @@ async function runConversation(
         await conversationStore.updateConversationTitle(conversationId, title, userId)
     }
 
-    // 灵魂记忆提炼属于非关键后台任务，不能阻塞对话完成事件和输入框解锁。
+    // 灵魂记忆提炼与对话摘要属于非关键后台任务，不能阻塞对话完成事件和输入框解锁。
     void distillSoulIfNeeded({
         userId,
         threshold: config.memoryDistillationThreshold,
@@ -404,6 +420,15 @@ async function runConversation(
         maxOutputTokens: config.maxTokens
     }).catch((error: unknown) => {
         logger.error('AgentMemory', '灵魂记忆自动提炼失败', { error })
+    })
+    void summarizeConversationIfNeeded({
+        conversationId,
+        userId,
+        recentUserTurnsToKeep: config.memoryDistillationThreshold,
+        model,
+        maxOutputTokens: config.maxTokens
+    }).catch((error: unknown) => {
+        logger.error('AgentMemory', '对话运行摘要生成失败', { error })
     })
 
     logger.info('Agent', '模型流式响应结束', {
@@ -415,4 +440,84 @@ async function runConversation(
         toolResultCount
     })
     return conversationId
+}
+
+/** 纯闲聊模式（明确不需要调用工具） */
+const CHITCHAT_PATTERNS = [
+    /^你好$|^嗨$|^hi$|^hello$|^在吗$/i,
+    /^[哈呵呵嘿嘿]+$/,
+    /^早[上安安]?$|^晚[上安安]?$|^午[安安好]?$/,
+    /^再见$|^拜拜$|^回见$/,
+    /^(谢谢|感谢|多谢|3q|thx|thanks)$/i,
+    /^(好的|好的吧|行|可以|没问题|ok|okay)$/i,
+    /^(嗯|昂|哦|噢|喔|好)$/,
+    /^(没什么|没了|没有|算了)$/
+]
+
+/** 触发任务规划的用户请求模式（匹配任意一个即需要创建任务清单） */
+const TOOL_TRIGGER_PATTERNS = [
+    /查|查询|找|搜索|搜/,
+    /多少|余额|预算|统计|汇总|合计/,
+    /记|记账|流水|收支|花费|支出|收入/,
+    /对比|比较|差别|差异/,
+    /分析|趋势|异常|变化/,
+    /报告|月报|周报|年报|总结/,
+    /生成|创建|制作/,
+    /删|删除|修改|更新/,
+    /分类|分月|分周|逐年|全部|每个/,
+    /为什么|原因|怎么回事/,
+    /检查|审核|核对|对账/,
+    /建议|优化|方案/,
+    /待办|todo|任务/,
+    /转|转账|调账|调/,
+    /这个月|上个月|这周|上周|今年|去年/,
+    /\d{4}年|\d{1,2}月|\d{1,2}日|最近/
+]
+
+/**
+ * 检测用户请求是否需要调用工具
+ *
+ * @param message 用户消息
+ * @returns 是否需要任务规划
+ * @author xiangwei
+ */
+function detectToolCallRequest(message: string): boolean {
+    const normalized = message.trim().toLowerCase()
+
+    // 纯闲聊直接跳过
+    for (const pattern of CHITCHAT_PATTERNS) {
+        if (pattern.test(normalized)) return false
+    }
+
+    // 触发工具调用的模式
+    for (const pattern of TOOL_TRIGGER_PATTERNS) {
+        if (pattern.test(normalized)) return true
+    }
+
+    // 默认：消息长度超过 10 个字就视为需要工具调用
+    return normalized.length > 10
+}
+
+/**
+ * 格式化 System Prompt 使用的本地日期
+ *
+ * @param date 日期
+ * @returns 中文日期
+ * @author xiangwei
+ */
+function formatSystemDate(date: Date): string {
+    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+}
+
+/**
+ * 格式化 System Prompt 使用的本地时间
+ *
+ * @param date 日期
+ * @returns HH:mm 时间
+ * @author xiangwei
+ */
+function formatSystemTime(date: Date): string {
+    const hour = String(date.getHours()).padStart(2, '0')
+    const minute = String(date.getMinutes()).padStart(2, '0')
+    return `${hour}:${minute}`
 }

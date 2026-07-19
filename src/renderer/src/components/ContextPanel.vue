@@ -626,6 +626,8 @@ onUnmounted(() => offRefresh?.())
     display: flex;
     flex-direction: column;
     gap: 6px;
+    max-height: 240px;
+    overflow-y: auto;
 }
 .ctx-task-row {
     display: flex;

@@ -1,12 +1,11 @@
 /**
  * 消息窗口构建
- * 按记忆阈值裁剪最近对话，拼接 runtime_context
+ * 按记忆阈值裁剪最近对话，生成模型消息序列
  *
  * @author xiangwei
  */
 
 import { pruneMessages, type ModelMessage } from 'ai'
-import type { RuntimeSystemInfo } from '../runtime-system-info'
 
 /** 上下文中的持久化消息 */
 interface ConversationMessage {
@@ -19,11 +18,7 @@ interface BuildMessagesOptions {
     history: ConversationMessage[]
     userMessage: string
     maxUserTurns: number
-    soulMemory: string
-    profileMemory: string
-    userName: string
-    systemInfo: RuntimeSystemInfo
-    currentDate?: string
+    summary?: string | null
 }
 
 /**
@@ -47,29 +42,20 @@ export function buildMessages(options: BuildMessagesOptions): ModelMessage[] {
                 content: message.content
             }) satisfies ModelMessage
     )
-    const currentDate = options.currentDate ?? formatCurrentDate(new Date())
-    const currentTime = formatCurrentTime(new Date())
-    const userName = options.userName.replace(/\s+/g, ' ').trim() || '未命名用户'
-    const runtimeContext = `<runtime_context>
- 当前日期：${currentDate}
- 当前时间：${currentTime}
- 用户名：${userName}
-系统信息：
-- 操作系统：${options.systemInfo.operatingSystem} ${options.systemInfo.systemRelease}
-- 系统架构：${options.systemInfo.architecture}
-- 应用版本：${options.systemInfo.appVersion}
-- 语言区域：${options.systemInfo.locale}
-- 时区：${options.systemInfo.timeZone}
-用户画像：
-${options.profileMemory || '暂无用户画像'}
-最新灵魂记忆：
-${options.soulMemory || '暂无已提炼的灵魂记忆'}
-</runtime_context>`
+
+    const summaryMessage: ModelMessage | null = options.summary
+        ? {
+              role: 'system',
+              content: `以下是对早前对话的简要摘要，作为上下文参考：\n${options.summary}`
+          }
+        : null
+
     const messages: ModelMessage[] = [
+        ...(summaryMessage ? [summaryMessage] : []),
         ...historyMessages,
         {
             role: 'user',
-            content: `${options.userMessage}\n\n${runtimeContext}`
+            content: options.userMessage
         }
     ]
 
@@ -107,28 +93,4 @@ function trimToRecentUserTurns(
         }
     }
     return history.slice(startIndex)
-}
-
-/**
- * 格式化本地日期
- *
- * @param date 日期
- * @returns 中文日期
- * @author xiangwei
- */
-function formatCurrentDate(date: Date): string {
-    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
-}
-
-/**
- * 格式化本地时间
- *
- * @param date 日期
- * @returns HH:mm 时间
- * @author xiangwei
- */
-function formatCurrentTime(date: Date): string {
-    const hour = String(date.getHours()).padStart(2, '0')
-    const minute = String(date.getMinutes()).padStart(2, '0')
-    return `${hour}:${minute}`
 }

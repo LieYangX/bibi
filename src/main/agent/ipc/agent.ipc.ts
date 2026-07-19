@@ -298,7 +298,11 @@ export function registerAgentIpc(): void {
         IPC_CHANNELS.agent.listLocalTools,
         IPC_SCHEMAS.none,
         '获取本地工具失败',
-        async () => toolRegistry.getToolInfos()
+        async () => {
+            const enabledSkills = skillRegistry.getEnabledSkills()
+            const enabledSkillNames = new Set(enabledSkills.map((skill) => skill.meta.name))
+            return toolRegistry.getToolInfos(enabledSkillNames)
+        }
     )
 
     // 列出 Skills

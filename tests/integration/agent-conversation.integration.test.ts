@@ -6,14 +6,18 @@ import {
 } from '../../src/main/database/drizzle'
 import { runMigrations } from '../../src/main/database/drizzle/migrations'
 import {
+    countConversationUserMessages,
     countUserMessages,
     createConversation,
     getConversation,
+    getConversationSummary,
     listConversations,
     restoreMessages,
+    restoreMessagesExcludingRecentTurns,
     restoreRecentMessages,
     restoreRecentUserTurns,
     saveMessage,
+    updateConversationSummary,
     updateConversationTitle
 } from '../../src/main/agent/memory/conversation-store'
 import { createUser } from '../../src/main/services/user.service'
@@ -154,5 +158,44 @@ describe('智能体会话用户隔离', () => {
             thinking: '分析历史数据',
             thinking_duration_ms: 2_345
         })
+    })
+
+    it('支持会话运行摘要的读写与按轮次隔离', async () => {
+        const owner = await createUser('摘要用户')
+        const conversationId = await createConversation(owner.id)
+
+        // 初始无摘要
+        expect(await getConversationSummary(conversationId, owner.id)).toBeNull()
+        expect(await countConversationUserMessages(conversationId, owner.id)).toBe(0)
+
+        // 写入 4 轮对话
+        for (let index = 1; index <= 4; index++) {
+            await saveMessage(conversationId, owner.id, 'user', `问题 ${index}`)
+            await saveMessage(conversationId, owner.id, 'assistant', `回答 ${index}`)
+        }
+        expect(await countConversationUserMessages(conversationId, owner.id)).toBe(4)
+
+        // 读取最近 2 轮以外的消息（即前 2 轮）
+        const olderMessages = await restoreMessagesExcludingRecentTurns(conversationId, owner.id, 2)
+        expect(olderMessages).toEqual([
+            { role: 'user', content: '问题 1' },
+            { role: 'assistant', content: '回答 1' },
+            { role: 'user', content: '问题 2' },
+            { role: 'assistant', content: '回答 2' }
+        ])
+
+        // 更新并读取摘要
+        const summaryText = '用户前两次询问了示例问题。'
+        expect(await updateConversationSummary(conversationId, owner.id, summaryText)).toBe(true)
+        expect(await getConversationSummary(conversationId, owner.id)).toBe(summaryText)
+
+        // 其他用户不能读写摘要
+        const otherUser = await createUser('摘要访客')
+        await expect(getConversationSummary(conversationId, otherUser.id)).rejects.toThrow(
+            '会话不存在或不属于当前用户'
+        )
+        await expect(
+            updateConversationSummary(conversationId, otherUser.id, '越权摘要')
+        ).rejects.toThrow('会话不存在或不属于当前用户')
     })
 })

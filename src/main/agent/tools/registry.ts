@@ -1,6 +1,6 @@
 /**
  * 本地工具注册中心
- * 独立管理工具发现、用途描述和用户边界，不依赖 Skill 启停状态。
+ * 管理工具发现、用途描述和用户边界，工具可见性与 Skill 启停状态绑定。
  *
  * @author xiangwei
  */
@@ -14,7 +14,6 @@ import * as dataQueryTools from '../capabilities/data-query'
 import * as calculatorTools from '../capabilities/calculator'
 import * as analysisTools from '../capabilities/analysis'
 import * as transactionTools from '../capabilities/transaction-write'
-import * as taskPlanningTools from '../capabilities/task-planning'
 import * as userTodoTools from '../capabilities/user-todo'
 import { runWithAgentContext, type AgentRunContext } from '../agent-run-context'
 import { createRuntimeTools, getRuntimeToolInfos } from '../runtime'
@@ -38,12 +37,20 @@ export interface ToolGroupInfo {
     tools: { name: string; description: string }[]
 }
 
+/** 分组中文标签 */
+const GROUP_LABELS: Record<string, string> = {
+    'data-query': '数据查询',
+    calculator: '数学计算',
+    analysis: '消费分析',
+    'transaction-write': '记账操作',
+    'user-todo': '待办管理'
+}
+
 const TOOL_GROUPS: ToolGroupDefinition[] = [
     { name: 'data-query', tools: dataQueryTools },
     { name: 'calculator', tools: calculatorTools },
     { name: 'analysis', tools: analysisTools },
-    { name: 'transaction', tools: transactionTools },
-    { name: 'task-planning', tools: taskPlanningTools },
+    { name: 'transaction-write', tools: transactionTools },
     { name: 'user-todo', tools: userTodoTools }
 ]
 
@@ -79,11 +86,15 @@ export class ToolRegistry {
     /**
      * 获取所有本地工具的用途说明
      *
+     * @param enabledSkillNames 已启用 Skill 名称集合，用于过滤业务工具
      * @returns 工具展示信息
      * @author xiangwei
      */
-    getToolInfos(): AgentToolInfo[] {
-        const businessTools = this.registeredTools.map(({ name, tool: rawTool }) => {
+    getToolInfos(enabledSkillNames?: Set<string>): AgentToolInfo[] {
+        const businessTools = this.filterByEnabledSkills(
+            this.registeredTools,
+            enabledSkillNames
+        ).map(({ name, tool: rawTool }) => {
             const raw = rawTool as Tool & { description?: string }
             return {
                 name,
@@ -97,21 +108,15 @@ export class ToolRegistry {
     /**
      * 获取按分组组织的工具用途说明，用于系统提示词展示
      *
+     * @param enabledSkillNames 已启用 Skill 名称集合，用于过滤业务工具
      * @returns 分组工具信息
      * @author xiangwei
      */
-    getGroupedToolInfos(): ToolGroupInfo[] {
-        const groupLabels: Record<string, string> = {
-            'data-query': '数据查询',
-            calculator: '数学计算',
-            analysis: '消费分析',
-            transaction: '记账操作',
-            'task-planning': '任务规划',
-            'user-todo': '待办管理'
-        }
+    getGroupedToolInfos(enabledSkillNames?: Set<string>): ToolGroupInfo[] {
+        const filteredTools = this.filterByEnabledSkills(this.registeredTools, enabledSkillNames)
         const groups: ToolGroupInfo[] = []
-        for (const [groupKey, label] of Object.entries(groupLabels)) {
-            const tools = this.registeredTools
+        for (const [groupKey, label] of Object.entries(GROUP_LABELS)) {
+            const tools = filteredTools
                 .filter((registered) => registered.group === groupKey)
                 .map(({ name, tool: rawTool }) => ({
                     name,
@@ -121,13 +126,27 @@ export class ToolRegistry {
                 groups.push({ label, tools })
             }
         }
-        groups.push({
-            label: '运行时',
-            tools: getRuntimeToolInfos().map((info) => ({
-                name: info.name,
-                description: info.description
-            }))
-        })
+        const allRuntimeInfos = getRuntimeToolInfos()
+        const runtimeTools = allRuntimeInfos.filter((info) => !isTaskPlanningTool(info.name))
+        const taskPlanningInfos = allRuntimeInfos.filter((info) => isTaskPlanningTool(info.name))
+        if (runtimeTools.length > 0) {
+            groups.push({
+                label: '运行时',
+                tools: runtimeTools.map((info) => ({
+                    name: info.name,
+                    description: info.description
+                }))
+            })
+        }
+        if (taskPlanningInfos.length > 0) {
+            groups.push({
+                label: '任务规划',
+                tools: taskPlanningInfos.map((info) => ({
+                    name: info.name,
+                    description: info.description
+                }))
+            })
+        }
         return groups
     }
 
@@ -135,15 +154,39 @@ export class ToolRegistry {
      * 为当前 Agent 运行时上下文创建完整的本地工具集合
      *
      * @param runContext Agent 运行时上下文（userId / conversationId / emit）
+     * @param enabledSkillNames 已启用 Skill 名称集合，用于过滤业务工具
      * @returns AI SDK 工具字典
      * @author xiangwei
      */
-    createTools(runContext: AgentRunContext): Record<string, Tool> {
-        const tools = createRuntimeTools(runContext.userId)
-        for (const registered of this.registeredTools) {
+    createTools(
+        runContext: AgentRunContext,
+        enabledSkillNames?: Set<string>
+    ): Record<string, Tool> {
+        const tools = createRuntimeTools(runContext.userId, runContext)
+        for (const registered of this.filterByEnabledSkills(
+            this.registeredTools,
+            enabledSkillNames
+        )) {
             tools[registered.name] = wrapToolWithUser(registered, runContext)
         }
         return tools
+    }
+
+    /**
+     * 按已启用 Skill 名称过滤业务工具
+     * 运行时工具（getSkill / memory）不受 Skill 启停影响，始终可用。
+     *
+     * @param tools 全部业务工具
+     * @param enabledSkillNames 已启用 Skill 名称集合
+     * @returns 过滤后的业务工具
+     * @author xiangwei
+     */
+    private filterByEnabledSkills(
+        tools: RegisteredTool[],
+        enabledSkillNames?: Set<string>
+    ): RegisteredTool[] {
+        if (!enabledSkillNames || enabledSkillNames.size === 0) return []
+        return tools.filter((registered) => enabledSkillNames.has(registered.group))
     }
 }
 
@@ -215,6 +258,22 @@ function wrapToolWithUser(registered: RegisteredTool, runContext: AgentRunContex
             }
         }
     })
+}
+
+/**
+ * 判断工具名是否为任务规划工具
+ *
+ * @param name 工具名
+ * @returns 是否为任务规划工具
+ * @author xiangwei
+ */
+function isTaskPlanningTool(name: string): boolean {
+    return [
+        'createAgentTasks',
+        'updateAgentTaskStatus',
+        'queryAgentTasks',
+        'clearAgentTasks'
+    ].includes(name)
 }
 
 /** 全局本地工具注册中心 */

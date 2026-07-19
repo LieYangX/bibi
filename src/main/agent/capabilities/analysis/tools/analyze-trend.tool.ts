@@ -1,66 +1,35 @@
 /**
  * 趋势分析工具
  * 分析指定时间范围内的支出变化趋势
+ *
  * @author xiangwei
  */
 
 import { tool } from 'ai'
 import { z } from 'zod'
-import { and, eq, sql, gte, lte } from 'drizzle-orm'
-import { db, transactions } from '../../../../database/drizzle'
 import { getCurrentUserId } from '../../../../services/session.service'
+import { queryExpenseTrend } from '../../../services/transaction-analytics.service'
 
 export const analyzeTrendTool = tool({
-    description: '分析指定时间范围内的支出趋势，支持按日/周/月粒度',
+    description:
+        '分析指定时间范围内的支出趋势，支持按日/周/月粒度聚合。适合“看看我最近花销趋势”类请求。',
     inputSchema: z.object({
         start_date: z.string().describe('开始日期 YYYY-MM-DD'),
         end_date: z.string().describe('结束日期 YYYY-MM-DD'),
-        granularity: z.enum(['daily', 'weekly', 'monthly']).describe('趋势粒度')
+        granularity: z
+            .enum(['daily', 'weekly', 'monthly'])
+            .describe('趋势粒度：daily/weekly/monthly')
     }),
     execute: async ({ start_date, end_date, granularity }) => {
         const userId = await getCurrentUserId()
         if (!userId) throw new Error('请先选择用户')
-        let groupExpr: ReturnType<typeof sql>
-        let orderExpr: ReturnType<typeof sql>
-        let label: string
 
-        switch (granularity) {
-            case 'daily':
-                groupExpr = sql`${transactions.date}`
-                orderExpr = sql`${transactions.date} ASC`
-                label = '日'
-                break
-            case 'weekly':
-                groupExpr = sql`strftime('%Y-%W', ${transactions.date})`
-                orderExpr = sql`1 ASC`
-                label = '周'
-                break
-            case 'monthly':
-                groupExpr = sql`strftime('%Y-%m', ${transactions.date})`
-                orderExpr = sql`1 ASC`
-                label = '月'
-                break
-        }
+        const rows = await queryExpenseTrend(
+            { userId, startDate: start_date, endDate: end_date },
+            granularity
+        )
 
-        const rows = await db
-            .select({
-                period: sql<string>`${groupExpr}`,
-                amount_cents: sql<number>`SUM(${transactions.amount_cents})`,
-                count: sql<number>`COUNT(*)`
-            })
-            .from(transactions)
-            .where(
-                and(
-                    eq(transactions.user_id, userId),
-                    eq(transactions.type, 'expense'),
-                    eq(transactions.is_deleted, 0),
-                    gte(transactions.date, start_date),
-                    lte(transactions.date, end_date)
-                )
-            )
-            .groupBy(groupExpr)
-            .orderBy(orderExpr)
-
+        const label = granularity === 'daily' ? '日' : granularity === 'weekly' ? '周' : '月'
         const items = rows.map((r) => ({
             period: r.period,
             amount: (r.amount_cents / 100).toFixed(2),

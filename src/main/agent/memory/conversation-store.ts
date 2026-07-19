@@ -485,3 +485,107 @@ export async function updateConversationTitle(
         .run()
     return result.changes > 0
 }
+
+/**
+ * 统计单个会话的用户消息数
+ *
+ * @param conversationId 会话 ID
+ * @param userId 用户 ID
+ * @returns 用户消息总数
+ * @author xiangwei
+ */
+export async function countConversationUserMessages(
+    conversationId: string,
+    userId: string
+): Promise<number> {
+    if (!(await conversationBelongsToUser(conversationId, userId))) {
+        throw new Error('会话不存在或不属于当前用户')
+    }
+    const [row] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(agentMessages)
+        .where(
+            and(eq(agentMessages.conversation_id, conversationId), eq(agentMessages.role, 'user'))
+        )
+    return Number(row?.count ?? 0)
+}
+
+/**
+ * 读取会话当前摘要
+ *
+ * @param conversationId 会话 ID
+ * @param userId 用户 ID
+ * @returns 摘要文本，不存在时返回 null
+ * @author xiangwei
+ */
+export async function getConversationSummary(
+    conversationId: string,
+    userId: string
+): Promise<string | null> {
+    if (!(await conversationBelongsToUser(conversationId, userId))) {
+        throw new Error('会话不存在或不属于当前用户')
+    }
+    const [row] = await db
+        .select({ summary: agentConversations.summary })
+        .from(agentConversations)
+        .where(eq(agentConversations.id, conversationId))
+        .limit(1)
+    return row?.summary ?? null
+}
+
+/**
+ * 更新会话运行摘要
+ *
+ * @param conversationId 会话 ID
+ * @param userId 用户 ID
+ * @param summary 新的完整摘要内容
+ * @returns 是否成功更新
+ * @author xiangwei
+ */
+export async function updateConversationSummary(
+    conversationId: string,
+    userId: string,
+    summary: string
+): Promise<boolean> {
+    if (!(await conversationBelongsToUser(conversationId, userId))) {
+        throw new Error('会话不存在或不属于当前用户')
+    }
+    const result = await db
+        .update(agentConversations)
+        .set({ summary, updated_at: sql`(datetime('now', 'localtime'))` })
+        .where(
+            and(eq(agentConversations.id, conversationId), eq(agentConversations.user_id, userId))
+        )
+        .run()
+    return result.changes > 0
+}
+
+/**
+ * 读取除最近若干用户轮次之外的全部消息
+ * 用于生成或更新对话运行摘要。
+ *
+ * @param conversationId 会话 ID
+ * @param userId 用户 ID
+ * @param excludeRecentUserTurns 保留为原文的最近用户轮次数
+ * @returns 按时间正序排列的消息
+ * @author xiangwei
+ */
+export async function restoreMessagesExcludingRecentTurns(
+    conversationId: string,
+    userId: string,
+    excludeRecentUserTurns: number
+): Promise<Array<{ role: string; content: string }>> {
+    if (!(await conversationBelongsToUser(conversationId, userId))) {
+        throw new Error('会话不存在或不属于当前用户')
+    }
+    if (excludeRecentUserTurns < 0) {
+        throw new Error('保留轮次数不能为负数')
+    }
+
+    const allMessages = await restoreMessages(conversationId, userId)
+    const conversationMessages = allMessages.filter(
+        (message) => message.role === 'user' || message.role === 'assistant'
+    )
+    const recentTurns = trimToRecentUserTurns(conversationMessages, excludeRecentUserTurns)
+    return conversationMessages.slice(0, conversationMessages.length - recentTurns.length)
+}

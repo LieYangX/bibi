@@ -1,17 +1,21 @@
 /**
  * 异常检测工具
  * 检测指定时间段内的大额异常支出
+ *
  * @author xiangwei
  */
 
 import { tool } from 'ai'
 import { z } from 'zod'
-import { and, eq, sql, gte, lte } from 'drizzle-orm'
-import { db, transactions, categories } from '../../../../database/drizzle'
 import { getCurrentUserId } from '../../../../services/session.service'
+import {
+    queryExpenseStats,
+    queryAnomalyExpenses
+} from '../../../services/transaction-analytics.service'
 
 export const detectAnomaliesTool = tool({
-    description: '检测指定时间段内的异常大额支出（超过平均值 N 倍）',
+    description:
+        '检测指定时间段内的异常大额支出（超过平均值 N 倍）。适合“最近有没有花得特别多的”类请求。',
     inputSchema: z.object({
         start_date: z.string().describe('开始日期 YYYY-MM-DD'),
         end_date: z.string().describe('结束日期 YYYY-MM-DD'),
@@ -20,25 +24,14 @@ export const detectAnomaliesTool = tool({
     execute: async ({ start_date, end_date, threshold = 3 }) => {
         const userId = await getCurrentUserId()
         if (!userId) throw new Error('请先选择用户')
-        // 计算平均值
-        const [stats] = await db
-            .select({
-                avg: sql<number>`AVG(${transactions.amount_cents})`,
-                max: sql<number>`MAX(${transactions.amount_cents})`,
-                count: sql<number>`COUNT(*)`
-            })
-            .from(transactions)
-            .where(
-                and(
-                    eq(transactions.user_id, userId),
-                    eq(transactions.type, 'expense'),
-                    eq(transactions.is_deleted, 0),
-                    gte(transactions.date, start_date),
-                    lte(transactions.date, end_date)
-                )
-            )
 
-        if (!stats || stats.count === 0) {
+        const stats = await queryExpenseStats({
+            userId,
+            startDate: start_date,
+            endDate: end_date
+        })
+
+        if (stats.count === 0) {
             return {
                 message: '该时间段内没有支出记录',
                 anomalies: [],
@@ -49,28 +42,10 @@ export const detectAnomaliesTool = tool({
         const avgAmount = stats.avg
         const thresholdAmount = avgAmount * threshold
 
-        // 找出异常支出
-        const anomalies = await db
-            .select({
-                id: transactions.id,
-                date: transactions.date,
-                amount_cents: transactions.amount_cents,
-                note: transactions.note,
-                category_name: categories.name
-            })
-            .from(transactions)
-            .leftJoin(categories, eq(transactions.category_id, categories.id))
-            .where(
-                and(
-                    eq(transactions.user_id, userId),
-                    eq(transactions.type, 'expense'),
-                    eq(transactions.is_deleted, 0),
-                    gte(transactions.date, start_date),
-                    lte(transactions.date, end_date),
-                    sql`${transactions.amount_cents} > ${thresholdAmount}`
-                )
-            )
-            .orderBy(sql`${transactions.amount_cents} DESC`)
+        const anomalies = await queryAnomalyExpenses(
+            { userId, startDate: start_date, endDate: end_date },
+            thresholdAmount
+        )
 
         const items = anomalies.map((a) => ({
             date: a.date,
@@ -85,9 +60,9 @@ export const detectAnomaliesTool = tool({
         formatted += `异常阈值（${threshold}倍）: ¥${(thresholdAmount / 100).toFixed(2)}\n\n`
 
         if (items.length === 0) {
-            formatted += `✅ 未发现异常支出\n`
+            formatted += `未发现异常支出\n`
         } else {
-            formatted += `⚠️ 发现 ${items.length} 笔异常支出：\n\n`
+            formatted += `发现 ${items.length} 笔异常支出：\n\n`
             for (const item of items) {
                 formatted += `- ${item.date} ¥${item.amount}`
                 if (item.category) formatted += ` | ${item.category}`

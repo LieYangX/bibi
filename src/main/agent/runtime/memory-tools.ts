@@ -19,9 +19,9 @@ const memoryTypeSchema = z.enum(['profile', 'soul'])
 
 const MEMORY_TOOL_DESCRIPTIONS = {
     readLocalMemory:
-        '读取当前用户的本地 Markdown 记忆。profile 是稳定的基本信息，soul 是情感、偏好和行为模式。',
+        '读取当前用户的本地长期记忆。profile 保存稳定的用户画像（姓名、职业、财务习惯等）；soul 保存从长期对话中提炼的情感倾向、表达习惯和互动偏好。当需要确认用户长期信息时使用，不要用它替代实时数据查询工具。',
     writeLocalMemory:
-        '将当前用户的一类记忆完整覆盖为最新 Markdown。更新用户画像前先读取旧画像并合并；灵魂通常由系统自动提炼。'
+        '写入或更新当前用户的一类长期记忆。仅当用户明确透露了新的稳定信息（如职业变动、常住城市、记账偏好）时才调用；更新前应先读取旧画像并合并，禁止覆盖为 guessed 内容。'
 } as const
 
 /**

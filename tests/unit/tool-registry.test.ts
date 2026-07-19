@@ -2,21 +2,41 @@ import { describe, expect, it } from 'vitest'
 import { toolRegistry } from '../../src/main/agent/tools/registry'
 
 describe('本地工具注册中心', () => {
-    it('独立公开全部工具及用途描述', () => {
-        const tools = toolRegistry.getToolInfos()
+    it('运行时工具始终可见，业务工具按已启用 Skill 过滤', () => {
+        const allTools = toolRegistry.getToolInfos()
 
-        expect(tools.slice(0, 3).map((tool) => tool.name)).toEqual([
+        expect(allTools.map((tool) => tool.name)).toEqual([
             'getSkill',
             'readLocalMemory',
-            'writeLocalMemory'
+            'writeLocalMemory',
+            'createAgentTasks',
+            'updateAgentTaskStatus',
+            'queryAgentTasks',
+            'clearAgentTasks'
         ])
-        expect(tools.map((tool) => tool.name)).toContain('queryTransactions')
-        expect(tools.map((tool) => tool.name)).toContain('createTransaction')
-        expect(tools.every((tool) => tool.description.length > 0)).toBe(true)
 
-        const executableTools = toolRegistry.createTools('tool-registry-user')
-        expect(Object.keys(executableTools)).toEqual(tools.map((tool) => tool.name))
-        for (const toolInfo of tools) {
+        const enabledSkillNames = new Set([
+            'data-query',
+            'calculator',
+            'analysis',
+            'transaction-write',
+            'task-planning',
+            'user-todo'
+        ])
+        const enabledTools = toolRegistry.getToolInfos(enabledSkillNames)
+
+        expect(enabledTools.map((tool) => tool.name)).toContain('queryTransactions')
+        expect(enabledTools.map((tool) => tool.name)).toContain('createTransaction')
+        expect(enabledTools.every((tool) => tool.description.length > 0)).toBe(true)
+
+        const executableTools = toolRegistry.createTools(
+            { userId: 'tool-registry-user', conversationId: 'conv-1', emit: async () => undefined },
+            enabledSkillNames
+        )
+        expect(Object.keys(executableTools).sort()).toEqual(
+            enabledTools.map((tool) => tool.name).sort()
+        )
+        for (const toolInfo of enabledTools) {
             const executable = executableTools[toolInfo.name] as { description?: string }
             expect(executable.description).toBe(toolInfo.description)
         }
