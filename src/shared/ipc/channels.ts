@@ -67,6 +67,18 @@ export const IPC_CHANNELS = {
         get: 'setting:get',
         set: 'setting:set'
     },
+    file: {
+        /** 选择目录对话框 */
+        selectDirectory: 'file:selectDirectory',
+        /** 在系统文件管理器中打开文件 */
+        openFile: 'file:openFile',
+        /** 获取当前工作目录（已配置或默认） */
+        getWorkspaceDir: 'file:getWorkspaceDir',
+        /** 设置工作目录（自动追加 /bibi 并创建） */
+        setWorkspaceDir: 'file:setWorkspaceDir',
+        /** 重置为默认工作目录（~/bibi） */
+        resetWorkspaceDir: 'file:resetWorkspaceDir'
+    },
     app: {
         getVersions: 'app:getVersions',
         openLogDirectory: 'app:openLogDirectory',

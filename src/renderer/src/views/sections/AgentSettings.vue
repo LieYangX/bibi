@@ -90,6 +90,32 @@
             </div>
         </div>
 
+        <!-- 工作目录 -->
+        <div class="setting-field">
+            <label class="setting-label">工作目录</label>
+            <div class="setting-input-row">
+                <input
+                    v-model="workspaceDirInput"
+                    type="text"
+                    class="bb-input workspace-dir-input"
+                    placeholder="默认：用户主目录"
+                    readonly
+                />
+                <button class="bb-btn" :disabled="savingDir" @click="selectWorkspaceDir">
+                    选择
+                </button>
+                <button
+                    v-if="workspaceDirInput"
+                    class="bb-btn bb-btn-danger"
+                    :disabled="savingDir"
+                    @click="resetWorkspaceDir"
+                >
+                    重置
+                </button>
+            </div>
+            <p class="setting-desc">命令行和文件编辑工具的默认基目录。文件操作仅限于此目录内。</p>
+        </div>
+
         <!-- 反馈消息 -->
         <div
             v-if="feedback"
@@ -105,6 +131,7 @@
 import { ref, onMounted, reactive } from 'vue'
 import { useAgentStore } from '../../stores/agent.store'
 import { BbSwitch } from '../../components/ui'
+import { desktopApi } from '../../api/desktop-api'
 import type { AgentConfig } from '@shared/types'
 import {
     DEFAULT_MEMORY_DISTILLATION_THRESHOLD,
@@ -126,6 +153,10 @@ const localConfig = reactive<AgentConfig>({
 /** API Key 独立输入（不自动绑定到 localConfig，需手动保存） */
 const apiKeyInput = ref('')
 
+/** 工作目录 */
+const workspaceDirInput = ref('')
+const savingDir = ref(false)
+
 const saving = ref(false)
 const feedback = ref('')
 const feedbackOk = ref(false)
@@ -145,6 +176,12 @@ onMounted(async () => {
     await agentStore.initialize()
     Object.assign(localConfig, agentStore.config)
     apiKeyInput.value = localConfig.apiKey
+
+    // 加载工作目录（返回已配置或默认路径）
+    const dirResult = await desktopApi.file.getWorkspaceDir()
+    if (dirResult.ok) {
+        workspaceDirInput.value = dirResult.data
+    }
 })
 
 async function savePartial(patch: Partial<AgentConfig>): Promise<void> {
@@ -188,6 +225,33 @@ async function clearApiKey(): Promise<void> {
     localConfig.apiKey = ''
     apiKeyInput.value = ''
     await savePartial({ apiKey: '' })
+}
+
+async function selectWorkspaceDir(): Promise<void> {
+    savingDir.value = true
+    const pickResult = await desktopApi.file.selectDirectory()
+    if (pickResult.ok && pickResult.data) {
+        const saveResult = await desktopApi.file.setWorkspaceDir(pickResult.data)
+        if (saveResult.ok) {
+            workspaceDirInput.value = saveResult.data
+            showFeedback('工作目录已更新', true)
+        } else {
+            showFeedback('保存失败：' + saveResult.error, false)
+        }
+    }
+    savingDir.value = false
+}
+
+async function resetWorkspaceDir(): Promise<void> {
+    savingDir.value = true
+    const result = await desktopApi.file.resetWorkspaceDir()
+    if (result.ok) {
+        workspaceDirInput.value = result.data
+        showFeedback('已重置为默认（用户目录/bibi）', true)
+    } else {
+        showFeedback('重置失败：' + result.error, false)
+    }
+    savingDir.value = false
 }
 </script>
 
@@ -252,6 +316,12 @@ async function clearApiKey(): Promise<void> {
 .memory-threshold-input {
     width: 76px;
     text-align: center;
+}
+
+.workspace-dir-input {
+    flex: 1;
+    cursor: default;
+    color: var(--bb-text-secondary);
 }
 
 .setting-feedback {

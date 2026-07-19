@@ -402,7 +402,8 @@ export const IPC_SCHEMAS = {
             z.tuple([
                 z.literal('last_conversation_id'),
                 z.union([z.string(), z.null(), z.undefined()])
-            ])
+            ]),
+            z.tuple([z.literal('agent_workspace_dir'), z.union([z.string(), z.undefined()])])
         ]),
         set: z.union([
             z.tuple([z.literal('amount_mask'), z.boolean()]),
@@ -410,8 +411,16 @@ export const IPC_SCHEMAS = {
             z.tuple([z.literal('stt_enabled'), z.boolean()]),
             z.tuple([z.literal('stt_model'), sttModelIdSchema]),
             z.tuple([z.literal('theme'), themeModeSchema]),
-            z.tuple([z.literal('last_conversation_id'), z.union([z.string(), z.null()])])
+            z.tuple([z.literal('last_conversation_id'), z.union([z.string(), z.null()])]),
+            z.tuple([z.literal('agent_workspace_dir'), z.string()])
         ])
+    },
+    file: {
+        selectDirectory: z.tuple([]),
+        openFile: z.tuple([z.string().min(1)]),
+        getWorkspaceDir: z.tuple([]),
+        setWorkspaceDir: z.tuple([z.string().min(1)]),
+        resetWorkspaceDir: z.tuple([])
     },
     app: {
         reportRendererError: z.tuple([

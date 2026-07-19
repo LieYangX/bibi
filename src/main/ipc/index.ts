@@ -17,6 +17,7 @@ import { registerWindowIpc } from './window.ipc'
 import { registerAgentIpc } from '../agent/ipc/agent.ipc'
 import { registerSttIpc } from './stt.ipc'
 import { registerWeatherIpc } from './weather.ipc'
+import { registerFileIpc } from './file.ipc'
 
 export function registerIpcHandlers(): void {
     registerUserIpc()
@@ -31,6 +32,7 @@ export function registerIpcHandlers(): void {
     registerAppIpc()
     registerWindowIpc()
     registerAgentIpc()
+    registerFileIpc()
     registerSttIpc()
     registerTodoIpc()
 }

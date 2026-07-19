@@ -66,7 +66,9 @@ const TOOL_CN: Record<string, string> = {
     createUserTodo: '创建待办',
     deleteUserTodo: '删除待办',
     queryUserTodos: '查询待办',
-    updateUserTodo: '修改待办'
+    updateUserTodo: '修改待办',
+    executeCommand: '执行命令',
+    editFile: '编辑文件'
 }
 
 const MAX_AGENT_STEPS = 10
@@ -246,6 +248,12 @@ ${context.soulMemory || '暂无已提炼的灵魂记忆'}
 \`\`\`bibi-card
 {"title": "账户总览", "fields": [{"label": "总资产", "value": "12,580.00"}, {"label": "本月支出", "value": "3,240.50", "color": "negative"}, {"label": "本月收入", "value": "8,500.00", "color": "positive"}]}
 \`\`\`
+
+**文件** - 适用于命令行执行或文件编辑的结果展示（可点击打开文件）：
+\`\`\`bibi-file
+{"path": "/Users/xxx/bibi/src/test.ts", "action": "modified", "size": 1234}
+\`\`\`
+action 取值：created（新文件）、modified（已修改）、deleted（已删除）、ran（已执行命令）。
 
 使用规则：
 1. 结构化块之后仍保留 1-2 句文字总结。

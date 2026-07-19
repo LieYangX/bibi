@@ -117,6 +117,14 @@ const electronAPI: ElectronAPI = {
     weather: {
         getCurrent: (forceRefresh) => invokeWithLog(IPC_CHANNELS.weather.getCurrent, forceRefresh)
     },
+    file: {
+        selectDirectory: () => invokeWithLog(IPC_CHANNELS.file.selectDirectory),
+        openFile: (path: string) => invokeWithLog(IPC_CHANNELS.file.openFile, path),
+        getWorkspaceDir: () => invokeWithLog(IPC_CHANNELS.file.getWorkspaceDir),
+        setWorkspaceDir: (basePath: string) =>
+            invokeWithLog(IPC_CHANNELS.file.setWorkspaceDir, basePath),
+        resetWorkspaceDir: () => invokeWithLog(IPC_CHANNELS.file.resetWorkspaceDir)
+    },
     import: {
         selectFile: (source: ImportSource) => invokeWithLog(IPC_CHANNELS.import.selectFile, source),
         parseFile: (fileToken: string, source: ImportSource) =>

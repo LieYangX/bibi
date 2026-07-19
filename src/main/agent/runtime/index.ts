@@ -16,6 +16,7 @@ import {
     queryAgentTasksTool,
     clearAgentTasksTool
 } from './task-planning-tools'
+import { executeCommandTool, editFileTool } from './system-tools'
 
 /** 任务规划工具信息 */
 const taskPlanningToolInfos: AgentToolInfo[] = [
@@ -38,6 +39,20 @@ const taskPlanningToolInfos: AgentToolInfo[] = [
     {
         name: 'clearAgentTasks',
         description: (clearAgentTasksTool as Tool & { description?: string }).description ?? '',
+        parameters: {}
+    }
+]
+
+/** 系统工具信息 */
+const systemToolInfos: AgentToolInfo[] = [
+    {
+        name: 'executeCommand',
+        description: (executeCommandTool as Tool & { description?: string }).description ?? '',
+        parameters: {}
+    },
+    {
+        name: 'editFile',
+        description: (editFileTool as Tool & { description?: string }).description ?? '',
         parameters: {}
     }
 ]
@@ -68,7 +83,9 @@ export function createRuntimeTools(
             : queryAgentTasksTool,
         clearAgentTasks: runContext
             ? wrapToolContext(clearAgentTasksTool, runContext)
-            : clearAgentTasksTool
+            : clearAgentTasksTool,
+        executeCommand: executeCommandTool,
+        editFile: editFileTool
     }
 }
 
@@ -101,9 +118,11 @@ function wrapToolContext(rawTool: Tool, runContext: AgentRunContext): Tool {
  * @author xiangwei
  */
 export function getRuntimeToolInfos(): AgentToolInfo[] {
-    return [skillLoaderInfo, ...memoryToolInfos, ...taskPlanningToolInfos].map((info) => ({
-        name: info.name,
-        description: info.description,
-        parameters: {}
-    }))
+    return [skillLoaderInfo, ...memoryToolInfos, ...taskPlanningToolInfos, ...systemToolInfos].map(
+        (info) => ({
+            name: info.name,
+            description: info.description,
+            parameters: {}
+        })
+    )
 }

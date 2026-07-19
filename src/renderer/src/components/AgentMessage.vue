@@ -113,6 +113,10 @@
                         v-else-if="seg.entry?.data_type === 'card'"
                         :data="seg.entry.data as any"
                     />
+                    <StructuredFile
+                        v-else-if="seg.entry?.data_type === 'file'"
+                        :data="seg.entry.data as any"
+                    />
                 </template>
             </div>
             <div v-if="message.content" class="bb-msg__meta bb-msg__meta--ai">
@@ -139,6 +143,7 @@ import StructuredChart from './StructuredChart.vue'
 
 const ToolResultDetail = defineAsyncComponent(() => import('./ToolResultDetail.vue'))
 const StructuredCard = defineAsyncComponent(() => import('./StructuredCard.vue'))
+const StructuredFile = defineAsyncComponent(() => import('./StructuredFile.vue'))
 
 const props = defineProps<{
     message: {

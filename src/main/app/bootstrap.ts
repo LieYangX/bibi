@@ -17,6 +17,7 @@ import { wechatChannelService } from '../agent/wechat-channel.service'
 import { getCurrentUserId } from '../services/session.service'
 import { userExists } from '../services/user.service'
 import { backfillCategoryColors } from '../database/seed'
+import { ensureDefaultWorkspaceDir } from '../services/workspace.service'
 
 const APP_ID = 'com.personal.bibi'
 const STARTUP_ERROR_TITLE = '笔笔启动失败'
@@ -179,6 +180,9 @@ async function initializeApplication(): Promise<void> {
         app.quit()
         return
     }
+
+    // 确保默认工作目录存在（用户未设置自定义目录时才自动创建）
+    await ensureDefaultWorkspaceDir()
 
     await restoreLastWechatConnection()
     registerIpcHandlers()

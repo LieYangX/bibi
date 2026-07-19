@@ -194,6 +194,41 @@ function buildSkillCatalog(skillDefs: SkillDefinition[]): string {
  * @returns 格式化后的工具目录文本
  * @author xiangwei
  */
+/** 工具英文名 → 中文名（用于系统提示词中的工具目录） */
+const TOOL_CN_LABEL: Record<string, string> = {
+    queryTransactions: '流水查询',
+    queryRecentTransactions: '最近流水',
+    queryAccountBalance: '账户余额',
+    queryMonthlySummary: '月度汇总',
+    queryYearlySummary: '年度汇总',
+    queryCategorySummary: '分类统计',
+    queryBudgetProgress: '预算进度',
+    evaluate: '表达式计算',
+    summarize: '数据汇总',
+    compareValues: '数值对比',
+    convertCentsToYuan: '单位换算',
+    analyzeTrend: '趋势分析',
+    detectAnomalies: '异常检测',
+    comparePeriods: '周期对比',
+    createTransaction: '记账',
+    deleteTransaction: '删除流水',
+    queryAllAccounts: '账户列表',
+    queryAllCategories: '分类列表',
+    getSkill: '加载 Skill',
+    readLocalMemory: '读取本地记忆',
+    writeLocalMemory: '写入本地记忆',
+    createAgentTasks: '创建任务清单',
+    updateAgentTaskStatus: '更新任务状态',
+    queryAgentTasks: '查询任务进度',
+    clearAgentTasks: '清空任务清单',
+    createUserTodo: '创建待办',
+    deleteUserTodo: '删除待办',
+    queryUserTodos: '查询待办',
+    updateUserTodo: '修改待办',
+    executeCommand: '执行命令',
+    editFile: '编辑文件'
+}
+
 function buildToolCatalog(groupedTools: ToolGroupInfo[]): string {
     const toolKey = groupedTools
         .map(
@@ -206,7 +241,9 @@ function buildToolCatalog(groupedTools: ToolGroupInfo[]): string {
         const toolSections = groupedTools
             .map(
                 (group) =>
-                    `**${group.label}**：${group.tools.map((t) => `${t.name}（${t.description}）`).join('、')}`
+                    `**${group.label}**：${group.tools
+                        .map((t) => `${TOOL_CN_LABEL[t.name] || t.name}（${t.description}）`)
+                        .join('、')}`
             )
             .join('\n')
 

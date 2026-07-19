@@ -181,8 +181,9 @@ export interface ConversationDetail extends Conversation {
  * - table：二维表格（如流水列表、分类对比）
  * - chart：图表（如月度趋势、分类占比）
  * - card：摘要卡片（如余额总览、单条流水详情）
+ * - file：文件条目（可点击打开）
  */
-export type StructuredDataType = 'table' | 'chart' | 'card'
+export type StructuredDataType = 'table' | 'chart' | 'card' | 'file'
 
 /** 表格结构化数据 */
 export interface StructuredTableData {
@@ -213,10 +214,20 @@ export interface StructuredCardData {
     }>
 }
 
+/** 文件结构化数据 */
+export interface StructuredFileData {
+    /** 文件路径（绝对路径） */
+    path: string
+    /** 操作：created / modified / deleted / ran */
+    action: string
+    /** 文件大小（可选，字节） */
+    size?: number
+}
+
 /** 结构化数据条目（前端解析或后端发射的统一格式） */
 export interface StructuredDataEntry {
     data_type: StructuredDataType
-    data: StructuredTableData | StructuredChartData | StructuredCardData
+    data: StructuredTableData | StructuredChartData | StructuredCardData | StructuredFileData
 }
 
 // ========== 流式事件 ==========
@@ -267,7 +278,8 @@ export interface StreamEvent {
         /** 结构化数据标记，前端据此选择渲染组件 */
         data_type?: StructuredDataType
         /** 结构化的载荷数据，与 data_type 配对使用 */
-        structured_data?: StructuredTableData | StructuredChartData | StructuredCardData
+        structured_data?:
+            StructuredTableData | StructuredChartData | StructuredCardData | StructuredFileData
     }
     /** chunk 事件携带的增量数据 */
     id?: string

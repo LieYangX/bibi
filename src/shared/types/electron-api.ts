@@ -107,6 +107,13 @@ export interface ElectronAPI {
     weather: {
         getCurrent: (forceRefresh?: boolean) => Promise<IpcResult<WeatherSnapshot>>
     }
+    file: {
+        selectDirectory: () => Promise<IpcResult<string | null>>,
+        openFile: (path: string) => Promise<IpcResult>,
+        getWorkspaceDir: () => Promise<IpcResult<string>>,
+        setWorkspaceDir: (basePath: string) => Promise<IpcResult<string>>,
+        resetWorkspaceDir: () => Promise<IpcResult<string>>
+    },
     import: {
         selectFile: (source: ImportSource) => Promise<IpcResult<string | null>>
         parseFile: (

@@ -29,8 +29,8 @@ export function parseStructuredContent(content: string): ContentSegment[] {
     if (!content) return [{ type: 'text', text: '' }]
 
     const segments: ContentSegment[] = []
-    // 匹配 ```bibi-table / ```bibi-chart / ```bibi-card 块
-    const blockRegex = /```(bibi-table|bibi-chart|bibi-card)\s*\n([\s\S]*?)```/g
+    // 匹配 ```bibi-table / ```bibi-chart / ```bibi-card / ```bibi-file 块
+    const blockRegex = /```(bibi-table|bibi-chart|bibi-card|bibi-file)\s*\n([\s\S]*?)```/g
     let lastIndex = 0
     let match: RegExpExecArray | null
 
@@ -88,11 +88,32 @@ function parseBlock(langTag: string, jsonStr: string): StructuredDataEntry | nul
                 return parseChartBlock(parsed)
             case 'bibi-card':
                 return parseCardBlock(parsed)
+            case 'bibi-file':
+                return parseFileBlock(parsed)
             default:
                 return null
         }
     } catch {
         return null
+    }
+}
+
+/**
+ * 解析文件块
+ *
+ * @param data 解析后的 JSON 对象
+ * @returns 结构化条目
+ * @author xiangwei
+ */
+function parseFileBlock(data: Record<string, unknown>): StructuredDataEntry | null {
+    if (typeof data.path !== 'string' || !data.path) return null
+    return {
+        data_type: 'file',
+        data: {
+            path: data.path,
+            action: typeof data.action === 'string' ? data.action : 'modified',
+            size: typeof data.size === 'number' ? data.size : undefined
+        }
     }
 }
 

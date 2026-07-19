@@ -1373,7 +1373,9 @@ const TOOL_CN_MAP: Record<string, string> = {
     createUserTodo: '创建待办',
     deleteUserTodo: '删除待办',
     queryUserTodos: '查询待办',
-    updateUserTodo: '修改待办'
+    updateUserTodo: '修改待办',
+    executeCommand: '执行命令',
+    editFile: '编辑文件'
 }
 function toolDisplayName(name: string): string {
     return TOOL_CN_MAP[name] || name
