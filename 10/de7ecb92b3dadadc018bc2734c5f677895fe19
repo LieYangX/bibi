@@ -1,0 +1,193 @@
+src/main/ipc/index.ts
+  s_78c9aacf49fee8::t_78b1048fd80866 13,35
+src/main/agent/tools/registry.ts
+  s_78c9aacf49fee8::t_045d2766f2caac 109-110
+  s_78c9aacf49fee8::t_f42c4812a4575c 45
+  s_78c9aacf49fee8::t_90a2aef09070fc 18
+  s_78c9aacf49fee8::t_ebf5419f252a36 17,19
+  s_78c9aacf49fee8::t_6671867b8c9c8a 46-47
+  s_78c9aacf49fee8::t_d438dd502b39ea 108
+  s_78c9aacf49fee8::t_d40fad4ae23ee4 135,137,141-142,144,164,167,171,185,195-198
+src/shared/types/agent.ts
+  s_78c9aacf49fee8::t_f4827951f7b94a 188-196,224-225
+  s_78c9aacf49fee8::t_16363217a0e5cf 323-326
+src/main/agent/capabilities/task-planning/tools/clear-agent-tasks.tool.ts
+  s_78c9aacf49fee8::t_c42744f8f3484a 1-29
+src/shared/types/todo.ts
+  s_78c9aacf49fee8::t_d38a1dbcadda25 1-12,14-15,17-25,27,29-32,34,36-43
+  s_78c9aacf49fee8::t_219a1029099200 13,16,26,28,33,35
+src/main/agent/orchestrator.ts
+  s_78c9aacf49fee8::t_5163f4508c93dd 23
+  s_78c9aacf49fee8::t_513a4f757c6cb5 24,31-32
+  s_78c9aacf49fee8::t_ed642569110cbe 59-62
+  s_78c9aacf49fee8::t_04f4cd36470741 63-67
+  s_78c9aacf49fee8::t_c2e7ac42c127ca 214
+src/main/database/drizzle/migrations/index.ts
+  s_78c9aacf49fee8::t_57555fac34dc22 64-66
+  s_78c9aacf49fee8::t_fc37327868e9fe 58-60
+  s_78c9aacf49fee8::t_f8456940bc92bc 61-63
+src/renderer/src/components/ContextPanel.vue
+  s_78c9aacf49fee8::t_1e3d8fcb953faf 123,140-170
+  s_78c9aacf49fee8::t_0176ec86d2f850 190,208-209,219,230,243-263
+  s_78c9aacf49fee8::t_76c141932ddaf0 616-667
+  s_78c9aacf49fee8::t_ce773908ada630 171-172
+  s_78c9aacf49fee8::t_0390ca5fb392c5 264
+src/shared/types/index.ts
+  s_78c9aacf49fee8::t_1b3148a25b6b69 17
+tests/integration/database.integration.test.ts
+  s_78c9aacf49fee8::t_8727eab0851f3c 61
+src/main/database/drizzle/migrations/0007_robust_natasha_romanoff.sql
+  s_78c9aacf49fee8::t_417b67c0c26def 16
+  s_78c9aacf49fee8::t_03c2f6ad03511a 1-15
+src/renderer/src/views/sections/TodoSection.vue
+  s_78c9aacf49fee8::t_f7dd07b20b3839 3-18,47,50,56,84-134,149,154-171,191,198,201,217-224,231-233,276-279,282-285,287-291,308-309,311,314-317,320,323,325,328-333,338,364-366,376-381,419-420,423-424,429,436-441,466,493,508,512-513,528-531,533-535,538,546,561,577,583-586,591,597-601
+  s_78c9aacf49fee8::t_105a07daf5ffeb 23
+  s_230033d09146b3::t_88965d3d889b14 1-2,19-22,24-46,48-49,51-55,57-82,135-148,150-153,172-190,192-197,199-200,202-216,225-230,234-275,280-281,286,292-307,321-322,324,326-327,334-337,339-363,367-375,382-418,421-422,425,427-428,435,442-465,467-492,494-507,509-511,514-527,532,536-537,539-545,547-560,562-576,578-582,587-590,592-596,602-603
+  s_230033d09146b3::t_9483d7a7fd73be 83
+  s_78c9aacf49fee8::t_804c206ff99cf1 310,312-313,318-319
+  s_78c9aacf49fee8::t_28b6ea4270bd41 426,430-434
+src/main/agent/capabilities/task-planning/SKILL.md
+  s_78c9aacf49fee8::t_215ea674b4c105 1-11,13-17,19-24,26-32,34-39
+  s_78c9aacf49fee8::t_3c09f4b457728a 12,18,25,33
+src/main/database/drizzle/migrations/meta/0009_snapshot.json
+  s_78c9aacf49fee8::t_2dcf2463630e2d 2-1364,1367-1372,1374-1375,1377
+  s_78c9aacf49fee8::t_6c2d66aefe5b01 1,1365-1366,1373,1376
+src/shared/ipc/schemas.ts
+  s_78c9aacf49fee8::t_b91b80a79a51fd 222-227,231-236,240-256
+  s_78c9aacf49fee8::t_27a046cc87d575 352-358
+  s_78c9aacf49fee8::t_533dd73bc7dd72 228-230,237-239
+  s_78c9aacf49fee8::t_ca071741118337 505-507
+src/renderer/src/views/AgentChatView.vue
+  s_78c9aacf49fee8::t_a4e5b690f0f3c8 1368-1376
+src/main/agent/capabilities/task-planning/index.ts
+  s_78c9aacf49fee8::t_d81de1b40f4bed 1-13
+src/shared/ipc/channels.ts
+  s_78c9aacf49fee8::t_b4f9014fcb4caa 134-138
+  s_78c9aacf49fee8::t_a2857c6850ebd9 45-51
+src/renderer/src/views/TodosView.vue
+  s_230033d09146b3::t_6808589c878f09 1-17
+tests/integration/todo.integration.test.ts
+  s_78c9aacf49fee8::t_4ac09b7c76d833 1-133
+src/main/agent/capabilities/user-todo/index.ts
+  s_78c9aacf49fee8::t_9abedf62c46564 1-13
+src/main/agent/capabilities/task-planning/tools/query-agent-tasks.tool.ts
+  s_78c9aacf49fee8::t_7cc887d5058a80 1-38
+src/main/database/drizzle/migrations/meta/0008_snapshot.json
+  s_78c9aacf49fee8::t_93b55d21bf5177 1,1351-1352,1359,1362
+  s_78c9aacf49fee8::t_3c09f4b457728a 2-1350,1353-1358,1360-1361,1363
+src/main/agent/capabilities/user-todo/tools/create-user-todo.tool.ts
+  s_78c9aacf49fee8::t_add0ca24c33993 26-33,38-39
+  s_78c9aacf49fee8::t_2dcf2463630e2d 15,20
+  s_78c9aacf49fee8::t_88eb27b9cbbae8 1-11,13,16,21-25,34,41-42,46-48,50-52
+  s_78c9aacf49fee8::t_5bb73623f4779e 12,14,17-19,35-37,40,43-45,49
+src/renderer/src/router/index.ts
+  s_78c9aacf49fee8::t_a40b120175543d 43-46
+  s_78c9aacf49fee8::t_99a54c3f076ab4 42
+src/main/agent/capabilities/user-todo/tools/update-user-todo.tool.ts
+  s_78c9aacf49fee8::t_2dcf2463630e2d 18
+  s_78c9aacf49fee8::t_5df90351d566b3 1-12,14-15,17,19,25-27,29-54,61,63,65-66,68-74,78-82,84,86-87,89-91
+  s_78c9aacf49fee8::t_d319b094ed0f68 13,20-24,28,55-60,62,64,67,75-77,83,85,88
+  s_78c9aacf49fee8::t_a5b844c7784aac 16
+src/main/agent/capabilities/user-todo/tools/query-user-todos.tool.ts
+  s_78c9aacf49fee8::t_0df47fb6f90f57 1-51,53,56-59,61-65
+  s_78c9aacf49fee8::t_19df5d14a8d3a1 52,54-55,60
+src/main/database/drizzle/migrations/meta/0007_snapshot.json
+  s_78c9aacf49fee8::t_105a07daf5ffeb 2-1250,1253-1258,1260-1261,1263
+  s_78c9aacf49fee8::t_03c2f6ad03511a 1,1251-1252,1259,1262
+src/renderer/src/composables/useRefreshBus.ts
+  s_78c9aacf49fee8::t_00bbd6c73ab17e 6,14-15
+src/main/ipc/todo.ipc.ts
+  s_78c9aacf49fee8::t_4ae1c7b75e8700 1-7,9-42
+  s_78c9aacf49fee8::t_105a07daf5ffeb 8
+src/renderer/src/stores/todo.store.ts
+  s_78c9aacf49fee8::t_39e090f167969f 1-8,10-120
+  s_78c9aacf49fee8::t_105a07daf5ffeb 9
+src/main/database/drizzle/migrations/0009_kind_chameleon.sql
+  s_78c9aacf49fee8::t_6c2d66aefe5b01 1-2
+src/renderer/src/stores/agent.store.ts
+  s_78c9aacf49fee8::t_b08f35248576bd 997
+  s_78c9aacf49fee8::t_437d76d19a4cd5 128-130
+  s_78c9aacf49fee8::t_3f1b2633ab493d 1019-1039,1052,1073-1074
+  s_78c9aacf49fee8::t_c8063bc5b50d08 274-279
+  s_78c9aacf49fee8::t_e6df8ba096e7fc 17
+src/preload/index.ts
+  s_78c9aacf49fee8::t_e819df56258aad 104-111
+  s_78c9aacf49fee8::t_f97142fe72ad98 220-222
+  s_78c9aacf49fee8::t_ab2c7b24679786 13,21,25
+src/renderer/src/components/AppLayout.vue
+  s_78c9aacf49fee8::t_2b8a8a1450cee8 143-144
+  s_78c9aacf49fee8::t_3ea71f9931ca54 120
+src/main/agent/skill-registry.ts
+  s_78c9aacf49fee8::t_d73485f8a3309c 20
+  s_78c9aacf49fee8::t_b2176ec88c3d3e 77-82
+  s_78c9aacf49fee8::t_a5e7e176109237 83-88
+  s_78c9aacf49fee8::t_a71baaffd979a1 21
+src/main/agent/capabilities/user-todo/SKILL.md
+  s_78c9aacf49fee8::t_a5b844c7784aac 12-16,18,21,28
+  s_78c9aacf49fee8::t_b88862a795d0f6 1-11,17,19-20,22-27,29-33
+src/main/agent/ipc/agent.ipc.ts
+  s_78c9aacf49fee8::t_4476a8c85bceee 29
+  s_78c9aacf49fee8::t_3b0fd8cbe993b0 443-458
+src/main/services/agent-task.service.ts
+  s_78c9aacf49fee8::t_3c09f4b457728a 54,143,164
+  s_78c9aacf49fee8::t_33b281f3b0613c 1-53,55-142,144-163,165
+src/main/agent/capabilities/task-planning/tools/create-agent-tasks.tool.ts
+  s_78c9aacf49fee8::t_35d4f6a6e2a704 1-45
+src/main/services/todo.service.ts
+  s_78c9aacf49fee8::t_105a07daf5ffeb 140
+  s_78c9aacf49fee8::t_4e5cd706e4e1cb 50,53
+  s_78c9aacf49fee8::t_99ccbec41125de 82,84
+  s_78c9aacf49fee8::t_d0da775c3f6245 1-49,51-52,54-81,83,85-139,141-142
+src/main/database/drizzle/schema.ts
+  s_78c9aacf49fee8::t_dae1a9be484376 326-338,341,343-357
+  s_78c9aacf49fee8::t_14b966059df1bf 339,342
+  s_78c9aacf49fee8::t_105a07daf5ffeb 340
+  s_78c9aacf49fee8::t_b46b5ea3b9241e 358-388
+src/main/agent/capabilities/task-planning/tools/update-agent-task-status.tool.ts
+  s_78c9aacf49fee8::t_38bdd5f7e99dd2 1-44
+src/renderer/src/app/session/reset-user-data.ts
+  s_78c9aacf49fee8::t_634d35f3331ff1 11,29
+src/main/agent/agent-run-context.ts
+  s_78c9aacf49fee8::t_875c31fd8c3dcd 1-46
+tests/integration/agent-task.integration.test.ts
+  s_78c9aacf49fee8::t_ec2d78d66d2178 1-32,34-67,69-76,80-83,85-93,95-102,104,106-111,117-120
+  s_78c9aacf49fee8::t_6995d0a518bb74 68
+  s_78c9aacf49fee8::t_786af149517601 112-116
+  s_78c9aacf49fee8::t_538c2e5a11fca9 33,84,94,103
+  s_78c9aacf49fee8::t_3c09f4b457728a 77-79,105
+src/main/database/drizzle/migrations/meta/_journal.json
+  s_78c9aacf49fee8::t_2dcf2463630e2d 53-73
+src/main/agent/context/system-prompt.ts
+  s_78c9aacf49fee8::t_6981ce682b2301 20-22
+src/main/database/drizzle/migrations/0008_cold_lady_mastermind.sql
+  s_78c9aacf49fee8::t_93b55d21bf5177 1-15
+src/main/agent/capabilities/user-todo/tools/delete-user-todo.tool.ts
+  s_78c9aacf49fee8::t_0ef9e8d5ca25d3 1-52
+src/shared/types/electron-api.ts
+  s_78c9aacf49fee8::t_105a07daf5ffeb 8
+  s_78c9aacf49fee8::t_7a602710d78e56 96-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "10de7ecb92b3dadadc018bc2734c5f677895fe19",
+  "prompts": {},
+  "sessions": {
+    "s_230033d09146b3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_08828b94dffeCrMKpNyzOT33JV",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    },
+    "s_78c9aacf49fee8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_0883fee42ffeo4nMTAPWII2vWu",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
