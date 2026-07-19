@@ -513,6 +513,7 @@ export const IPC_SCHEMAS = {
         toggleMcpServer: z.tuple([mcpServerNameSchema, z.boolean()]),
         inspectMcpServer: z.tuple([mcpServerNameSchema]),
         listTasks: z.tuple([idSchema]),
-        clearTasks: z.tuple([idSchema])
+        clearTasks: z.tuple([idSchema]),
+        confirmTool: z.tuple([z.string().min(1), z.boolean()])
     }
 } as const

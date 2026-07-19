@@ -101,22 +101,27 @@
             <div v-if="message.content" class="bb-msg__content bb-msg__content--ai">
                 <template v-for="(seg, segIndex) in parsedSegments" :key="segIndex">
                     <MarkdownContent v-if="seg.type === 'text'" :content="seg.text || ''" />
-                    <StructuredTable
-                        v-else-if="seg.entry?.data_type === 'table'"
-                        :data="seg.entry.data as any"
-                    />
-                    <StructuredChart
-                        v-else-if="seg.entry?.data_type === 'chart'"
-                        :data="seg.entry.data as any"
-                    />
-                    <StructuredCard
-                        v-else-if="seg.entry?.data_type === 'card'"
-                        :data="seg.entry.data as any"
-                    />
-                    <StructuredFile
-                        v-else-if="seg.entry?.data_type === 'file'"
-                        :data="seg.entry.data as any"
-                    />
+                    <div
+                        v-else-if="seg.entry"
+                        class="bb-msg__structured"
+                    >
+                        <StructuredTable
+                            v-if="seg.entry.data_type === 'table'"
+                            :data="seg.entry.data as any"
+                        />
+                        <StructuredChart
+                            v-else-if="seg.entry.data_type === 'chart'"
+                            :data="seg.entry.data as any"
+                        />
+                        <StructuredCard
+                            v-else-if="seg.entry.data_type === 'card'"
+                            :data="seg.entry.data as any"
+                        />
+                        <StructuredFile
+                            v-else-if="seg.entry.data_type === 'file'"
+                            :data="seg.entry.data as any"
+                        />
+                    </div>
                 </template>
             </div>
             <div v-if="message.content" class="bb-msg__meta bb-msg__meta--ai">
@@ -531,5 +536,10 @@ function formatThinkingDuration(durationMs?: number): string {
 }
 .bb-tool-card__chev.open {
     transform: rotate(180deg);
+}
+
+/* 结构化组件之间的间距 */
+.bb-msg__structured + .bb-msg__structured {
+    margin-top: 12px;
 }
 </style>

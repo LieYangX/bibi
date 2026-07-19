@@ -132,6 +132,15 @@ export const useAgentStore = defineStore('agent', () => {
     /** 当前会话的智能体任务清单（由 task_update 事件实时更新，切换会话时重载） */
     const currentTasks = ref<AgentTaskInfo[]>([])
 
+    /** 待用户确认的危险操作 */
+    const pendingConfirmation = ref<{
+        confirmId: string
+        detail: import('@shared/types').ConfirmationDetail
+    } | null>(null)
+
+    /** 当前会话是否完全授权（授权后跳过所有危险操作确认） */
+    const sessionTrusted = ref(false)
+
     const hasConfig = computed(() => !!config.value.apiKey && config.value.enabled)
 
     let cleanupListener: (() => void) | null = null
@@ -284,6 +293,20 @@ export const useAgentStore = defineStore('agent', () => {
             case 'task_update': {
                 if (event.conversationId === currentConversationId.value) {
                     currentTasks.value = event.tasks ?? []
+                }
+                break
+            }
+            case 'confirmation_request': {
+                if (event.confirmId && event.confirmDetail) {
+                    // 已授权当前会话，自动确认所有操作
+                    if (sessionTrusted.value) {
+                        desktopApi.agent.confirmTool(event.confirmId, true).catch(() => {})
+                        break
+                    }
+                    pendingConfirmation.value = {
+                        confirmId: event.confirmId,
+                        detail: event.confirmDetail
+                    }
                 }
                 break
             }
@@ -683,6 +706,7 @@ export const useAgentStore = defineStore('agent', () => {
         queuedMessages.value = []
         priorityQueuedMessage = null
         isAwaitingResponse.value = false
+        sessionTrusted.value = false
         currentThinking.value = ''
         nextMessageCursor.value = null
         messageError.value = null
@@ -718,6 +742,7 @@ export const useAgentStore = defineStore('agent', () => {
     async function loadConversation(id: string): Promise<boolean> {
         if (isProcessing.value) return false
         const requestId = ++conversationRequestId
+        sessionTrusted.value = false
         const generation = captureUserRequestGeneration()
         isLoadingMessages.value = true
         messageError.value = null
@@ -1047,6 +1072,14 @@ export const useAgentStore = defineStore('agent', () => {
         currentTasks.value = []
     }
 
+    /** 确认或拒绝危险操作 */
+    async function confirmTool(approved: boolean): Promise<void> {
+        const pending = pendingConfirmation.value
+        if (!pending) return
+        pendingConfirmation.value = null
+        await desktopApi.agent.confirmTool(pending.confirmId, approved)
+    }
+
     return {
         config,
         conversations,
@@ -1060,6 +1093,8 @@ export const useAgentStore = defineStore('agent', () => {
         messages,
         toolCallCounts,
         currentTasks,
+        pendingConfirmation,
+        sessionTrusted,
         isProcessing,
         isAwaitingResponse,
         isStopping,
@@ -1082,6 +1117,7 @@ export const useAgentStore = defineStore('agent', () => {
         findMessageById,
         loadTasks,
         clearTasks,
+        confirmTool,
         sendMessage,
         connectWechat,
         disconnectWechat,

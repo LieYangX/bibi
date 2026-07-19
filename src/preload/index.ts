@@ -227,7 +227,10 @@ const electronAPI: ElectronAPI = {
             return () => ipcRenderer.removeListener(IPC_CHANNELS.agent.event, listener)
         },
         listTasks: (conversationId) => invokeWithLog(IPC_CHANNELS.agent.listTasks, conversationId),
-        clearTasks: (conversationId) => invokeWithLog(IPC_CHANNELS.agent.clearTasks, conversationId)
+        clearTasks: (conversationId) =>
+            invokeWithLog(IPC_CHANNELS.agent.clearTasks, conversationId),
+        confirmTool: (confirmId, approved) =>
+            invokeWithLog(IPC_CHANNELS.agent.confirmTool, confirmId, approved)
     }
 }
 

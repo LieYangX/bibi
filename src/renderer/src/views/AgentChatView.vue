@@ -265,6 +265,20 @@
                                 <BrainCircuit :size="15" /> 深度思考
                             </button>
                             <button
+                                class="agent-foot-btn"
+                                :class="{ 'agent-foot-btn--danger': agentStore.sessionTrusted }"
+                                :title="
+                                    agentStore.sessionTrusted
+                                        ? '已授权，本会话不再弹确认窗'
+                                        : '完全授权本会话，跳过所有操作确认'
+                                "
+                                @click="agentStore.sessionTrusted = !agentStore.sessionTrusted"
+                            >
+                                <ShieldCheck v-if="agentStore.sessionTrusted" :size="15" />
+                                <ShieldOff v-else :size="15" />
+                                {{ agentStore.sessionTrusted ? '已授权' : '完全授权' }}
+                            </button>
+                            <button
                                 v-if="sttEnabled"
                                 class="agent-foot-btn agent-mic-btn"
                                 :class="{
@@ -939,6 +953,34 @@
                 </button>
             </template>
         </BbModal>
+
+        <!-- 危险操作确认弹窗 -->
+        <BbModal
+            :visible="!!agentStore.pendingConfirmation"
+            :title="agentStore.pendingConfirmation?.detail.title || '确认操作'"
+            width="480px"
+            @update:visible="onCloseConfirm"
+        >
+            <div class="bb-confirm-body">
+                <p class="bb-confirm-desc">
+                    {{ agentStore.pendingConfirmation?.detail.description }}
+                </p>
+                <pre
+                    v-if="agentStore.pendingConfirmation?.detail.command"
+                    class="bb-confirm-code"
+                    >{{ agentStore.pendingConfirmation?.detail.command }}</pre>
+                <pre
+                    v-if="agentStore.pendingConfirmation?.detail.filePath"
+                    class="bb-confirm-code"
+                    >{{ agentStore.pendingConfirmation?.detail.filePath }}</pre>
+            </div>
+            <template #footer>
+                <button class="bb-btn" @click="agentStore.confirmTool(false)">拒绝</button>
+                <button class="bb-btn bb-btn-primary" @click="agentStore.confirmTool(true)">
+                    确认执行
+                </button>
+            </template>
+        </BbModal>
     </div>
 </template>
 
@@ -981,7 +1023,9 @@ import {
     ReceiptText,
     PiggyBank,
     PanelRight,
-    History
+    History,
+    ShieldCheck,
+    ShieldOff
 } from '@lucide/vue'
 import { desktopApi } from '../api/desktop-api'
 import type { McpServerConfig, SkillDetail, SttProgressEvent } from '@shared/types'
@@ -1917,6 +1961,13 @@ async function loadOlderAndPreserve(): Promise<void> {
     loadingOlderMessages = false
 }
 
+/** 关闭确认弹窗视为拒绝 */
+function onCloseConfirm(): void {
+    if (agentStore.pendingConfirmation) {
+        agentStore.confirmTool(false)
+    }
+}
+
 function onMessagesScroll(): void {
     if (!messagesRef.value) return
     const el = messagesRef.value
@@ -2586,6 +2637,14 @@ onUnmounted(() => {
 .agent-foot-btn--active {
     background: var(--bb-accent-soft);
     color: var(--bb-accent-text);
+}
+.agent-foot-btn--danger {
+    background: var(--bb-danger-light, rgba(239, 68, 68, 0.12));
+    color: var(--bb-danger, #ef4444);
+}
+.agent-foot-btn--danger:hover {
+    background: var(--bb-danger-light, rgba(239, 68, 68, 0.2));
+    color: var(--bb-danger, #ef4444);
 }
 .agent-foot-btn:disabled {
     cursor: not-allowed;
@@ -3500,5 +3559,32 @@ onUnmounted(() => {
 }
 .wechat-connect__error {
     color: var(--bb-danger);
+}
+
+/* ===== 操作确认弹窗（复用了 BbModal，这里仅补充内容区样式） ===== */
+.bb-confirm-body {
+    padding: 0;
+}
+
+.bb-confirm-desc {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: var(--bb-text-secondary);
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.bb-confirm-code {
+    margin: 0 0 8px;
+    padding: 8px 12px;
+    background: var(--bb-bg-input);
+    border-radius: var(--bb-radius-sm);
+    font-family: var(--bb-font-mono);
+    font-size: 12px;
+    color: var(--bb-text-primary);
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 120px;
+    overflow: auto;
 }
 </style>

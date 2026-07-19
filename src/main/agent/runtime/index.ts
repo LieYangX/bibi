@@ -84,8 +84,10 @@ export function createRuntimeTools(
         clearAgentTasks: runContext
             ? wrapToolContext(clearAgentTasksTool, runContext)
             : clearAgentTasksTool,
-        executeCommand: executeCommandTool,
-        editFile: editFileTool
+        executeCommand: runContext
+            ? wrapToolContext(executeCommandTool, runContext)
+            : executeCommandTool,
+        editFile: runContext ? wrapToolContext(editFileTool, runContext) : editFileTool
     }
 }
 

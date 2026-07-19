@@ -9,6 +9,8 @@ import { z } from 'zod'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 import { getWorkspaceDir } from '../../../services/workspace.service'
+import { getCurrentAgentContext } from '../../agent-run-context'
+import { requestUserConfirmation } from '../../confirmation-manager'
 
 const execAsync = promisify(exec)
 
@@ -39,6 +41,28 @@ export const executeCommandTool = tool({
         const platform = process.platform
         const platformName = PLATFORM_LABEL[platform] ?? platform
         const cwd = input.workdir ?? (await getWorkspaceDir())
+
+        // 请求用户确认
+        const ctx = getCurrentAgentContext()
+        if (ctx) {
+            const approved = await requestUserConfirmation(ctx, {
+                title: '执行命令',
+                description: `在目录 ${cwd} 中执行：`,
+                command: input.command,
+                action: 'executeCommand'
+            })
+            if (!approved) {
+                return {
+                    success: false,
+                    platform,
+                    platformName,
+                    exitCode: -1,
+                    stdout: '',
+                    stderr: '用户已拒绝执行此命令',
+                    truncated: false
+                }
+            }
+        }
 
         try {
             const { stdout, stderr } = await execAsync(input.command, {

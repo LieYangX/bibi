@@ -147,6 +147,8 @@ export const IPC_CHANNELS = {
         /** 查询指定会话的智能体任务清单 */
         listTasks: 'agent:listTasks',
         /** 清空指定会话的智能体任务清单 */
-        clearTasks: 'agent:clearTasks'
+        clearTasks: 'agent:clearTasks',
+        /** 用户确认或拒绝危险工具操作 */
+        confirmTool: 'agent:confirmTool'
     }
 } as const

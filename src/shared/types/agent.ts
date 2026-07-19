@@ -232,6 +232,20 @@ export interface StructuredDataEntry {
 
 // ========== 流式事件 ==========
 
+/** 工具确认请求详情 */
+export interface ConfirmationDetail {
+    /** 确认标题 */
+    title: string
+    /** 确认描述 */
+    description: string
+    /** 要执行的命令（executeCommand 时） */
+    command?: string
+    /** 要操作的文件路径（editFile 时） */
+    filePath?: string
+    /** 操作类型 */
+    action: string
+}
+
 export type StreamEventType =
     | 'message'
     | 'thinking'
@@ -243,6 +257,7 @@ export type StreamEventType =
     | 'error'
     | 'task_update'
     | 'structured_data'
+    | 'confirmation_request'
 
 /** 智能体任务清单条目（2 状态：pending / completed） */
 export interface AgentTaskInfo {
@@ -287,6 +302,10 @@ export interface StreamEvent {
     tasks?: AgentTaskInfo[]
     /** structured_data 事件携带的结构化条目列表 */
     structured_entries?: StructuredDataEntry[]
+    /** confirmation_request 事件携带的确认请求 ID */
+    confirmId?: string
+    /** confirmation_request 事件携带的确认详情 */
+    confirmDetail?: ConfirmationDetail
 }
 
 /** 智能体回答被用户主动取消时的统一消息 */
@@ -388,6 +407,8 @@ export interface AgentAPI {
     listTasks: (conversationId: string) => Promise<IpcResult<AgentTaskInfo[]>>
     /** 清空指定会话的智能体任务清单 */
     clearTasks: (conversationId: string) => Promise<IpcResult>
+    /** 确认或拒绝危险工具操作 */
+    confirmTool: (confirmId: string, approved: boolean) => Promise<IpcResult>
 }
 
 export interface SkillDetail {

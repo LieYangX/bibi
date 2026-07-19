@@ -9,6 +9,8 @@ import { z } from 'zod'
 import { readFileSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
 import { getWorkspaceDir, isPathInWorkspace } from '../../../services/workspace.service'
+import { getCurrentAgentContext } from '../../agent-run-context'
+import { requestUserConfirmation } from '../../confirmation-manager'
 
 export const editFileTool = tool({
     description:
@@ -54,6 +56,25 @@ export const editFileTool = tool({
             return {
                 success: false,
                 error: `文件不在工作目录（${workspaceDir}）内，拒绝访问。可在设置中修改工作目录。`
+            }
+        }
+
+        // edit 模式需要用户确认
+        if (input.operation === 'edit') {
+            const ctx = getCurrentAgentContext()
+            if (ctx) {
+                const actionDesc = input.oldString
+                    ? `替换 "${input.oldString.substring(0, 80)}"`
+                    : `修改第 ${input.startLine}${input.endLine ? `-${input.endLine}` : ''} 行`
+                const approved = await requestUserConfirmation(ctx, {
+                    title: '编辑文件',
+                    description: `文件：${absPath}\n操作：${actionDesc}`,
+                    filePath: absPath,
+                    action: 'editFile'
+                })
+                if (!approved) {
+                    return { success: false, error: '用户已拒绝此文件编辑操作' }
+                }
             }
         }
 

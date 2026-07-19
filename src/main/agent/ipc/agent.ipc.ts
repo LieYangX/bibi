@@ -27,6 +27,7 @@ import { loadAgentConfig, updateAgentConfig } from '../agent-config'
 import { toolRegistry } from '../tools/registry'
 import { wechatChannelService } from '../wechat-channel.service'
 import { listAgentTasks, clearAgentTasks } from '../../services/agent-task.service'
+import { resolveUserConfirmation } from '../confirmation-manager'
 import type { WebContents } from 'electron'
 
 /** 活跃的智能体对话任务 */
@@ -459,5 +460,16 @@ export function registerAgentIpc(): void {
         IPC_SCHEMAS.agent.clearTasks,
         '清空任务清单失败',
         async (userId, _event, conversationId) => clearAgentTasks(conversationId, userId)
+    )
+
+    // 用户确认/拒绝危险操作
+    registerUserIpcHandler(
+        IPC_CHANNELS.agent.confirmTool,
+        IPC_SCHEMAS.agent.confirmTool,
+        '确认操作失败',
+        async (_userId, _event, confirmId: string, approved: boolean) => {
+            const found = resolveUserConfirmation(confirmId, approved)
+            if (!found) throw new Error('确认请求已过期或不存在')
+        }
     )
 }
