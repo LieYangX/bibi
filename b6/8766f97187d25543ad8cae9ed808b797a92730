@@ -1,0 +1,24 @@
+doc/修改点.md
+  s_f5633dea0b8ba7::t_2c113cac61c9d6 69
+src/main/agent/orchestrator.ts
+  s_f5633dea0b8ba7::t_2c113cac61c9d6 339-342
+src/renderer/src/App.vue
+  s_f5633dea0b8ba7::t_c77f40965a6611 93-94
+  s_f5633dea0b8ba7::t_085226cb3050c8 70-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "b68766f97187d25543ad8cae9ed808b797a92730",
+  "prompts": {},
+  "sessions": {
+    "s_f5633dea0b8ba7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_088468fbaffeECcHfIQHIjB2dm",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
