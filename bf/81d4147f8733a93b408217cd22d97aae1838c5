@@ -1,0 +1,65 @@
+src/main/agent/memory/conversation-store.ts
+  s_f233246d0b739d::t_eee3b8bcb69ad2 84-103
+  s_f233246d0b739d::t_f0dbde8e88d6fd 83
+src/shared/types/agent.ts
+  s_f233246d0b739d::t_d25ab82145947d 177-221,234,267-270,276-277
+src/main/agent/orchestrator.ts
+  s_f233246d0b739d::t_64bc02c9cb5098 148,155,157-158,163-164
+  s_f233246d0b739d::t_3ed22968ed5a3d 219-231
+  s_f233246d0b739d::t_9c4eee562596ca 292,294-301
+  s_f233246d0b739d::t_395d6724c9ba02 318
+  s_f233246d0b739d::t_1a08133e24d079 304-305
+  s_f233246d0b739d::t_2f6918e829d28c 30
+  s_f233246d0b739d::t_00aadd97bda226 112,127
+  s_f233246d0b739d::t_3e3fe499e7f7e6 180-218,256
+  s_f233246d0b739d::t_89ddfc5c3cdbe4 232-255,257,265
+  s_f233246d0b739d::t_10b6a1a00316e4 290-291,293,302-303,306-307
+src/main/agent/context/system-prompt.ts
+  s_f233246d0b739d::t_c459077158959a 84,86-87
+  s_f233246d0b739d::t_1d50034b2d768d 49
+  s_f233246d0b739d::t_73c5e90ecafb21 56
+src/renderer/src/components/AgentMessage.vue
+  s_f233246d0b739d::t_f81169fc248be7 102-116
+  s_f233246d0b739d::t_feed3ad7cf41d5 204-213
+  s_f233246d0b739d::t_8c3035c622b10f 136-138,141
+  s_f233246d0b739d::t_9223185deb66a0 520
+src/renderer/src/utils/structured-content.ts
+  s_f233246d0b739d::t_2173ac03b6209f 10
+  s_f233246d0b739d::t_914b27670737b7 79
+  s_f233246d0b739d::t_d2e6155e1b0fc2 1-9,11-78,80-156
+src/renderer/src/stores/agent.store.ts
+  s_f233246d0b739d::t_4f9339213bc3a4 53-56
+  s_f233246d0b739d::t_e4f50742e6c13b 213-216,226-228
+tests/unit/system-prompt.test.ts
+  s_f233246d0b739d::t_074b11f5196846 23,32,43-46,58,67,82
+src/renderer/src/components/StructuredTable.vue
+  s_f233246d0b739d::t_d66358b711f04d 73
+  s_f233246d0b739d::t_bcf55e437f281f 1-17,23-25,27-72,74-91,93-96
+  s_f233246d0b739d::t_9e64301280494f 92
+  s_f233246d0b739d::t_234528f1ea5a54 26
+  s_f233246d0b739d::t_914b27670737b7 18-22
+tests/unit/structured-content.test.ts
+  s_f233246d0b739d::t_e8a45112078f53 1-107,109-122,124-129
+  s_f233246d0b739d::t_c1e11ea0d52d86 108,123
+src/renderer/src/components/StructuredChart.vue
+  s_f233246d0b739d::t_a0fa8998204a65 16-24,26-37
+  s_f233246d0b739d::t_3e1542bc7f4149 1-15,25,38-168
+src/renderer/src/components/StructuredCard.vue
+  s_f233246d0b739d::t_9005f17a9dbe84 1-78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "bf81d4147f8733a93b408217cd22d97aae1838c5",
+  "prompts": {},
+  "sessions": {
+    "s_f233246d0b739d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_0876fd8c6ffe39QP4GIEq6vd6h",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
