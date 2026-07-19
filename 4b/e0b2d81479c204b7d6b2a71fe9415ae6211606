@@ -1,0 +1,146 @@
+src/main/agent/runtime/task-planning-tools/query-agent-tasks.tool.ts
+  s_f4117521b96ca8::t_e4d9711cf64bb8 1-38
+src/main/agent/capabilities/transaction-write/SKILL.md
+  s_f4117521b96ca8::t_5deccb0e1b09bc 11,15-19,23-26,30-33
+src/main/agent/capabilities/report/SKILL.md
+  s_f4117521b96ca8::t_90a767c178264d 11,13,15-18,27,37,45,51-54
+src/main/agent/capabilities/calculator/SKILL.md
+  s_f4117521b96ca8::t_8879963cf43950 11,15-19
+src/main/agent/capabilities/analysis/tools/analyze-trend.tool.ts
+  s_f4117521b96ca8::t_cbc35b3184daf6 4,11,14-15,27-30,32
+  s_f4117521b96ca8::t_0998031bdfe6ef 19-21
+src/main/agent/capabilities/analysis/SKILL.md
+  s_f4117521b96ca8::t_4fcedcd7341559 4,11,15-18
+src/main/agent/capabilities/analysis/tools/compare-periods.tool.ts
+  s_f4117521b96ca8::t_cb8ad5beddc253 4,11,14-15,25,27-28,31-34,38,40,47-48,53-54
+src/main/agent/runtime/memory-tools.ts
+  s_f4117521b96ca8::t_341a9931014d54 22,24
+src/main/agent/memory/soul-distiller.ts
+  s_f4117521b96ca8::t_e2b1d211346c8a 22-52
+src/main/agent/memory/conversation-store.ts
+  s_f4117521b96ca8::t_074b0c4df2ed2e 507-509
+  s_f4117521b96ca8::t_93c00e750791c3 488-506,510-591
+tests/integration/database.integration.test.ts
+  s_f4117521b96ca8::t_93a7fda84e1a25 61
+src/main/agent/runtime/task-planning-tools/clear-agent-tasks.tool.ts
+  s_f4117521b96ca8::t_e4d9711cf64bb8 1-29
+src/main/agent/capabilities/data-query/SKILL.md
+  s_f4117521b96ca8::t_f8925e9cd6798c 4,11,15-19
+src/main/agent/capabilities/analysis/tools/detect-anomalies.tool.ts
+  s_f4117521b96ca8::t_0998031bdfe6ef 11-14
+  s_f4117521b96ca8::t_0bafa6d2e92162 4,17-18,28-34,45-48,63,65
+src/main/agent/tools/registry.ts
+  s_f4117521b96ca8::t_37f9786c586359 45
+  s_f4117521b96ca8::t_7416d4a792f0b3 53
+  s_f4117521b96ca8::t_072f001700fb13 3,40-44,46-48,89,93-97,111,115,118-119,157,161-164,166-169,174-189
+  s_f4117521b96ca8::t_a082b4e59554d7 165
+  s_f4117521b96ca8::t_b1b1ab3caa3683 263-270,277-278
+  s_f4117521b96ca8::t_7656ef2ad4566e 130-131,271-276
+  s_f4117521b96ca8::t_b70985615d007d 129,132-149
+  s_f4117521b96ca8::t_0998031bdfe6ef 116
+  s_f4117521b96ca8::t_baa29149fd4fca 190
+src/main/agent/ipc/agent.ipc.ts
+  s_f4117521b96ca8::t_b9cac14240796f 301-305
+tests/unit/tool-registry.test.ts
+  s_f4117521b96ca8::t_fb36db07e2fc7b 22
+  s_f4117521b96ca8::t_1bce56b1c3c62b 11-15
+  s_f4117521b96ca8::t_2f74795cfa6319 5-6,8,18-21,23-39
+src/main/database/drizzle/migrations/index.ts
+  s_f4117521b96ca8::t_4f76bb3e34f52a 67-79
+src/renderer/src/components/ContextPanel.vue
+  s_f4117521b96ca8::t_3b4c8299d5855d 629-630
+tests/unit/system-prompt.test.ts
+  s_f4117521b96ca8::t_1fdf54dd030fd1 111
+  s_f4117521b96ca8::t_ce5f5957eaef0e 22-37,39,48-49,52-74,76-79,83-85
+  s_f4117521b96ca8::t_35169608e69464 114-115
+  s_f4117521b96ca8::t_8c812cb6ee2d64 86-109,112-113
+  s_f4117521b96ca8::t_80dd72929e7afd 4
+src/main/agent/runtime/task-planning-tools/index.ts
+  s_f4117521b96ca8::t_8ff6cc10865ad8 1-10
+src/main/agent/orchestrator.ts
+  s_f4117521b96ca8::t_f73c3d6508682a 203,216,219-228,230
+  s_f4117521b96ca8::t_39de2a9862974a 189-201
+  s_f4117521b96ca8::t_61ddd2d442f62a 208
+  s_f4117521b96ca8::t_514f1fd23ccf94 209
+  s_f4117521b96ca8::t_b65d6b53f3d45d 415,424-431
+  s_f4117521b96ca8::t_410a60f0cd8395 462-465,468-469,475-477,479-483,485-486,489-491,494-496,499-500
+  s_f4117521b96ca8::t_d5617e8247df45 445-461,466-467,470-474,478,484,487-488,492-493,497-498
+  s_f4117521b96ca8::t_1628f05bba59e0 212,214
+  s_f4117521b96ca8::t_c9882e74e6e2e2 22
+  s_f4117521b96ca8::t_bace0980a530e5 444,501-523
+  s_f4117521b96ca8::t_031e8db06cd99e 204-207
+  s_f4117521b96ca8::t_2781e7f9293572 432
+src/main/agent/runtime/task-planning-tools/create-agent-tasks.tool.ts
+  s_f4117521b96ca8::t_dcae19ef830877 10-14,34-43,54,63-64,71
+  s_f4117521b96ca8::t_f0455416888e80 49-53
+  s_f4117521b96ca8::t_5374cefa74bdb1 70
+  s_f4117521b96ca8::t_c08b9153d13889 55-62
+  s_f4117521b96ca8::t_3342622114327c 46,48
+  s_f4117521b96ca8::t_e4d9711cf64bb8 1-9,15-16,18-33,44-45,47,65-69,72-74
+  s_f4117521b96ca8::t_61ddd2d442f62a 17
+src/main/agent/runtime/task-planning-tools/update-agent-task-status.tool.ts
+  s_f4117521b96ca8::t_e4d9711cf64bb8 1-30,32,38-48
+  s_f4117521b96ca8::t_f0455416888e80 33-34,36-37
+  s_f4117521b96ca8::t_410288151629c8 31,35
+src/main/agent/context/system-prompt.ts
+  s_f4117521b96ca8::t_6b47a39dd76998 174-176
+  s_f4117521b96ca8::t_bc083268e9232a 3,11,13-32,34-40,48,53,60-61,63-67,69-80,82,84-85,92-94,96-116,154-173,177-212,214-226,233,241-242,244-245,249,253,255-256,259-261,263,267-268,274-279
+  s_f4117521b96ca8::t_99845b0e2e0e2a 68,95,213
+  s_f4117521b96ca8::t_f39ab3a0c362fe 33
+  s_f4117521b96ca8::t_f2a2f7fe8d3331 133,135-136,138-141
+  s_f4117521b96ca8::t_4671617a7f8066 117-132,134,137,142-153
+  s_f4117521b96ca8::t_99a9f004b208b5 81,83,86-91
+src/main/agent/services/transaction-analytics.service.ts
+  s_f4117521b96ca8::t_0998031bdfe6ef 102
+  s_f4117521b96ca8::t_8290f22c13d5eb 1-101,103-201
+src/main/agent/context/message-builder.ts
+  s_f4117521b96ca8::t_fb1dbeadd3afac 3
+  s_f4117521b96ca8::t_20d3c7ec9a8006 21
+  s_f4117521b96ca8::t_a2cc54528a3afc 58
+  s_f4117521b96ca8::t_4a79fb25b8b951 45-52,54
+tests/integration/agent-conversation.integration.test.ts
+  s_f4117521b96ca8::t_a8d265a75a76d8 9,13,16,20
+  s_f4117521b96ca8::t_074b0c4df2ed2e 179
+  s_f4117521b96ca8::t_7b4b26235609fe 162-178,180-200
+src/main/agent/runtime/skill-loader.tool.ts
+  s_f4117521b96ca8::t_ea82d0c8833764 15
+src/main/agent/capabilities/task-planning/SKILL.md
+  s_f4117521b96ca8::t_87131443d2d61a 4,11-12,15-17,21-24,28-32,36-41
+src/main/database/drizzle/schema.ts
+  s_f4117521b96ca8::t_fbd7687fbaaaf6 24
+src/main/agent/memory/conversation-summarizer.ts
+  s_f4117521b96ca8::t_e45d46662568bc 1-136
+src/main/database/drizzle/migrations/0010_add_conversation_summary.sql
+  s_f4117521b96ca8::t_508c87488dfd7b 1
+tests/unit/message-builder.test.ts
+  s_f4117521b96ca8::t_61093dfa287ad0 44-45
+  s_f4117521b96ca8::t_4364fb3191dc62 1-15,17-36,38-43,46-54
+  s_f4117521b96ca8::t_fcd67874e5cdf9 37
+  s_f4117521b96ca8::t_9732d4f9f01855 16
+src/main/agent/runtime/index.ts
+  s_f4117521b96ca8::t_b97967a4463dd6 49,53-56,60-71,75-94
+  s_f4117521b96ca8::t_7656ef2ad4566e 24,35,40
+  s_f4117521b96ca8::t_62c6bf6c4dd434 3,13-23,25-34,36-39,41-43,59,104
+  s_f4117521b96ca8::t_8029e65dd56c85 12
+  s_f4117521b96ca8::t_ca697d5a895a18 95-96
+src/main/agent/capabilities/user-todo/SKILL.md
+  s_f4117521b96ca8::t_4cf4bafe65ddfa 4,11,15-19
+tests/unit/conversation-summarizer.test.ts
+  s_f4117521b96ca8::t_49d20fd8ead0c1 1-86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "4be0b2d81479c204b7d6b2a71fe9415ae6211606",
+  "prompts": {},
+  "sessions": {
+    "s_f4117521b96ca8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_087e7e52cffeCSQuo7vdFqMqso",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
