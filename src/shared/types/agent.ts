@@ -174,6 +174,51 @@ export interface ConversationDetail extends Conversation {
     next_cursor: AgentMessageCursor | null
 }
 
+// ========== 结构化数据 ==========
+
+/**
+ * 支持的结构化数据块类型
+ * - table：二维表格（如流水列表、分类对比）
+ * - chart：图表（如月度趋势、分类占比）
+ * - card：摘要卡片（如余额总览、单条流水详情）
+ */
+export type StructuredDataType = 'table' | 'chart' | 'card'
+
+/** 表格结构化数据 */
+export interface StructuredTableData {
+    title?: string
+    columns: string[]
+    rows: string[][]
+}
+
+/** 图表结构化数据 */
+export interface StructuredChartData {
+    title?: string
+    type: 'pie' | 'bar' | 'line'
+    labels: string[]
+    datasets: Array<{
+        name: string
+        values: number[]
+    }>
+}
+
+/** 卡片结构化数据 */
+export interface StructuredCardData {
+    title?: string
+    fields: Array<{
+        label: string
+        value: string
+        /** 可选语义色：positive / negative / neutral */
+        color?: string
+    }>
+}
+
+/** 结构化数据条目（前端解析或后端发射的统一格式） */
+export interface StructuredDataEntry {
+    data_type: StructuredDataType
+    data: StructuredTableData | StructuredChartData | StructuredCardData
+}
+
 // ========== 流式事件 ==========
 
 export type StreamEventType =
@@ -186,6 +231,7 @@ export type StreamEventType =
     | 'done'
     | 'error'
     | 'task_update'
+    | 'structured_data'
 
 /** 智能体任务清单条目（2 状态：pending / completed） */
 export interface AgentTaskInfo {
@@ -218,11 +264,17 @@ export interface StreamEvent {
         streaming?: boolean
         thinking?: string
         thinking_duration_ms?: number
+        /** 结构化数据标记，前端据此选择渲染组件 */
+        data_type?: StructuredDataType
+        /** 结构化的载荷数据，与 data_type 配对使用 */
+        structured_data?: StructuredTableData | StructuredChartData | StructuredCardData
     }
     /** chunk 事件携带的增量数据 */
     id?: string
     /** task_update 事件携带的当前会话全量任务列表 */
     tasks?: AgentTaskInfo[]
+    /** structured_data 事件携带的结构化条目列表 */
+    structured_entries?: StructuredDataEntry[]
 }
 
 /** 智能体回答被用户主动取消时的统一消息 */

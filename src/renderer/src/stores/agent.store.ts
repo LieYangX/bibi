@@ -50,6 +50,10 @@ export interface AgentMsg {
     isStreaming?: boolean
     thinking?: string
     thinkingDurationMs?: number
+    /** 结构化数据类型（后端推送时携带，前端也可从文本解析） */
+    dataType?: string
+    /** 结构化数据原始载荷 */
+    structuredData?: unknown
 }
 
 /** 等待发送的智能体消息 */
@@ -206,6 +210,10 @@ export const useAgentStore = defineStore('agent', () => {
                     existing.content = message.content || ''
                     existing.toolName = message.tool_used
                     existing.thinkingDurationMs = message.thinking_duration_ms
+                    if (message.data_type) {
+                        existing.dataType = message.data_type
+                        existing.structuredData = message.structured_data
+                    }
                 } else {
                     messages.value.push({
                         id: message.id,
@@ -215,7 +223,9 @@ export const useAgentStore = defineStore('agent', () => {
                         toolName: message.tool_used,
                         isStreaming: message.streaming ?? false,
                         thinking: deepThink.value ? message.thinking || undefined : undefined,
-                        thinkingDurationMs: message.thinking_duration_ms
+                        thinkingDurationMs: message.thinking_duration_ms,
+                        dataType: message.data_type,
+                        structuredData: message.structured_data
                     })
                 }
                 if (message.role === 'assistant' && message.content) {

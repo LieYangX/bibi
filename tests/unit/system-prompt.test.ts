@@ -19,24 +19,8 @@ const skillDefinitions: SkillDefinition[] = [
     }
 ]
 
-const runtimeContext = {
-    userName: '测试用户',
-    currentDate: '2026年1月1日',
-    currentTime: '10:00',
-    systemInfo: {
-        operatingSystem: 'Windows',
-        systemRelease: '11',
-        architecture: 'x64',
-        appVersion: '1.0.0',
-        locale: 'zh-CN',
-        timeZone: 'Asia/Shanghai'
-    },
-    profileMemory: '',
-    soulMemory: ''
-}
-
 describe('Agent 系统提示词', () => {
-    it('按 Role → Context → Capabilities → Tools → Output → Examples → Guardrails → Recap 分层', () => {
+    it('按 Role → Capabilities → Tools → Output → Examples → Guardrails → Recap 分层', () => {
         const prompt = buildSystemPrompt(
             skillDefinitions,
             [
@@ -45,20 +29,21 @@ describe('Agent 系统提示词', () => {
                     tools: [{ name: 'queryTransactions', description: '查询流水' }]
                 }
             ],
-            [],
-            runtimeContext
+            []
         )
 
         expect(prompt).toContain('<role>')
-        expect(prompt).toContain('<context>')
         expect(prompt).toContain('<capabilities>')
         expect(prompt).toContain('<tool_policies>')
         expect(prompt).toContain('<tools>')
-        expect(prompt).toContain('<execution_protocol>')
         expect(prompt).toContain('<output_format>')
         expect(prompt).toContain('<examples>')
         expect(prompt).toContain('<guardrails>')
         expect(prompt).toContain('<recap>')
+        // 运行时上下文、执行协议、结构化输出指令已移至桌面端用户消息
+        expect(prompt).not.toContain('<context>')
+        expect(prompt).not.toContain('<execution_protocol>')
+        expect(prompt).not.toContain('<structured_output>')
     })
 
     it('区分原子型与流程型 Skill，并正确展示能力域', () => {
@@ -70,8 +55,7 @@ describe('Agent 系统提示词', () => {
                     tools: [{ name: 'queryTransactions', description: '查询流水' }]
                 }
             ],
-            [],
-            runtimeContext
+            []
         )
 
         expect(prompt).toContain('[数据查询] 查询流水和账户数据')
@@ -80,7 +64,7 @@ describe('Agent 系统提示词', () => {
     })
 
     it('没有启用 Skill 时明确展示空目录', () => {
-        const prompt = buildSystemPrompt([], [], [], runtimeContext)
+        const prompt = buildSystemPrompt([], [], [])
 
         expect(prompt).toContain('- 暂无已启用能力域')
     })
@@ -95,7 +79,7 @@ describe('Agent 系统提示词', () => {
             'user-todo'
         ])
         const groupedTools = toolRegistry.getGroupedToolInfos(enabledSkillNames)
-        const prompt = buildSystemPrompt(skillDefinitions, groupedTools, [], runtimeContext)
+        const prompt = buildSystemPrompt(skillDefinitions, groupedTools, [])
 
         // 任务规划工具必须在 system prompt 的 tools 段出现
         expect(prompt).toContain('任务规划')
@@ -103,15 +87,5 @@ describe('Agent 系统提示词', () => {
         expect(prompt).toContain('updateAgentTaskStatus')
         expect(prompt).toContain('queryAgentTasks')
         expect(prompt).toContain('clearAgentTasks')
-    })
-
-    it('执行协议包含强制创建任务清单的规则', () => {
-        const prompt = buildSystemPrompt(skillDefinitions, [], [], runtimeContext)
-
-        expect(prompt).toContain('任务清单规则（强制执行）')
-        expect(prompt).toContain('createAgentTasks')
-        expect(prompt).toContain('updateAgentTaskStatus')
-        expect(prompt).toContain('在调用任何业务工具之前')
-        expect(prompt).toContain('必须先调用 createAgentTasks')
     })
 })

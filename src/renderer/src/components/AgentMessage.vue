@@ -99,7 +99,21 @@
                 <div v-if="showThinking" class="bb-msg__think-body">{{ message.thinking }}</div>
             </div>
             <div v-if="message.content" class="bb-msg__content bb-msg__content--ai">
-                <MarkdownContent :content="message.content" />
+                <template v-for="(seg, segIndex) in parsedSegments" :key="segIndex">
+                    <MarkdownContent v-if="seg.type === 'text'" :content="seg.text || ''" />
+                    <StructuredTable
+                        v-else-if="seg.entry?.data_type === 'table'"
+                        :data="seg.entry.data as any"
+                    />
+                    <StructuredChart
+                        v-else-if="seg.entry?.data_type === 'chart'"
+                        :data="seg.entry.data as any"
+                    />
+                    <StructuredCard
+                        v-else-if="seg.entry?.data_type === 'card'"
+                        :data="seg.entry.data as any"
+                    />
+                </template>
             </div>
             <div v-if="message.content" class="bb-msg__meta bb-msg__meta--ai">
                 <span class="bb-msg__time">{{ formattedTime }}</span>
@@ -119,8 +133,12 @@ import { ChevronDown, BrainCircuit, Copy, Pencil } from '@lucide/vue'
 import { useUserStore } from '../stores/user.store'
 import MarkdownContent from './MarkdownContent.vue'
 import { Message } from './ui'
+import { parseStructuredContent } from '../utils/structured-content'
+import StructuredTable from './StructuredTable.vue'
+import StructuredChart from './StructuredChart.vue'
 
 const ToolResultDetail = defineAsyncComponent(() => import('./ToolResultDetail.vue'))
+const StructuredCard = defineAsyncComponent(() => import('./StructuredCard.vue'))
 
 const props = defineProps<{
     message: {
@@ -182,6 +200,16 @@ function editMessage(): void {
 const thinkingDurationText = computed(() =>
     formatThinkingDuration(props.message.thinkingDurationMs)
 )
+
+/**
+ * 解析助手消息中的结构化数据块，将文本和结构化片段分开渲染
+ *
+ * @author xiangwei
+ */
+const parsedSegments = computed(() => {
+    if (props.message.role !== 'assistant' || !props.message.content) return []
+    return parseStructuredContent(props.message.content)
+})
 
 const SECOND_IN_MS = 1_000
 const SECONDS_PER_MINUTE = 60
@@ -489,6 +517,7 @@ function formatThinkingDuration(durationMs?: number): string {
     background: var(--bb-bg-input);
     color: var(--bb-text-tertiary);
     margin-left: auto;
+    white-space: nowrap;
 }
 .bb-tool-card__chev {
     flex-shrink: 0;

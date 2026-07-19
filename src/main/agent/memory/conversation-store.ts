@@ -81,6 +81,27 @@ export async function conversationBelongsToUser(
 }
 
 /**
+ * 获取会话来源
+ *
+ * @param conversationId 会话 ID
+ * @returns 会话来源，会话不存在时返回 null
+ * @author xiangwei
+ */
+export async function getConversationSource(
+    conversationId: string,
+    userId: string
+): Promise<'desktop' | 'wechat' | null> {
+    const [conversation] = await db
+        .select({ source: agentConversations.source })
+        .from(agentConversations)
+        .where(
+            and(eq(agentConversations.id, conversationId), eq(agentConversations.user_id, userId))
+        )
+        .limit(1)
+    return conversation?.source ?? null
+}
+
+/**
  * 保存消息到会话
  *
  * @param conversationId 会话 ID

@@ -27,6 +27,7 @@ import { logger, runWithLogContext } from '../utils/logger'
 import { summarizeLogValue } from '../utils/log-sanitizer'
 import { closeMcpClients, loadMcpRuntimeTools } from './mcp-service'
 import { getRuntimeSystemInfo } from './runtime-system-info'
+import type { RuntimeSystemInfo } from './runtime-system-info'
 import { getUser } from '../services/user.service'
 
 /** 流式事件发射器（从 agent-run-context re-export，保持向后兼容） */
@@ -108,7 +109,7 @@ export async function processMessage(
         if (!config.apiKey) throw new Error('API Key 未配置')
 
         // 创建或校验会话归属，后续日志均附带实际会话编号。
-        const resolvedConversationId = await resolveConversationId(
+        const { conversationId: resolvedConversationId, source } = await resolveConversationId(
             conversationId,
             userId,
             config.model
@@ -123,6 +124,7 @@ export async function processMessage(
                     deepThink,
                     emit,
                     config,
+                    source,
                     abortSignal
                 )
         )
@@ -143,21 +145,23 @@ export async function processMessage(
  * @param conversationId 请求中的会话 ID
  * @param userId 当前用户 ID
  * @param model 模型名称
- * @returns 可安全使用的会话 ID
+ * @returns 会话 ID 与来源
  * @author xiangwei
  */
 async function resolveConversationId(
     conversationId: string | null,
     userId: string,
     model: string
-): Promise<string> {
+): Promise<{ conversationId: string; source: 'desktop' | 'wechat' }> {
     if (!conversationId) {
-        return conversationStore.createConversation(userId, undefined, model)
+        const newId = await conversationStore.createConversation(userId, undefined, model)
+        return { conversationId: newId, source: 'desktop' }
     }
     if (!(await conversationStore.conversationBelongsToUser(conversationId, userId))) {
         throw new Error('会话不存在或不属于当前用户')
     }
-    return conversationId
+    const source = await conversationStore.getConversationSource(conversationId, userId)
+    return { conversationId, source: source ?? 'desktop' }
 }
 
 /**
@@ -173,6 +177,84 @@ async function resolveConversationId(
  * @returns 会话 ID
  * @author xiangwei
  */
+/**
+ * 构建桌面端用户消息后缀（含运行时上下文、执行协议与结构化输出指令）
+ *
+ * @param context 运行时上下文
+ * @returns 后缀文本
+ * @author xiangwei
+ */
+function buildDesktopUserInstruction(context: {
+    userName: string
+    currentDate: string
+    currentTime: string
+    systemInfo: RuntimeSystemInfo
+    profileMemory: string
+    soulMemory: string
+}): string {
+    return `
+
+<context>
+当前用户：${context.userName}
+当前日期：${context.currentDate}
+当前时间：${context.currentTime}
+系统信息：
+- 操作系统：${context.systemInfo.operatingSystem} ${context.systemInfo.systemRelease}
+- 系统架构：${context.systemInfo.architecture}
+- 应用版本：${context.systemInfo.appVersion}
+- 语言区域：${context.systemInfo.locale}
+- 时区：${context.systemInfo.timeZone}
+用户画像（profile）：
+${context.profileMemory || '暂无用户画像'}
+最新灵魂记忆（soul）：
+${context.soulMemory || '暂无已提炼的灵魂记忆'}
+
+记忆使用规则：
+- 画像和灵魂属于"工作记忆"，每轮自动注入，仅作理解需求的隐性背景。
+- 严禁向用户透露记忆的存在，不得说"根据记录""我记得你"。
+- 当前输入与记忆冲突时，以当前输入为准。
+- 余额、流水、预算等实时数据必须通过工具查询，不得凭记忆回答。
+- 如需更新长期记忆，使用 writeLocalMemory 工具，且仅写入用户明确透露的稳定信息。
+</context>
+
+<execution_protocol>
+1. 识别目标：明确用户真实需求、目标结果以及完成任务所需的信息。仅当缺少无法推断的关键信息时才向用户追问；可以合理推断的信息不得反复确认。
+
+2. 判断能力域：判断用户请求属于哪个能力域，并选择对应执行方式：
+   - 流程型任务（记账、报告生成）：必须先调用 getSkill 获取完整流程，再基于 Skill 规则制定执行计划。
+   - 原子型任务（数据查询、数学计算、消费分析、待办管理）：无需调用 getSkill，可直接调用对应工具。
+
+3. 分步执行：按顺序执行每一步，完成后及时反馈结果。
+
+4. 验证交付：执行完成后检查结果是否满足用户目标。如果失败，说明已完成部分、失败原因，不编造不存在的结果。
+</execution_protocol>
+
+<structured_output>
+当你的回复包含适合结构化展示的数据时，使用以下 fenced code block 语法包裹，前端会自动识别并渲染为更美观的组件：
+
+**表格** - 适用于多条行记录（流水列表、分类对比、账户概览）：
+\`\`\`bibi-table
+{"columns": ["分类", "金额", "占比"], "rows": [["餐饮", "1280.00", "39.5%"], ["交通", "560.00", "17.3%"]], "title": "本月支出分类"}
+\`\`\`
+
+**图表** - 适用于趋势、分布等可视化数据（月度趋势、分类占比）：
+\`\`\`bibi-chart
+{"type": "bar", "labels": ["1月", "2月", "3月"], "datasets": [{"name": "支出", "values": [3200, 2800, 3500]}], "title": "季度支出趋势"}
+\`\`\`
+
+**卡片** - 适用于摘要信息（余额总览、关键指标）：
+\`\`\`bibi-card
+{"title": "账户总览", "fields": [{"label": "总资产", "value": "12,580.00"}, {"label": "本月支出", "value": "3,240.50", "color": "negative"}, {"label": "本月收入", "value": "8,500.00", "color": "positive"}]}
+\`\`\`
+
+使用规则：
+1. 结构化块之后仍保留 1-2 句文字总结。
+2. 同一个回复可包含多个结构化块（如先表格后图表）。
+3. 普通文字回复不需使用结构化块，仅在有明确行/列数据或可视化场景时使用。
+4. 结构化块仅用于数据展示，不用于交互式操作。
+</structured_output>`
+}
+
 async function runConversation(
     conversationId: string,
     userMessage: string,
@@ -180,6 +262,7 @@ async function runConversation(
     deepThink: boolean,
     emit: EventEmitter,
     config: AgentRuntimeConfig,
+    source: 'desktop' | 'wechat',
     abortSignal?: AbortSignal
 ): Promise<string> {
     const startedAt = Date.now()
@@ -204,9 +287,24 @@ async function runConversation(
     // 检测用户请求是否需要调用工具，若是则在用户消息末尾追加任务规划指令
     // 不使用 system 消息（DeepSeek provider 的 messages 不支持 system 角色）
     const needsToolCall = detectToolCallRequest(userMessage)
-    const effectiveUserMessage = needsToolCall
-        ? `${userMessage}\n\n[执行要求] 本请求需要调用工具来完成。在调用业务工具之前，先调用 createAgentTasks 创建任务清单让用户看到执行步骤；每完成一步立即调用 updateAgentTaskStatus 更新状态。\n[执行要求]`
-        : userMessage
+    let effectiveUserMessage = userMessage
+
+    // 桌面端：追加运行时上下文、执行协议与结构化输出指令
+    if (source === 'desktop') {
+        effectiveUserMessage += buildDesktopUserInstruction({
+            userName: currentUser.name,
+            currentDate: formatSystemDate(new Date()),
+            currentTime: formatSystemTime(new Date()),
+            systemInfo,
+            profileMemory: profileMemory.content,
+            soulMemory: soulMemory.content
+        })
+    }
+
+    // 桌面端：追加任务规划指令，让 AI 先创建任务清单再执行
+    if (source === 'desktop' && needsToolCall) {
+        effectiveUserMessage += `\n\n[执行要求] 本请求需要调用工具来完成。在调用业务工具之前，先调用 createAgentTasks 创建任务清单让用户看到执行步骤；每完成一步立即调用 updateAgentTaskStatus 更新状态。\n[执行要求]`
+    }
     const messages = buildMessages({
         history,
         userMessage: effectiveUserMessage,
@@ -217,15 +315,7 @@ async function runConversation(
     const systemPrompt = buildSystemPrompt(
         enabledSkills,
         toolRegistry.getGroupedToolInfos(enabledSkillNames),
-        mcpRuntime.toolInfos,
-        {
-            userName: currentUser.name,
-            currentDate: formatSystemDate(new Date()),
-            currentTime: formatSystemTime(new Date()),
-            systemInfo,
-            profileMemory: profileMemory.content,
-            soulMemory: soulMemory.content
-        }
+        mcpRuntime.toolInfos
     )
     const localTools = toolRegistry.createTools({ userId, conversationId, emit }, enabledSkillNames)
     const allTools: Record<string, Tool> = {
