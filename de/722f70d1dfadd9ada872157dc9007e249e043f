@@ -1,0 +1,46 @@
+src/main/agent/context/system-prompt.ts
+  s_06395d43f38651::t_a7d389b10aa76e 155
+  s_06395d43f38651::t_4ab45e31fb421b 49-50
+src/renderer/src/views/AgentChatView.vue
+  s_06395d43f38651::t_2a2ed7a0cd5ae1 1966-1998
+  s_06395d43f38651::t_7d14c8b575cb3a 978-980
+src/main/agent/orchestrator.ts
+  s_06395d43f38651::t_92dc5a01efdf0d 325-326
+  s_06395d43f38651::t_036acce301200d 377
+  s_06395d43f38651::t_d21df1b9e734e7 313
+src/main/agent/agent-config.ts
+  s_06395d43f38651::t_46b25ce1ca5a32 29,36-37,41-52
+  s_06395d43f38651::t_27146580bfe036 89
+  s_06395d43f38651::t_c670166fbf549b 9,11,13
+  s_06395d43f38651::t_4f084de4f8613e 53-54
+src/renderer/src/views/sections/AgentSettings.vue
+  s_06395d43f38651::t_9e3b235b8dc004 119-138
+  s_06395d43f38651::t_6a9d3a97e51885 157
+  s_06395d43f38651::t_e29281d50213da 171-172
+src/shared/ipc/schemas.ts
+  s_06395d43f38651::t_d71f1e88faf865 8,10
+  s_06395d43f38651::t_7024f0484586f6 480-486
+src/renderer/src/stores/agent.store.ts
+  s_06395d43f38651::t_106750e7b2e48c 32
+  s_06395d43f38651::t_12babf078c354e 95-96
+src/shared/types/agent.ts
+  s_06395d43f38651::t_284f30d0ce212a 73-81,89
+src/renderer/src/components/AgentMessage.vue
+  s_06395d43f38651::t_2214e189fa0d05 104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "de722f70d1dfadd9ada872157dc9007e249e043f",
+  "prompts": {},
+  "sessions": {
+    "s_06395d43f38651": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_0875321e2ffe7By9Gv7gF9zQB3",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
