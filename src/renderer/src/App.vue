@@ -67,8 +67,20 @@ async function checkReleaseNotes(): Promise<void> {
     const result = await desktopApi.app.getVersions()
     if (!result.ok) return
 
-    const release = getReleaseNotes(result.data.app)
-    if (!release || hasReadReleaseNotes(storage, release)) return
+    // 优先查找当前版本对应的公告
+    let release = getReleaseNotes(result.data.app)
+    if (release && hasReadReleaseNotes(storage, release)) {
+        release = null
+    }
+
+    // 当前版本无公告或已读时，查找最新未读的公告
+    // 适用于版本号跳过（如 3.0.7 → 4.0.0）等场景
+    if (!release) {
+        const allReleases = getAllReleaseNotes()
+        release = allReleases.find((r) => !hasReadReleaseNotes(storage, r)) ?? null
+    }
+
+    if (!release) return
 
     currentReleaseNotes.value = release
     releaseNotesTimer = setTimeout(() => {
@@ -78,7 +90,8 @@ async function checkReleaseNotes(): Promise<void> {
 }
 
 /**
- * 立即打开当前版本更新公告
+ * 立即打开更新公告弹窗
+ * 用户手动点击"更新内容"时始终展示，不因当前版本无特定公告条目而静默失败
  *
  * @author xiangwei
  */
@@ -87,11 +100,6 @@ async function openCurrentReleaseNotes(): Promise<void> {
         clearTimeout(releaseNotesTimer)
         releaseNotesTimer = null
     }
-    const result = await desktopApi.app.getVersions()
-    if (!result.ok) return
-    const release = getReleaseNotes(result.data.app)
-    if (!release) return
-    currentReleaseNotes.value = release
     showReleaseNotes.value = true
 }
 

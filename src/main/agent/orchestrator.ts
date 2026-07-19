@@ -336,13 +336,10 @@ async function runConversation(
                 const toolContent = resultStr.slice(0, MAX_TOOL_MESSAGE_LENGTH)
                 const toolTokenEstimate = Math.max(Math.round(toolContent.length / 2), 1)
                 void conversationStore
-                    .saveMessage(
-                        conversationId,
-                        userId,
-                        'tool',
-                        toolContent,
-                        { tool_used: cnName, token_count: toolTokenEstimate }
-                    )
+                    .saveMessage(conversationId, userId, 'tool', toolContent, {
+                        tool_used: cnName,
+                        token_count: toolTokenEstimate
+                    })
                     .catch((error: unknown) => {
                         logger.error('Agent', '工具结果持久化失败', { toolName, error })
                     })
