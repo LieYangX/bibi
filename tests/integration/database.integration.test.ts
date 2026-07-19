@@ -58,7 +58,7 @@ describe('SQLite 迁移与驱动契约', () => {
         expect(() => runMigrations(database, migrationsDir)).not.toThrow()
         expect(
             database.prepare('SELECT COUNT(*) AS count FROM __drizzle_migrations').get()
-        ).toEqual({ count: 9 })
+        ).toEqual({ count: 12 })
         database.close()
     })
 })

@@ -10,6 +10,7 @@ import { registerCategoryIpc } from './category.ipc'
 import { registerImportIpc } from './import.ipc'
 import { registerSettingIpc } from './setting.ipc'
 import { registerStatisticsIpc } from './statistics.ipc'
+import { registerTodoIpc } from './todo.ipc'
 import { registerTransactionIpc } from './transaction.ipc'
 import { registerUserIpc } from './user.ipc'
 import { registerWindowIpc } from './window.ipc'
@@ -31,4 +32,5 @@ export function registerIpcHandlers(): void {
     registerWindowIpc()
     registerAgentIpc()
     registerSttIpc()
+    registerTodoIpc()
 }

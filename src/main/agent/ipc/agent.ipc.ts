@@ -26,6 +26,7 @@ import {
 import { loadAgentConfig, updateAgentConfig } from '../agent-config'
 import { toolRegistry } from '../tools/registry'
 import { wechatChannelService } from '../wechat-channel.service'
+import { listAgentTasks, clearAgentTasks } from '../../services/agent-task.service'
 import type { WebContents } from 'electron'
 
 /** 活跃的智能体对话任务 */
@@ -438,5 +439,21 @@ export function registerAgentIpc(): void {
         IPC_SCHEMAS.agent.inspectMcpServer,
         '连接 MCP 服务失败',
         async (_userId, _event, name) => inspectSavedMcpServer(name)
+    )
+
+    // 查询指定会话的智能体任务清单
+    registerUserIpcHandler(
+        IPC_CHANNELS.agent.listTasks,
+        IPC_SCHEMAS.agent.listTasks,
+        '查询任务清单失败',
+        async (userId, _event, conversationId) => listAgentTasks(conversationId, userId)
+    )
+
+    // 清空指定会话的智能体任务清单
+    registerUserIpcHandler(
+        IPC_CHANNELS.agent.clearTasks,
+        IPC_SCHEMAS.agent.clearTasks,
+        '清空任务清单失败',
+        async (userId, _event, conversationId) => clearAgentTasks(conversationId, userId)
     )
 }

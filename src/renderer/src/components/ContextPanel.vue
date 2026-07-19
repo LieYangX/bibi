@@ -120,7 +120,7 @@
         <section class="ctx-section">
             <div class="ctx-section__head ctx-section__head--row">
                 <span>最近流水</span>
-                <router-link class="ctx-section__more" to="/detail">查看全部 →</router-link>
+                <router-link class="ctx-section__more" to="/detail">查看全部 -></router-link>
             </div>
             <div v-if="recentTransactions.length" class="ctx-tx-list">
                 <div v-for="tx in recentTransactions" :key="tx.id" class="ctx-tx-row">
@@ -135,6 +135,39 @@
                 </div>
             </div>
             <div v-else class="ctx-empty-inline">暂无流水</div>
+        </section>
+
+        <!-- 智能体任务进度（绑定当前会话，切换会话自动重载） -->
+        <section v-if="agentStore.currentConversationId" class="ctx-section">
+            <div class="ctx-section__head ctx-section__head--row">
+                <span>小笔待办</span>
+                <span v-if="agentTasks.length" class="ctx-task-count">
+                    {{ completedTaskCount }}/{{ agentTasks.length }}
+                </span>
+            </div>
+            <BbProgress
+                v-if="agentTasks.length > 0"
+                class="ctx-task-track"
+                :percent="taskProgressPercent"
+                color="var(--bb-accent)"
+            />
+            <div v-if="agentTasks.length" class="ctx-task-list">
+                <div v-for="task in agentTasks" :key="task.id" class="ctx-task-row">
+                    <span
+                        class="ctx-task-check"
+                        :class="{ 'is-done': task.status === 'completed' }"
+                    >
+                        <Check v-if="task.status === 'completed'" :size="10" />
+                    </span>
+                    <span
+                        class="ctx-task-title"
+                        :class="{ 'is-done': task.status === 'completed' }"
+                    >
+                        {{ task.title }}
+                    </span>
+                </div>
+            </div>
+            <div v-else class="ctx-empty-inline">暂无进行中的任务</div>
         </section>
 
         <!-- 导入草稿提醒 -->
@@ -154,7 +187,7 @@
  * @author xiangwei
  */
 
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import {
     Eye,
     EyeOff,
@@ -172,7 +205,8 @@ import {
     Snowflake,
     CloudOff,
     Droplets,
-    Wind
+    Wind,
+    Check
 } from '@lucide/vue'
 import { storeToRefs } from 'pinia'
 import { BbAmount } from './common'
@@ -182,6 +216,7 @@ import { useTransactionStore } from '../stores/transaction.store'
 import { useBudgetStore } from '../stores/budget.store'
 import { useImportStore } from '../stores/import.store'
 import { useSettingStore } from '../stores/setting.store'
+import { useAgentStore } from '../stores/agent.store'
 import { onRefreshMany } from '../composables/useRefreshBus'
 import { desktopApi } from '../api/desktop-api'
 import { formatLocalDate } from '../utils/date'
@@ -192,6 +227,7 @@ const transactionStore = useTransactionStore()
 const budgetStore = useBudgetStore()
 const importStore = useImportStore()
 const settingStore = useSettingStore()
+const agentStore = useAgentStore()
 const { amountMaskEnabled } = storeToRefs(settingStore)
 
 const monthExpense = computed(() => statisticsStore.monthlyStats?.total_expense_cents ?? 0)
@@ -202,6 +238,28 @@ const budgetList = computed(() =>
         .slice()
         .sort((a, b) => b.progress_pct - a.progress_pct)
         .slice(0, 3)
+)
+
+// ── 智能体任务（绑定当前会话，切换会话自动重载） ──
+const agentTasks = computed(() => agentStore.currentTasks)
+const completedTaskCount = computed(
+    () => agentTasks.value.filter((t) => t.status === 'completed').length
+)
+const taskProgressPercent = computed(() =>
+    agentTasks.value.length === 0
+        ? 0
+        : Math.round((completedTaskCount.value / agentTasks.value.length) * 100)
+)
+watch(
+    () => agentStore.currentConversationId,
+    (newId) => {
+        if (newId) {
+            void agentStore.loadTasks(newId)
+        } else {
+            agentStore.clearTasks()
+        }
+    },
+    { immediate: true }
 )
 
 // ── 天气 ──
@@ -553,6 +611,58 @@ onUnmounted(() => offRefresh?.())
 }
 .ctx-tx-amount--expense {
     color: var(--bb-danger);
+}
+
+/* 智能体任务进度 */
+.ctx-task-count {
+    font-size: 11px;
+    color: var(--bb-text-tertiary);
+    font-variant-numeric: tabular-nums;
+}
+.ctx-task-track {
+    margin-bottom: 4px;
+}
+.ctx-task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.ctx-task-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.ctx-task-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--bb-border);
+    border-radius: 50%;
+    flex-shrink: 0;
+    color: transparent;
+    transition:
+        background var(--bb-duration-fast) var(--bb-ease),
+        border-color var(--bb-duration-fast) var(--bb-ease),
+        color var(--bb-duration-fast) var(--bb-ease);
+}
+.ctx-task-check.is-done {
+    background: var(--bb-success);
+    border-color: var(--bb-success);
+    color: var(--bb-bg-card);
+}
+.ctx-task-title {
+    font-size: 12px;
+    color: var(--bb-text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color var(--bb-duration-fast) var(--bb-ease);
+}
+.ctx-task-title.is-done {
+    color: var(--bb-text-tertiary);
+    text-decoration: line-through;
 }
 
 /* 导入草稿提醒 */

@@ -5,6 +5,7 @@
 
 import type { Account, CreateAccountDTO, UpdateAccountDTO } from './account'
 import type { Budget, BudgetWithProgress, SetBudgetDTO } from './budget'
+import type { CreateTodoDTO, Todo, TodoListFilter, UpdateTodoDTO } from './todo'
 import type {
     Category,
     CategoryType,
@@ -91,6 +92,13 @@ export interface ElectronAPI {
         getMonth: (year: number, month: number) => Promise<IpcResult<BudgetWithProgress[]>>
         getYear: (year: number) => Promise<IpcResult<BudgetWithProgress[]>>
         delete: (id: string) => Promise<IpcResult>
+    }
+    todo: {
+        list: (filter: TodoListFilter) => Promise<IpcResult<Todo[]>>
+        create: (data: CreateTodoDTO) => Promise<IpcResult<Todo>>
+        update: (id: string, data: UpdateTodoDTO) => Promise<IpcResult<Todo | null>>
+        delete: (id: string) => Promise<IpcResult>
+        toggle: (id: string) => Promise<IpcResult<Todo>>
     }
     statistics: {
         getMonthly: (year: number, month: number) => Promise<IpcResult<MonthlyStatistics>>

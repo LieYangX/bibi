@@ -17,6 +17,8 @@ import { skillMarkdown as calculatorMarkdown } from './capabilities/calculator'
 import { skillMarkdown as reportMarkdown } from './capabilities/report'
 import { skillMarkdown as analysisMarkdown } from './capabilities/analysis'
 import { skillMarkdown as transactionWriteMarkdown } from './capabilities/transaction-write'
+import { skillMarkdown as taskPlanningMarkdown } from './capabilities/task-planning'
+import { skillMarkdown as userTodoMarkdown } from './capabilities/user-todo'
 
 export interface SkillDefinition {
     meta: SkillMeta
@@ -72,6 +74,18 @@ const BUILTIN_SKILLS: Array<{
         displayName: '记账',
         description: '记录新的流水或删除已有流水，按账户名称和分类名称自动匹配',
         markdown: transactionWriteMarkdown
+    },
+    {
+        name: 'task-planning',
+        displayName: '任务规划',
+        description: '多步骤任务的清单管理与进度跟踪，3 步及以上任务强制创建清单',
+        markdown: taskPlanningMarkdown
+    },
+    {
+        name: 'user-todo',
+        displayName: '待办管理',
+        description: '帮用户创建、查询、修改、删除待办事项',
+        markdown: userTodoMarkdown
     }
 ]
 

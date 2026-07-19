@@ -42,6 +42,13 @@ export const IPC_CHANNELS = {
         getYear: 'budget:getYear',
         delete: 'budget:delete'
     },
+    todo: {
+        list: 'todo:list',
+        create: 'todo:create',
+        update: 'todo:update',
+        delete: 'todo:delete',
+        toggle: 'todo:toggle'
+    },
     statistics: {
         getMonthly: 'statistics:getMonthly',
         getAnnual: 'statistics:getAnnual'
@@ -124,6 +131,10 @@ export const IPC_CHANNELS = {
         /** 查询 STT 模型状态 */
         sttModelStatus: 'agent:sttModelStatus',
         /** 删除已下载的 STT 模型缓存 */
-        sttDeleteModel: 'agent:sttDeleteModel'
+        sttDeleteModel: 'agent:sttDeleteModel',
+        /** 查询指定会话的智能体任务清单 */
+        listTasks: 'agent:listTasks',
+        /** 清空指定会话的智能体任务清单 */
+        clearTasks: 'agent:clearTasks'
     }
 } as const

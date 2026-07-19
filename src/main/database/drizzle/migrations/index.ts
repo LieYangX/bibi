@@ -55,6 +55,15 @@ const LEGACY_MIGRATION_COLUMNS: Record<string, Record<string, string[]>> = {
     },
     '0007_add_category_color': {
         categories: ['id', 'user_id', 'name', 'type', 'color']
+    },
+    '0007_robust_natasha_romanoff': {
+        todos: ['id', 'user_id', 'title', 'status', 'is_deleted', 'created_at']
+    },
+    '0008_cold_lady_mastermind': {
+        agent_tasks: ['id', 'conversation_id', 'user_id', 'title', 'status', 'created_at']
+    },
+    '0009_kind_chameleon': {
+        todos: ['id', 'user_id', 'title', 'note', 'status', 'due_date', 'due_time', 'is_deleted']
     }
 }
 

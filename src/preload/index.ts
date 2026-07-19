@@ -10,6 +10,7 @@ import type {
     CreateAccountDTO,
     CreateCategoryDTO,
     CreateSubCategoryDTO,
+    CreateTodoDTO,
     CreateTransactionDTO,
     ElectronAPI,
     ImportConfirmDTO,
@@ -17,9 +18,11 @@ import type {
     ImportDraftUpdateDTO,
     ImportSource,
     SetBudgetDTO,
+    TodoListFilter,
     TransactionFilter,
     UpdateAccountDTO,
     UpdateCategoryDTO,
+    UpdateTodoDTO,
     UpdateTransactionDTO,
     StreamEvent,
     SttProgressEvent,
@@ -97,6 +100,14 @@ const electronAPI: ElectronAPI = {
             invokeWithLog(IPC_CHANNELS.budget.getMonth, year, month),
         getYear: (year: number) => invokeWithLog(IPC_CHANNELS.budget.getYear, year),
         delete: (id: string) => invokeWithLog(IPC_CHANNELS.budget.delete, id)
+    },
+    todo: {
+        list: (filter: TodoListFilter) => invokeWithLog(IPC_CHANNELS.todo.list, filter),
+        create: (data: CreateTodoDTO) => invokeWithLog(IPC_CHANNELS.todo.create, data),
+        update: (id: string, data: UpdateTodoDTO) =>
+            invokeWithLog(IPC_CHANNELS.todo.update, id, data),
+        delete: (id: string) => invokeWithLog(IPC_CHANNELS.todo.delete, id),
+        toggle: (id: string) => invokeWithLog(IPC_CHANNELS.todo.toggle, id)
     },
     statistics: {
         getMonthly: (year: number, month: number) =>
@@ -206,7 +217,9 @@ const electronAPI: ElectronAPI = {
             }
             ipcRenderer.on(IPC_CHANNELS.agent.event, listener)
             return () => ipcRenderer.removeListener(IPC_CHANNELS.agent.event, listener)
-        }
+        },
+        listTasks: (conversationId) => invokeWithLog(IPC_CHANNELS.agent.listTasks, conversationId),
+        clearTasks: (conversationId) => invokeWithLog(IPC_CHANNELS.agent.clearTasks, conversationId)
     }
 }
 

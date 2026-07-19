@@ -20,15 +20,16 @@ import * as conversationStore from './memory/conversation-store'
 import { localMemoryStore } from './memory/local-memory'
 import { distillSoulIfNeeded } from './memory/soul-distiller'
 import { loadAgentConfig } from './agent-config'
-import type { AgentConfig, StreamEvent } from '@shared/types'
+import type { AgentConfig } from '@shared/types'
+import type { EventEmitter } from './agent-run-context'
 import { logger, runWithLogContext } from '../utils/logger'
 import { summarizeLogValue } from '../utils/log-sanitizer'
 import { closeMcpClients, loadMcpRuntimeTools } from './mcp-service'
 import { getRuntimeSystemInfo } from './runtime-system-info'
 import { getUser } from '../services/user.service'
 
-/** 流式事件发射器 */
-export type EventEmitter = (event: StreamEvent) => Promise<void>
+/** 流式事件发射器（从 agent-run-context re-export，保持向后兼容） */
+export type { EventEmitter }
 
 /** Agent 运行时配置 */
 type AgentRuntimeConfig = AgentConfig
@@ -55,7 +56,15 @@ const TOOL_CN: Record<string, string> = {
     queryAllCategories: '分类列表',
     getSkill: '加载 Skill',
     readLocalMemory: '读取本地记忆',
-    writeLocalMemory: '写入本地记忆'
+    writeLocalMemory: '写入本地记忆',
+    createAgentTasks: '创建任务清单',
+    updateAgentTaskStatus: '更新任务状态',
+    queryAgentTasks: '查询任务进度',
+    clearAgentTasks: '清空任务清单',
+    createUserTodo: '创建待办',
+    deleteUserTodo: '删除待办',
+    queryUserTodos: '查询待办',
+    updateUserTodo: '修改待办'
 }
 
 const MAX_AGENT_STEPS = 10
@@ -202,7 +211,7 @@ async function runConversation(
         toolRegistry.getGroupedToolInfos(),
         mcpRuntime.toolInfos
     )
-    const localTools = toolRegistry.createTools(userId)
+    const localTools = toolRegistry.createTools({ userId, conversationId, emit })
     const allTools: Record<string, Tool> = {
         ...localTools,
         ...mcpRuntime.tools

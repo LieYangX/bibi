@@ -14,6 +14,9 @@ import * as dataQueryTools from '../capabilities/data-query'
 import * as calculatorTools from '../capabilities/calculator'
 import * as analysisTools from '../capabilities/analysis'
 import * as transactionTools from '../capabilities/transaction-write'
+import * as taskPlanningTools from '../capabilities/task-planning'
+import * as userTodoTools from '../capabilities/user-todo'
+import { runWithAgentContext, type AgentRunContext } from '../agent-run-context'
 import { createRuntimeTools, getRuntimeToolInfos } from '../runtime'
 
 /** 工具分组定义 */
@@ -39,7 +42,9 @@ const TOOL_GROUPS: ToolGroupDefinition[] = [
     { name: 'data-query', tools: dataQueryTools },
     { name: 'calculator', tools: calculatorTools },
     { name: 'analysis', tools: analysisTools },
-    { name: 'transaction', tools: transactionTools }
+    { name: 'transaction', tools: transactionTools },
+    { name: 'task-planning', tools: taskPlanningTools },
+    { name: 'user-todo', tools: userTodoTools }
 ]
 
 /**
@@ -100,7 +105,9 @@ export class ToolRegistry {
             'data-query': '数据查询',
             calculator: '数学计算',
             analysis: '消费分析',
-            transaction: '记账操作'
+            transaction: '记账操作',
+            'task-planning': '任务规划',
+            'user-todo': '待办管理'
         }
         const groups: ToolGroupInfo[] = []
         for (const [groupKey, label] of Object.entries(groupLabels)) {
@@ -125,16 +132,16 @@ export class ToolRegistry {
     }
 
     /**
-     * 为当前用户创建完整的本地工具集合
+     * 为当前 Agent 运行时上下文创建完整的本地工具集合
      *
-     * @param userId 当前用户 ID
+     * @param runContext Agent 运行时上下文（userId / conversationId / emit）
      * @returns AI SDK 工具字典
      * @author xiangwei
      */
-    createTools(userId: string): Record<string, Tool> {
-        const tools = createRuntimeTools(userId)
+    createTools(runContext: AgentRunContext): Record<string, Tool> {
+        const tools = createRuntimeTools(runContext.userId)
         for (const registered of this.registeredTools) {
-            tools[registered.name] = wrapToolWithUser(registered, userId)
+            tools[registered.name] = wrapToolWithUser(registered, runContext)
         }
         return tools
     }
@@ -154,14 +161,14 @@ function isTool(value: unknown): value is Tool {
 }
 
 /**
- * 为业务工具绑定用户边界
+ * 为业务工具绑定用户边界与 Agent 上下文
  *
  * @param registered 已注册工具
- * @param userId 当前用户 ID
+ * @param runContext Agent 运行时上下文
  * @returns 绑定后的工具
  * @author xiangwei
  */
-function wrapToolWithUser(registered: RegisteredTool, userId: string): Tool {
+function wrapToolWithUser(registered: RegisteredTool, runContext: AgentRunContext): Tool {
     const raw = registered.tool as Tool & { description?: string; inputSchema?: unknown }
 
     return tool({
@@ -175,7 +182,7 @@ function wrapToolWithUser(registered: RegisteredTool, userId: string): Tool {
                 arguments: summarizeLogValue(args)
             })
             const currentUserId = await getPersistedCurrentUserId()
-            if (!currentUserId || currentUserId !== userId) {
+            if (!currentUserId || currentUserId !== runContext.userId) {
                 logger.warn('AgentTool', '工具调用被用户会话变更中断', {
                     toolGroup: registered.group,
                     toolName: registered.name,
@@ -185,8 +192,10 @@ function wrapToolWithUser(registered: RegisteredTool, userId: string): Tool {
             }
 
             try {
-                const result = await runWithBoundUserId(userId, () =>
-                    (raw.execute as (input: Record<string, unknown>) => unknown)(args)
+                const result = await runWithBoundUserId(runContext.userId, () =>
+                    runWithAgentContext(runContext, () =>
+                        (raw.execute as (input: Record<string, unknown>) => unknown)(args)
+                    )
                 )
                 logger.info('AgentTool', '工具调用完成', {
                     toolGroup: registered.group,

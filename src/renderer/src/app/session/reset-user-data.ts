@@ -8,6 +8,7 @@ import { useBudgetStore } from '../../stores/budget.store'
 import { useCategoryStore } from '../../stores/category.store'
 import { useImportStore } from '../../stores/import.store'
 import { useStatisticsStore } from '../../stores/statistics.store'
+import { useTodoStore } from '../../stores/todo.store'
 import { useTransactionStore } from '../../stores/transaction.store'
 import { useAgentStore } from '../../stores/agent.store'
 import { invalidateUserRequests } from './user-request-generation'
@@ -25,5 +26,6 @@ export function resetUserData(): void {
     useImportStore().reset()
     useStatisticsStore().reset()
     useTransactionStore().reset()
+    useTodoStore().reset()
     useAgentStore().reset()
 }

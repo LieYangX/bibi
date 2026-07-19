@@ -117,6 +117,7 @@ import {
     Tag,
     Wallet,
     FileDown,
+    CheckSquare,
     Settings as SettingsIcon,
     Pencil
 } from '@lucide/vue'
@@ -139,7 +140,8 @@ const railItems: Array<{ path: string; label: string; icon: Component }> = [
     { path: '/accounts', label: '账户', icon: Shield },
     { path: '/categories', label: '分类', icon: Tag },
     { path: '/budget', label: '预算', icon: Wallet },
-    { path: '/import', label: '导入', icon: FileDown }
+    { path: '/import', label: '导入', icon: FileDown },
+    { path: '/todos', label: '待办', icon: CheckSquare }
 ]
 
 /** 返回小笔主页 */

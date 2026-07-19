@@ -323,3 +323,66 @@ export const settings = sqliteTable(
     },
     (table) => [index('idx_settings_key').on(table.key)]
 )
+
+// ============================================================
+// 用户待办表
+// 极简纯任务清单，与记账解耦
+// ============================================================
+export const todos = sqliteTable(
+    'todos',
+    {
+        id: text('id').primaryKey(),
+        user_id: text('user_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        title: text('title').notNull(),
+        note: text('note'),
+        status: text('status').$type<'pending' | 'completed'>().notNull().default('pending'),
+        due_date: text('due_date'),
+        due_time: text('due_time'),
+        completed_at: text('completed_at'),
+        sort_order: integer('sort_order').notNull().default(0),
+        is_deleted: integer('is_deleted').notNull().default(0),
+        created_at: text('created_at')
+            .notNull()
+            .default(sql`(datetime('now', 'localtime'))`),
+        updated_at: text('updated_at')
+            .notNull()
+            .default(sql`(datetime('now', 'localtime'))`)
+    },
+    (table) => [
+        index('idx_todos_user_status').on(table.user_id, table.status),
+        index('idx_todos_user_due').on(table.user_id, table.due_date)
+    ]
+)
+
+// ============================================================
+// 智能体任务清单表
+// 多步骤任务执行时由 Agent 自主创建，与用户待办物理隔离
+// 绑定会话，会话删除时 cascade 清理
+// ============================================================
+export const agentTasks = sqliteTable(
+    'agent_tasks',
+    {
+        id: text('id').primaryKey(),
+        conversation_id: text('conversation_id')
+            .notNull()
+            .references(() => agentConversations.id, { onDelete: 'cascade' }),
+        user_id: text('user_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        title: text('title').notNull(),
+        status: text('status').$type<'pending' | 'completed'>().notNull().default('pending'),
+        sort_order: integer('sort_order').notNull().default(0),
+        created_at: text('created_at')
+            .notNull()
+            .default(sql`(datetime('now', 'localtime'))`),
+        updated_at: text('updated_at')
+            .notNull()
+            .default(sql`(datetime('now', 'localtime'))`)
+    },
+    (table) => [
+        index('idx_agent_tasks_conversation').on(table.conversation_id),
+        index('idx_agent_tasks_user_status').on(table.user_id, table.status)
+    ]
+)

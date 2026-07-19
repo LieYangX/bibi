@@ -40,6 +40,11 @@ const routes: RouteRecordRaw[] = [
             { path: 'import', name: 'Import', component: () => import('../views/ImportView.vue') },
             { path: 'agent', redirect: '/' },
             {
+                path: 'todos',
+                name: 'Todos',
+                component: () => import('../views/TodosView.vue')
+            },
+            {
                 path: 'settings',
                 name: 'Settings',
                 component: () => import('../views/SettingsView.vue')

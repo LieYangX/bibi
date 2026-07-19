@@ -3,7 +3,7 @@
  * @author xiangwei
  */
 
-export type RefreshEvent = 'transaction' | 'account' | 'category' | 'budget' | 'import'
+export type RefreshEvent = 'transaction' | 'account' | 'category' | 'budget' | 'import' | 'todo'
 type Listener = () => void | Promise<void>
 
 const listeners: Record<RefreshEvent, Set<Listener>> = {
@@ -11,7 +11,8 @@ const listeners: Record<RefreshEvent, Set<Listener>> = {
     account: new Set(),
     category: new Set(),
     budget: new Set(),
-    import: new Set()
+    import: new Set(),
+    todo: new Set()
 }
 const scheduledListeners = new Set<Listener>()
 

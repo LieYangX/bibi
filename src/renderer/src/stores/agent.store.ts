@@ -14,6 +14,7 @@ import { desktopApi } from '../api/desktop-api'
 import type {
     AgentConfig,
     AgentMessageCursor,
+    AgentTaskInfo,
     AgentToolInfo,
     ConversationCursor,
     ConversationDetail,
@@ -123,6 +124,9 @@ export const useAgentStore = defineStore('agent', () => {
 
     /** 工具调用次数（按工具显示名累计，用户级别） */
     const toolCallCounts = ref<Record<string, number>>({})
+
+    /** 当前会话的智能体任务清单（由 task_update 事件实时更新，切换会话时重载） */
+    const currentTasks = ref<AgentTaskInfo[]>([])
 
     const hasConfig = computed(() => !!config.value.apiKey && config.value.enabled)
 
@@ -265,6 +269,12 @@ export const useAgentStore = defineStore('agent', () => {
                 }
                 finishStreamProcessing()
                 scheduleQueuedMessageDispatch()
+                break
+            }
+            case 'task_update': {
+                if (event.conversationId === currentConversationId.value) {
+                    currentTasks.value = event.tasks ?? []
+                }
                 break
             }
         }
@@ -984,6 +994,7 @@ export const useAgentStore = defineStore('agent', () => {
         currentConversationId.value = null
         currentConversationSource.value = 'desktop'
         messages.value = []
+        currentTasks.value = []
         isProcessing.value = false
         isAwaitingResponse.value = false
         isStopping.value = false
@@ -1005,6 +1016,27 @@ export const useAgentStore = defineStore('agent', () => {
         return messages.value.find((m) => m.id === id)
     }
 
+    /**
+     * 加载指定会话的智能体任务清单
+     * 切换会话时由 ContextPanel 调用，同步展示该会话的任务进度
+     *
+     * @param conversationId 会话 ID
+     * @author xiangwei
+     */
+    async function loadTasks(conversationId: string): Promise<void> {
+        const result = await desktopApi.agent.listTasks(conversationId)
+        if (result.ok) {
+            currentTasks.value = result.data
+        } else {
+            currentTasks.value = []
+        }
+    }
+
+    /** 清空当前任务清单（切换会话或重置时调用） */
+    function clearTasks(): void {
+        currentTasks.value = []
+    }
+
     return {
         config,
         conversations,
@@ -1017,6 +1049,7 @@ export const useAgentStore = defineStore('agent', () => {
         currentConversationId,
         messages,
         toolCallCounts,
+        currentTasks,
         isProcessing,
         isAwaitingResponse,
         isStopping,
@@ -1037,6 +1070,8 @@ export const useAgentStore = defineStore('agent', () => {
         initialize,
         loadMoreConversations,
         findMessageById,
+        loadTasks,
+        clearTasks,
         sendMessage,
         connectWechat,
         disconnectWechat,

@@ -185,6 +185,15 @@ export type StreamEventType =
     | 'chunk'
     | 'done'
     | 'error'
+    | 'task_update'
+
+/** 智能体任务清单条目（2 状态：pending / completed） */
+export interface AgentTaskInfo {
+    id: string
+    title: string
+    status: 'pending' | 'completed'
+    sort_order: number
+}
 
 export interface StreamEvent {
     type: StreamEventType
@@ -212,6 +221,8 @@ export interface StreamEvent {
     }
     /** chunk 事件携带的增量数据 */
     id?: string
+    /** task_update 事件携带的当前会话全量任务列表 */
+    tasks?: AgentTaskInfo[]
 }
 
 /** 智能体回答被用户主动取消时的统一消息 */
@@ -309,6 +320,10 @@ export interface AgentAPI {
     onWechatStatus: (callback: (status: WechatConnectionStatus) => void) => () => void
     /** 事件监听（流式） */
     onEvent: (callback: (event: StreamEvent) => void) => () => void
+    /** 查询指定会话的智能体任务清单 */
+    listTasks: (conversationId: string) => Promise<IpcResult<AgentTaskInfo[]>>
+    /** 清空指定会话的智能体任务清单 */
+    clearTasks: (conversationId: string) => Promise<IpcResult>
 }
 
 export interface SkillDetail {

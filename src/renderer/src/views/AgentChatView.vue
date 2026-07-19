@@ -1365,7 +1365,15 @@ const TOOL_CN_MAP: Record<string, string> = {
     queryAllCategories: '分类列表',
     getSkill: '加载 Skill',
     readLocalMemory: '读取本地记忆',
-    writeLocalMemory: '写入本地记忆'
+    writeLocalMemory: '写入本地记忆',
+    createAgentTasks: '创建任务清单',
+    updateAgentTaskStatus: '更新任务状态',
+    queryAgentTasks: '查询任务进度',
+    clearAgentTasks: '清空任务清单',
+    createUserTodo: '创建待办',
+    deleteUserTodo: '删除待办',
+    queryUserTodos: '查询待办',
+    updateUserTodo: '修改待办'
 }
 function toolDisplayName(name: string): string {
     return TOOL_CN_MAP[name] || name

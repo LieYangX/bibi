@@ -219,6 +219,41 @@ const budgetSchema = z
     })
     .strict()
 
+const todoStatusSchema = z.enum(['pending', 'completed'])
+const todoTitleSchema = z.string().trim().min(1).max(200)
+
+const createTodoSchema = z
+    .object({
+        title: todoTitleSchema,
+        note: z.string().max(500).nullish(),
+        due_date: dateSchema.nullish(),
+        due_time: timeSchema.nullish()
+    })
+    .strict()
+
+const updateTodoSchema = z
+    .object({
+        title: todoTitleSchema.optional(),
+        note: z.string().max(500).nullish(),
+        due_date: dateSchema.nullable().optional(),
+        due_time: timeSchema.nullable().optional()
+    })
+    .strict()
+    .refine((value) => Object.keys(value).length > 0, '至少修改一个字段')
+
+const todoListFilterSchema = z
+    .object({
+        status: todoStatusSchema.optional(),
+        due_start: dateSchema.optional(),
+        due_end: dateSchema.optional(),
+        keyword: z.string().max(100).optional()
+    })
+    .strict()
+    .refine((value) => !value.due_start || !value.due_end || value.due_start <= value.due_end, {
+        path: ['due_end'],
+        message: '结束日期不能早于开始日期'
+    })
+
 const importDraftRowChangesSchema = z
     .object({
         included: z.boolean().optional(),
@@ -313,6 +348,13 @@ export const IPC_SCHEMAS = {
         getMonth: z.tuple([z.number().int().min(2000).max(2100), z.number().int().min(1).max(12)]),
         getYear: z.tuple([z.number().int().min(2000).max(2100)]),
         delete: z.tuple([idSchema])
+    },
+    todo: {
+        list: z.tuple([todoListFilterSchema]),
+        create: z.tuple([createTodoSchema]),
+        update: z.tuple([idSchema, updateTodoSchema]),
+        delete: z.tuple([idSchema]),
+        toggle: z.tuple([idSchema])
     },
     statistics: {
         getMonthly: z.tuple([
@@ -460,6 +502,8 @@ export const IPC_SCHEMAS = {
         ]),
         deleteMcpServer: z.tuple([mcpServerNameSchema]),
         toggleMcpServer: z.tuple([mcpServerNameSchema, z.boolean()]),
-        inspectMcpServer: z.tuple([mcpServerNameSchema])
+        inspectMcpServer: z.tuple([mcpServerNameSchema]),
+        listTasks: z.tuple([idSchema]),
+        clearTasks: z.tuple([idSchema])
     }
 } as const
