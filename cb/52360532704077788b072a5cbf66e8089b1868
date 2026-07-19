@@ -1,0 +1,110 @@
+src/main/agent/orchestrator.ts
+  s_06395d43f38651::t_8510213d95d580 69-71
+  s_06395d43f38651::t_11b40265badfe4 252-257
+src/main/agent/runtime/system-tools/index.ts
+  s_06395d43f38651::t_b2db4fe603f151 1-8
+src/preload/index.ts
+  s_06395d43f38651::t_fd6cf4ab3fcdb9 123
+  s_06395d43f38651::t_a40ec67bc807c9 120,127
+  s_06395d43f38651::t_7740c78cd0cef8 121
+  s_06395d43f38651::t_9446da5fbbafc9 122,124-126
+src/renderer/src/views/AgentChatView.vue
+  s_06395d43f38651::t_c9d6dde175719a 1376-1378
+src/main/agent/context/system-prompt.ts
+  s_06395d43f38651::t_cba7e28f54ed6b 245
+  s_06395d43f38651::t_c44e3cccb49fb8 197-231,244,246
+doc/修改点.md
+  s_06395d43f38651::t_98fba74215c6cd 72
+src/shared/ipc/channels.ts
+  s_06395d43f38651::t_25ac4a9eb1b3ff 70-71,81
+  s_06395d43f38651::t_2c5a7e0e4fd342 72-73
+  s_06395d43f38651::t_89e2ea96af4453 74,77-80
+  s_06395d43f38651::t_de1c6865041355 75-76
+src/main/ipc/file.ipc.ts
+  s_06395d43f38651::t_6ffff86104809a 1-6,8-10,16-26,64-66
+  s_06395d43f38651::t_7f142d9903a955 7,27-36
+  s_06395d43f38651::t_954c8b395536bb 11,13-15
+  s_06395d43f38651::t_c95cb48f2d6dd7 37-40,50-63
+  s_06395d43f38651::t_66528a05aab285 12
+  s_06395d43f38651::t_5131034afe4ea0 41-49
+src/renderer/src/components/AgentMessage.vue
+  s_06395d43f38651::t_083e7c6815febc 116-119
+  s_06395d43f38651::t_9bebabf0a3f583 146
+src/renderer/src/utils/structured-content.ts
+  s_06395d43f38651::t_6dda178c80f946 91-92,101-116
+  s_06395d43f38651::t_0b4c3706df6397 32-33
+  s_06395d43f38651::t_df5ebdeefa43ec 117-119
+src/main/agent/runtime/index.ts
+  s_06395d43f38651::t_4b0a3f3dac0985 121-127
+  s_06395d43f38651::t_d6810d86b18deb 19,46-56
+  s_06395d43f38651::t_35c47c73f68ef8 86-88
+  s_06395d43f38651::t_b04537ad8840d5 57-59
+src/renderer/src/views/sections/AgentSettings.vue
+  s_06395d43f38651::t_eb5e8ef7f011f2 232-234,236,239,247-250,252
+  s_06395d43f38651::t_be5b1fc87b1110 321-326
+  s_06395d43f38651::t_fa84184d0541b4 134
+  s_06395d43f38651::t_e7ac52efd01bb9 93-115,117-118
+  s_06395d43f38651::t_0e3f1c73a11306 156-159
+  s_06395d43f38651::t_1d88c47e6ced96 116
+  s_06395d43f38651::t_e9412a7e7fd1e6 229-231,235,237-238,240-246,251,253-255
+  s_06395d43f38651::t_3acda74539c2d7 179,183-184
+  s_06395d43f38651::t_aff48d9e3903a5 180-182
+src/shared/types/agent.ts
+  s_06395d43f38651::t_0e0a393108ad52 184,186
+  s_06395d43f38651::t_ca6aec72fffded 217-226,230
+  s_06395d43f38651::t_eff4c075e5c7f3 281-282
+src/main/agent/runtime/system-tools/edit-file.tool.ts
+  s_06395d43f38651::t_125babdb62a34b 10
+  s_06395d43f38651::t_f2b91a7270fb93 1-9,12-14,16-49,59-63,65-98,102-123
+  s_06395d43f38651::t_0c785a12c3717c 50-58
+  s_06395d43f38651::t_1929f93b68af0d 11,15
+  s_06395d43f38651::t_98fba74215c6cd 64,99-101
+src/main/services/workspace.service.ts
+  s_06395d43f38651::t_a6e14b69ff9e70 83-116
+  s_06395d43f38651::t_6d96acc9afff35 126-127
+  s_06395d43f38651::t_ec0f45bd24ac8f 1-2,4-7,10,12-15,29,31-39,70-82,117-125,128
+  s_06395d43f38651::t_d6b7018f567fe0 3,8,16-28,30,40
+  s_06395d43f38651::t_1299640d49ae96 9,11,41-69
+src/shared/types/electron-api.ts
+  s_06395d43f38651::t_acbffc1bfbee17 115
+  s_06395d43f38651::t_ae2c84f63a150a 111-114,116
+  s_06395d43f38651::t_7b74b78997cc10 110
+src/shared/ipc/schemas.ts
+  s_06395d43f38651::t_e7299eb7243458 418
+  s_06395d43f38651::t_06ec5c452fff3c 420,422-423
+  s_06395d43f38651::t_1d88c47e6ced96 406
+  s_06395d43f38651::t_836425303c733d 421
+  s_06395d43f38651::t_f4a02f997fe603 405,414-415
+  s_06395d43f38651::t_5b95513d301930 419
+  s_06395d43f38651::t_0177b461028f4f 424
+src/main/app/bootstrap.ts
+  s_06395d43f38651::t_53901946ec4e39 184-186
+  s_06395d43f38651::t_3c24119f4c6081 20
+src/main/ipc/index.ts
+  s_06395d43f38651::t_5e24c2937cdbe2 35
+  s_06395d43f38651::t_d54d7021e0ab6c 20
+src/renderer/src/components/StructuredFile.vue
+  s_06395d43f38651::t_d827b44a06e9b8 1-149
+src/main/agent/runtime/system-tools/execute-command.tool.ts
+  s_06395d43f38651::t_46835f8bb7e8ae 63,65-66,71,73
+  s_06395d43f38651::t_dcefd408885943 41,45
+  s_06395d43f38651::t_83e2c5d8e957dd 1-10,12-25,27-28,30-40,42-44,46-62,64,67-70,72,75-78
+  s_06395d43f38651::t_954c8b395536bb 74
+  s_06395d43f38651::t_c9b3362b866ed6 11,26,29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "cb52360532704077788b072a5cbf66e8089b1868",
+  "prompts": {},
+  "sessions": {
+    "s_06395d43f38651": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ses_0875321e2ffe7By9Gv7gF9zQB3",
+        "model": "unknown"
+      },
+      "human_author": "xiangwei <18573714766@139.com>"
+    }
+  }
+}
