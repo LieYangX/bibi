@@ -1,5 +1,7 @@
 # 笔笔（bibi）
 
+> **官网**：[lieyangx.github.io/bibi](https://lieyangx.github.io/bibi/) ｜ **仓库**：[github.com/LieYangX/bibi](https://github.com/LieYangX/bibi)
+
 个人记账桌面应用（Electron + Vue 3 + TypeScript），内置 AI 记账助手，并可作为局域网内 iOS 端的"电脑端大脑"——通过 Bonjour 广播 + HTTP API 向手机端提供记账工具能力。
 
 ## 功能特性
@@ -121,7 +123,7 @@ npm run build:win    # 生成 Windows 安装包
 
 ## 相关项目
 
-- **bibi-ios**：配套 iOS 端（SwiftUI + iOS 26），通过 Tool Server 调用本应用的记账工具。详见 [bibi-ios 仓库](https://github.com/LieYangX/bibi-ios)。
+- **星枢（bibi-ios）**：配套 iOS 端（SwiftUI + iOS 26），通过 Tool Server 调用本应用的记账工具。详见 [bibi-ios 仓库](https://github.com/LieYangX/bibi-ios) 与 [星枢官网](https://lieyangx.github.io/bibi-ios/)。
 
 ## 注意事项
 
