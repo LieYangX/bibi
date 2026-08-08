@@ -28,7 +28,7 @@
 
 ## 与 iOS 端联动
 
-仓库 [bibi-ios](https://github.com/)（`open-worker/bibi-ios`）是配套的 iOS 端（SwiftUI）。两端通过 **Tool Server** 联动：
+仓库 [bibi-ios](https://github.com/LieYangX/bibi-ios) 是配套的 iOS 端（SwiftUI）。两端通过 **Tool Server** 联动：
 
 ```
 ┌──────────────────────────┐            ┌──────────────────────────┐
@@ -99,7 +99,7 @@ npm run build:win    # 生成 Windows 安装包
 
 ## 相关项目
 
-- **bibi-ios**：配套 iOS 端（SwiftUI + iOS 26），通过 Tool Server 调用本应用的记账工具。详见 [bibi-ios 仓库](https://github.com/)。
+- **bibi-ios**：配套 iOS 端（SwiftUI + iOS 26），通过 Tool Server 调用本应用的记账工具。详见 [bibi-ios 仓库](https://github.com/LieYangX/bibi-ios)。
 
 ## 注意事项
 
