@@ -11,6 +11,16 @@
 - **微信渠道**：扫码登录后通过微信与智能体对话
 - **手机联动（Tool Server）**：开启后在局域网广播服务，iOS 端发现后配对，即可在手机上调用电脑端记账工具
 
+## 界面预览
+
+<p align="center">
+    <img src="assets/screenshot-home.png" alt="记账首页" width="49%"/>
+    <img src="assets/screenshot-agent.png" alt="AI 智能体对话" width="49%"/>
+</p>
+<p align="center">
+    <img src="assets/screenshot-toolserver.png" alt="Tool Server 设置" width="49%"/>
+</p>
+
 ## 技术栈
 
 | 分类 | 选型 |
