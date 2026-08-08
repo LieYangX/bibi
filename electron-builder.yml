@@ -39,6 +39,8 @@ files:
 asar: true
 asarUnpack:
     - 'node_modules/better-sqlite3/build/Release/*.node'
+    # onnxruntime-node 的 .node 和 .dll 必须在 asar 外同一目录，否则 DLL 依赖链无法加载
+    - 'node_modules/onnxruntime-node/**'
 win:
     executableName: bibi
 nsis:

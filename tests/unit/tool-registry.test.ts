@@ -12,7 +12,9 @@ describe('本地工具注册中心', () => {
             'createAgentTasks',
             'updateAgentTaskStatus',
             'queryAgentTasks',
-            'clearAgentTasks'
+            'clearAgentTasks',
+            'executeCommand',
+            'editFile'
         ])
 
         const enabledSkillNames = new Set([

@@ -73,6 +73,26 @@ describe('版本更新公告', () => {
         expect(RELEASE_NOTES_DELAY_MS).toBe(5_000)
     })
 
+    it('为 4.0.0 提供完整更新内容', () => {
+        const release = getReleaseNotes('4.0.0')
+
+        expect(release?.date).toBe('2026-07-18')
+        expect(release?.additions).toEqual([
+            '船新版本，AI 成为绝对主角，记账退居二线当辅助，UI 也换了一身新衣服。',
+            '新增流水导出，账单可以拎出去讲道理了。',
+            '新增暗黑模式，深夜复盘也不怕亮瞎眼。',
+            '一级分类新增颜色标识，账本一眼望去五彩缤纷。',
+            '新增新建用户引导与智能体待办功能，AI 会主动帮你列清单。',
+            'AI 支持返回结构化数据，表格、图表、数据卡片轮番上阵，信息展示 richer than rich。',
+            '新增任务规划功能，AI 动手前先拆任务清单，像位强迫症项目经理。',
+            '新增 AI 命令行工具，支持打开文件、执行命令、文件修改等操作，AI 不再只会嘴炮。'
+        ])
+        expect(release?.fixes).toEqual([
+            '修复若干显示 bug，界面不再偶尔抽风。',
+            '修复小笔说话没人味的问题，现在更像刚喝完咖啡的聪明同事了。'
+        ])
+    })
+
     it('历史版本公告包含发布日期', () => {
         expect(getReleaseNotes('3.0.3')?.date).toBe('2026-07-14')
     })
@@ -81,13 +101,14 @@ describe('版本更新公告', () => {
         const releases = getAllReleaseNotes()
 
         expect(releases.map((release) => release.version)).toEqual([
+            '4.0.0',
             '3.0.7',
             '3.0.6',
             '3.0.5',
             '3.0.4',
             '3.0.3'
         ])
-        expect(releases[0]?.version).toBe('3.0.7')
+        expect(releases[0]?.version).toBe('4.0.0')
     })
 
     it('同一版本仅在首次进入时展示公告', () => {

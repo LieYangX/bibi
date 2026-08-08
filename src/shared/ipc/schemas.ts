@@ -523,5 +523,12 @@ export const IPC_SCHEMAS = {
         listTasks: z.tuple([idSchema]),
         clearTasks: z.tuple([idSchema]),
         confirmTool: z.tuple([z.string().min(1), z.boolean()])
+    },
+    toolServer: {
+        getStatus: z.tuple([]),
+        toggle: z.tuple([z.boolean()]),
+        generateCode: z.tuple([]),
+        listDevices: z.tuple([]),
+        revokeDevice: z.tuple([z.string().min(1)])
     }
 } as const

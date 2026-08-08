@@ -45,7 +45,7 @@ export function buildMessages(options: BuildMessagesOptions): ModelMessage[] {
 
     const summaryMessage: ModelMessage | null = options.summary
         ? {
-              role: 'system',
+              role: 'user',
               content: `以下是对早前对话的简要摘要，作为上下文参考：\n${options.summary}`
           }
         : null

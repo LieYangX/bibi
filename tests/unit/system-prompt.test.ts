@@ -83,9 +83,9 @@ describe('Agent 系统提示词', () => {
 
         // 任务规划工具必须在 system prompt 的 tools 段出现
         expect(prompt).toContain('任务规划')
-        expect(prompt).toContain('createAgentTasks')
-        expect(prompt).toContain('updateAgentTaskStatus')
-        expect(prompt).toContain('queryAgentTasks')
-        expect(prompt).toContain('clearAgentTasks')
+        expect(prompt).toContain('创建任务清单')
+        expect(prompt).toContain('更新任务状态')
+        expect(prompt).toContain('查询任务进度')
+        expect(prompt).toContain('清空任务清单')
     })
 })

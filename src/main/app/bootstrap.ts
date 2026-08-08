@@ -18,6 +18,8 @@ import { getCurrentUserId } from '../services/session.service'
 import { userExists } from '../services/user.service'
 import { backfillCategoryColors } from '../database/seed'
 import { ensureDefaultWorkspaceDir } from '../services/workspace.service'
+import { startToolServer, stopToolServer } from '../tool-server'
+import { getSetting } from '../services/setting.service'
 
 const APP_ID = 'com.personal.bibi'
 const STARTUP_ERROR_TITLE = '笔笔启动失败'
@@ -187,6 +189,21 @@ async function initializeApplication(): Promise<void> {
     await restoreLastWechatConnection()
     registerIpcHandlers()
 
+    // 根据设置开关决定是否启动 Tool Server（供 iOS 端联动）
+    const toolServerEnabled = (await getSetting<boolean>('tool_server_enabled')) ?? false
+    if (toolServerEnabled) {
+        try {
+            await startToolServer()
+        } catch (error: unknown) {
+            // Tool Server 启动失败不阻断应用启动
+            logger.warn('Bootstrap', 'Tool Server 启动失败（不阻断应用）', {
+                error: getErrorMessage(error)
+            })
+        }
+    } else {
+        logger.info('Bootstrap', 'Tool Server 未启用（设置中已关闭）')
+    }
+
     const isAutoStart = process.argv.includes('--autostart')
     try {
         await openMainWindow(!isAutoStart)
@@ -225,6 +242,7 @@ export function bootstrapApplication(): void {
         destroyTray()
         wechatChannelService.stopAll()
         resetModel()
+        void stopToolServer()
         closeDatabase()
     })
     app.on('window-all-closed', () => {

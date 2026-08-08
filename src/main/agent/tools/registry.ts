@@ -173,6 +173,19 @@ export class ToolRegistry {
     }
 
     /**
+     * 获取已注册的原始业务工具列表
+     *
+     * 供 tool-server 使用，避免访问私有字段。
+     *
+     * @param enabledSkillNames 已启用 Skill 名称集合
+     * @returns 过滤后的业务工具元信息
+     * @author xiangwei
+     */
+    getRawRegisteredTools(enabledSkillNames?: Set<string>): RegisteredTool[] {
+        return this.filterByEnabledSkills(this.registeredTools, enabledSkillNames)
+    }
+
+    /**
      * 按已启用 Skill 名称过滤业务工具
      * 运行时工具（getSkill / memory）不受 Skill 启停影响，始终可用。
      *

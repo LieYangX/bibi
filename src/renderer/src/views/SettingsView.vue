@@ -60,6 +60,9 @@
 
         <!-- 语音转文字设置 -->
 
+        <!-- 移动设备联动 -->
+        <MobileDeviceSection />
+
         <!-- 关于应用 -->
         <div class="settings-card">
             <div class="settings-head">
@@ -225,6 +228,7 @@ import SttSettings from './sections/SttSettings.vue'
 import { desktopApi } from '../api/desktop-api'
 import { openReleaseNotesKey } from '../app/release-notes-presenter'
 import { Sliders, Info, ChevronRight, Bot } from '@lucide/vue'
+import MobileDeviceSection from './sections/MobileDeviceSection.vue'
 
 const settingStore = useSettingStore()
 const showFeatures = ref(false)

@@ -231,6 +231,13 @@ const electronAPI: ElectronAPI = {
             invokeWithLog(IPC_CHANNELS.agent.clearTasks, conversationId),
         confirmTool: (confirmId, approved) =>
             invokeWithLog(IPC_CHANNELS.agent.confirmTool, confirmId, approved)
+    },
+    toolServer: {
+        getStatus: () => invokeWithLog(IPC_CHANNELS.toolServer.getStatus),
+        toggle: (enable: boolean) => invokeWithLog(IPC_CHANNELS.toolServer.toggle, enable),
+        generateCode: () => invokeWithLog(IPC_CHANNELS.toolServer.generateCode),
+        listDevices: () => invokeWithLog(IPC_CHANNELS.toolServer.listDevices),
+        revokeDevice: (token: string) => invokeWithLog(IPC_CHANNELS.toolServer.revokeDevice, token)
     }
 }
 

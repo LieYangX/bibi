@@ -18,6 +18,7 @@ import { registerAgentIpc } from '../agent/ipc/agent.ipc'
 import { registerSttIpc } from './stt.ipc'
 import { registerWeatherIpc } from './weather.ipc'
 import { registerFileIpc } from './file.ipc'
+import { registerToolServerIpc } from './tool-server.ipc'
 
 export function registerIpcHandlers(): void {
     registerUserIpc()
@@ -35,4 +36,5 @@ export function registerIpcHandlers(): void {
     registerFileIpc()
     registerSttIpc()
     registerTodoIpc()
+    registerToolServerIpc()
 }

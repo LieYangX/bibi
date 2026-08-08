@@ -334,7 +334,9 @@ export const useAgentStore = defineStore('agent', () => {
     function handleWechatStatus(status: WechatConnectionStatus): void {
         if (wechatStatus.value && wechatStatus.value.userId !== status.userId) return
         wechatStatus.value = status
-        if (status.phase === 'connected' && status.conversationId) {
+        // 仅在用户尚未手动选择过会话时自动激活微信会话
+        // 若用户已手动切到其他会话，主进程的微信状态推送不应覆盖用户的选择
+        if (status.phase === 'connected' && status.conversationId && !currentConversationId.value) {
             void activateWechatConversation(status.conversationId)
         }
     }
@@ -366,7 +368,7 @@ export const useAgentStore = defineStore('agent', () => {
         activatingWechatConversationId = conversationId
         try {
             await refreshConversationList()
-            await loadConversation(conversationId)
+            await loadConversation(conversationId, false)
         } finally {
             if (activatingWechatConversationId === conversationId) {
                 activatingWechatConversationId = null
@@ -521,7 +523,13 @@ export const useAgentStore = defineStore('agent', () => {
         ensureWechatStatusListener()
         const result = await desktopApi.agent.connectWechat()
         if (!result.ok) return false
-        handleWechatStatus(result.data)
+        // 更新微信状态
+        if (wechatStatus.value && wechatStatus.value.userId !== result.data.userId) return true
+        wechatStatus.value = result.data
+        // 用户主动连接后始终跳转到微信会话，不受 handleWechatStatus 守卫影响
+        if (result.data.phase === 'connected' && result.data.conversationId) {
+            void activateWechatConversation(result.data.conversationId)
+        }
         return true
     }
 
@@ -738,10 +746,11 @@ export const useAgentStore = defineStore('agent', () => {
      * 加载会话的最近一页消息
      *
      * @param id 会话 ID
+     * @param persist 是否持久化为"上次打开的会话"（默认 true，微信自动激活时应传 false）
      * @returns 是否加载成功
      * @author xiangwei
      */
-    async function loadConversation(id: string): Promise<boolean> {
+    async function loadConversation(id: string, persist: boolean = true): Promise<boolean> {
         if (isProcessing.value) return false
         const requestId = ++conversationRequestId
         sessionTrusted.value = false
@@ -761,7 +770,9 @@ export const useAgentStore = defineStore('agent', () => {
         currentConversationSource.value = result.data.source
         messages.value = mapConversationMessages(result.data)
         nextMessageCursor.value = result.data.next_cursor
-        void persistConversationId()
+        if (persist) {
+            void persistConversationId()
+        }
         return true
     }
 

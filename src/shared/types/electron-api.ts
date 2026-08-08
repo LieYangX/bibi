@@ -33,6 +33,7 @@ import type {
     UpdateTransactionDTO
 } from './transaction'
 import type { AgentAPI } from './agent'
+import type { ToolServerAPI } from './tool-server'
 import type { IpcResult } from './api'
 import type { User, UserListResult } from './user'
 import type { WeatherSnapshot } from './weather'
@@ -147,4 +148,5 @@ export interface ElectronAPI {
         setMinimizePreference: (value: boolean) => Promise<IpcResult>
     }
     agent: AgentAPI
+    toolServer: ToolServerAPI
 }

@@ -150,5 +150,12 @@ export const IPC_CHANNELS = {
         clearTasks: 'agent:clearTasks',
         /** 用户确认或拒绝危险工具操作 */
         confirmTool: 'agent:confirmTool'
+    },
+    toolServer: {
+        getStatus: 'tool-server:getStatus',
+        toggle: 'tool-server:toggle',
+        generateCode: 'tool-server:generateCode',
+        listDevices: 'tool-server:listDevices',
+        revokeDevice: 'tool-server:revokeDevice'
     }
 } as const

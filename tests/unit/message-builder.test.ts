@@ -40,7 +40,7 @@ describe('Agent 消息构建', () => {
 
         expect(messages).toEqual([
             {
-                role: 'system',
+                role: 'user',
                 content:
                     '以下是对早前对话的简要摘要，作为上下文参考：\n用户曾询问本月支出和预算情况。'
             },
