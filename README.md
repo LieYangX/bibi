@@ -14,11 +14,23 @@
 ## 界面预览
 
 <p align="center">
-    <img src="assets/screenshot-home.png" alt="记账首页" width="49%"/>
-    <img src="assets/screenshot-agent.png" alt="AI 智能体对话" width="49%"/>
+    <img src="assets/首页.png" alt="首页" width="49%"/>
+    <img src="assets/流水.png" alt="流水" width="49%"/>
 </p>
 <p align="center">
-    <img src="assets/screenshot-toolserver.png" alt="Tool Server 设置" width="49%"/>
+    <img src="assets/账户.png" alt="账户" width="49%"/>
+    <img src="assets/分类.png" alt="分类" width="49%"/>
+</p>
+<p align="center">
+    <img src="assets/预算.png" alt="预算" width="49%"/>
+    <img src="assets/待办.png" alt="待办" width="49%"/>
+</p>
+<p align="center">
+    <img src="assets/导入账单.png" alt="账单导入" width="49%"/>
+    <img src="assets/设置页1.png" alt="设置 1" width="49%"/>
+</p>
+<p align="center">
+    <img src="assets/设置页2.png" alt="设置 2" width="49%"/>
 </p>
 
 ## 技术栈
